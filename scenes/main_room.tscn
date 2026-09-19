@@ -1,0 +1,133 @@
+[gd_scene load_steps=17 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
+
+[sub_resource type="Environment" id="Environment_room"]
+background_mode = 1
+background_color = Color(0.07, 0.09, 0.13, 1)
+ambient_light_source = 3
+ambient_light_color = Color(0.75, 0.82, 1, 1)
+ambient_light_energy = 0.65
+tonemap_mode = 2
+
+[sub_resource type="BoxMesh" id="BoxMesh_floor"]
+size = Vector3(20, 0.2, 20)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_floor"]
+size = Vector3(20, 0.2, 20)
+
+[sub_resource type="StandardMaterial3D" id="Material_floor"]
+albedo_color = Color(0.22, 0.24, 0.27, 1)
+roughness = 0.9
+
+[sub_resource type="BoxMesh" id="BoxMesh_back_wall"]
+size = Vector3(20, 4, 0.2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_back_wall"]
+size = Vector3(20, 4, 0.2)
+
+[sub_resource type="StandardMaterial3D" id="Material_back_wall"]
+albedo_color = Color(0.52, 0.5, 0.46, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_side_wall"]
+size = Vector3(0.2, 4, 20)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_side_wall"]
+size = Vector3(0.2, 4, 20)
+
+[sub_resource type="StandardMaterial3D" id="Material_side_wall"]
+albedo_color = Color(0.45, 0.47, 0.5, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_test_cube"]
+size = Vector3(1.5, 1.5, 1.5)
+
+[sub_resource type="StandardMaterial3D" id="Material_test_cube"]
+albedo_color = Color(0.9, 0.22, 0.06, 1)
+roughness = 0.45
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_test_cube"]
+size = Vector3(1.5, 1.5, 1.5)
+
+[sub_resource type="StandardMaterial3D" id="Material_marker"]
+albedo_color = Color(0.1, 0.8, 0.35, 1)
+emission_enabled = true
+emission = Color(0.02, 0.35, 0.08, 1)
+emission_energy_multiplier = 2.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_marker"]
+size = Vector3(5, 0.04, 5)
+
+[node name="MainRoom" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_room")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-55, -25, 0)
+light_energy = 1.4
+shadow_enabled = true
+
+[node name="FillLight" type="OmniLight3D" parent="."]
+position = Vector3(0, 3.5, 1)
+omni_range = 12.0
+light_energy = 2.0
+light_color = Color(1, 0.84, 0.68, 1)
+
+[node name="Floor" type="StaticBody3D" parent="."]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Floor"]
+mesh = SubResource("BoxMesh_floor")
+material_override = SubResource("Material_floor")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Floor"]
+shape = SubResource("BoxShape3D_floor")
+
+[node name="BackWall" type="StaticBody3D" parent="."]
+position = Vector3(0, 2, -10)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="BackWall"]
+mesh = SubResource("BoxMesh_back_wall")
+material_override = SubResource("Material_back_wall")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BackWall"]
+shape = SubResource("BoxShape3D_back_wall")
+
+[node name="LeftWall" type="StaticBody3D" parent="."]
+position = Vector3(-10, 2, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="LeftWall"]
+mesh = SubResource("BoxMesh_side_wall")
+material_override = SubResource("Material_side_wall")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="LeftWall"]
+shape = SubResource("BoxShape3D_side_wall")
+
+[node name="RightWall" type="StaticBody3D" parent="."]
+position = Vector3(10, 2, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="RightWall"]
+mesh = SubResource("BoxMesh_side_wall")
+material_override = SubResource("Material_side_wall")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="RightWall"]
+shape = SubResource("BoxShape3D_side_wall")
+
+[node name="TestCube" type="StaticBody3D" parent="."]
+position = Vector3(0, 0.75, -2)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="TestCube"]
+mesh = SubResource("BoxMesh_test_cube")
+material_override = SubResource("Material_test_cube")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="TestCube"]
+shape = SubResource("BoxShape3D_test_cube")
+
+[node name="GreenMarker" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.12, 0)
+mesh = SubResource("BoxMesh_marker")
+material_override = SubResource("Material_marker")
+
+[node name="Player" parent="." instance=ExtResource("1_player")]
+position = Vector3(0, 1, 4)
