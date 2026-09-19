@@ -15,6 +15,7 @@ func _process(_delta: float) -> void:
 	force_raycast_update()
 
 	var hit := get_collider()
+	print("raycast hit: ", hit)
 	var next_target: Node = null
 
 	var carried_target := get_tree().get_first_node_in_group("carried_interactable")
