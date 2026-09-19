@@ -1,8 +1,8 @@
-[gd_scene load_steps=20 format=3]
+[gd_scene load_steps=23 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
 [ext_resource type="Script" path="res://scripts/main_room.gd" id="2_main_room"]
-[ext_resource type="Script" path="res://scripts/test_interactable.gd" id="3_test_interactable"]
+[ext_resource type="Script" path="res://scripts/sofa_interactable.gd" id="3_sofa_interactable"]
 [ext_resource type="Script" path="res://scripts/hud.gd" id="4_hud"]
 
 [sub_resource type="Environment" id="Environment_room"]
@@ -42,18 +42,27 @@ size = Vector3(0.2, 4, 20)
 albedo_color = Color(0.14, 0.17, 0.25, 1)
 roughness = 0.8
 
-[sub_resource type="BoxMesh" id="BoxMesh_test_object"]
-size = Vector3(1.5, 1.5, 1.5)
+[sub_resource type="BoxMesh" id="BoxMesh_sofa_seat"]
+size = Vector3(3, 0.45, 1.25)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_test_object"]
-size = Vector3(1.5, 1.5, 1.5)
+[sub_resource type="BoxMesh" id="BoxMesh_sofa_back"]
+size = Vector3(3, 1.45, 0.35)
 
-[sub_resource type="StandardMaterial3D" id="Material_test_object"]
-albedo_color = Color(0.95, 0.2, 0.04, 1)
-roughness = 0.42
+[sub_resource type="BoxMesh" id="BoxMesh_sofa_arm"]
+size = Vector3(0.35, 0.8, 1.25)
 
-[sub_resource type="BoxMesh" id="BoxMesh_zone"]
-size = Vector3(4, 0.04, 4)
+[sub_resource type="BoxShape3D" id="BoxShape3D_sofa"]
+size = Vector3(3.7, 1.6, 1.6)
+
+[sub_resource type="StandardMaterial3D" id="Material_sofa"]
+albedo_color = Color(0.66, 0.25, 0.1, 1)
+roughness = 0.72
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_zone"]
+top_radius = 1.9
+bottom_radius = 1.9
+height = 0.04
+radial_segments = 48
 
 [sub_resource type="StandardMaterial3D" id="Material_zone"]
 albedo_color = Color(0.04, 0.85, 0.9, 1)
@@ -129,21 +138,39 @@ material_override = SubResource("Material_side_wall")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="RightWall"]
 shape = SubResource("BoxShape3D_side_wall")
 
-[node name="TestObject" type="StaticBody3D" parent="." groups=["interactable"]]
-position = Vector3(0, 1.2, -2)
-script = ExtResource("3_test_interactable")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="TestObject"]
-mesh = SubResource("BoxMesh_test_object")
-material_override = SubResource("Material_test_object")
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="TestObject"]
-shape = SubResource("BoxShape3D_test_object")
-
-[node name="InteractionZone" type="MeshInstance3D" parent="."]
-position = Vector3(0, 0.12, 0)
-mesh = SubResource("BoxMesh_zone")
+[node name="SofaPlacementZone" type="MeshInstance3D" parent="."]
+position = Vector3(3, 0.12, -2)
+mesh = SubResource("CylinderMesh_zone")
 material_override = SubResource("Material_zone")
+
+[node name="Sofa" type="StaticBody3D" parent="." groups=["interactable"]]
+position = Vector3(-3, 0, -2)
+script = ExtResource("3_sofa_interactable")
+placement_zone_path = NodePath("../SofaPlacementZone")
+
+[node name="Seat" type="MeshInstance3D" parent="Sofa"]
+position = Vector3(0, 0.45, 0)
+mesh = SubResource("BoxMesh_sofa_seat")
+material_override = SubResource("Material_sofa")
+
+[node name="Back" type="MeshInstance3D" parent="Sofa"]
+position = Vector3(0, 1.2, 0.45)
+mesh = SubResource("BoxMesh_sofa_back")
+material_override = SubResource("Material_sofa")
+
+[node name="LeftArm" type="MeshInstance3D" parent="Sofa"]
+position = Vector3(-1.35, 0.7, 0)
+mesh = SubResource("BoxMesh_sofa_arm")
+material_override = SubResource("Material_sofa")
+
+[node name="RightArm" type="MeshInstance3D" parent="Sofa"]
+position = Vector3(1.35, 0.7, 0)
+mesh = SubResource("BoxMesh_sofa_arm")
+material_override = SubResource("Material_sofa")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Sofa"]
+position = Vector3(0, 0.8, 0)
+shape = SubResource("BoxShape3D_sofa")
 
 [node name="Player" parent="." instance=ExtResource("1_player")]
 position = Vector3(0, 0.1, 4)
@@ -183,7 +210,7 @@ offset_right = 235.0
 offset_bottom = 140.0
 theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
 theme_override_font_sizes/font_size = 15
-text = "TEST TASK                 0/1\n\nDUSTING                    0/6\nSPIDER WEBS                0/4"
+text = "FURNITURE                  0/1\n\nDUSTING                    0/6\nSPIDER WEBS                0/4"
 
 [node name="TimerPanel" type="ColorRect" parent="HUD"]
 offset_left = 505.0
@@ -208,7 +235,7 @@ offset_right = 210.0
 offset_bottom = 705.0
 theme_override_colors/font_color = Color(1, 0.9, 0.55, 1)
 theme_override_font_sizes/font_size = 18
-text = "🧹  MOP"
+text = "MOP"
 
 [node name="InteractionPrompt" type="Panel" parent="HUD"]
 offset_left = 430.0
@@ -226,4 +253,4 @@ offset_bottom = 48.0
 theme_override_colors/font_color = Color(0.85, 0.96, 1, 1)
 theme_override_font_sizes/font_size = 18
 horizontal_alignment = 1
-text = "E  CLEAN THE TEST OBJECT"
+text = "E  PICK UP THE SOFA"

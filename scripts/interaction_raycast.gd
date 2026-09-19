@@ -17,7 +17,11 @@ func _process(_delta: float) -> void:
 	var hit := get_collider()
 	var next_target: Node = null
 
-	if hit != null and hit.has_method("get_interaction_prompt"):
+	var carried_target := get_tree().get_first_node_in_group("carried_interactable")
+
+	if carried_target != null:
+		next_target = carried_target
+	elif hit != null and hit.has_method("get_interaction_prompt"):
 		next_target = hit
 
 	if next_target == current_target:

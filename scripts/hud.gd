@@ -14,6 +14,6 @@ func set_interaction_prompt(prompt_text: String) -> void:
 	interaction_label.text = prompt_text
 
 
-func mark_test_complete() -> void:
-	task_label.text = "TEST TASK                 1/1"
+func mark_sofa_complete() -> void:
+	task_label.text = "FURNITURE                  1/1"
 	set_interaction_prompt("TASK COMPLETE")

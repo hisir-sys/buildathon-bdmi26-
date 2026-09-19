@@ -1,4 +1,4 @@
-# The Cleaner - interaction milestone
+# The Cleaner - sofa placement milestone
 
 ## Run
 
@@ -10,7 +10,7 @@
 
 - **WASD**: move
 - **Mouse**: look around
-- **E**: interact with the orange test object
+- **E**: pick up or place the sofa
 - **Escape**: release or recapture the mouse
 
-Look at the orange cube. The bottom prompt should appear. Press **E** and the cube will disappear while the task board changes from `0/1` to `1/1`.
+Look at the sofa. Press **E** to pick it up, carry it to the cyan highlighted zone, then press **E** again to place it. The task board changes from `0/1` to `1/1`.
