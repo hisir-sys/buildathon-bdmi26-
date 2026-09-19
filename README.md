@@ -1,15 +1,16 @@
-# The Cleaner - Godot starter project
+# The Cleaner - interaction milestone
 
 ## Run
 
 1. Extract this folder.
-2. Open the extracted folder in Godot 4.7.2.
-3. Press **F6** or **F5**.
+2. Open `project.godot` in Godot 4.7.2.
+3. Press **F5**.
 
 ## Controls
 
 - **WASD**: move
 - **Mouse**: look around
+- **E**: interact with the orange test object
 - **Escape**: release or recapture the mouse
 
-The orange cube and green marker are temporary visibility tests. They can be removed later when the real room assets are added.
+Look at the orange cube. The bottom prompt should appear. Press **E** and the cube will disappear while the task board changes from `0/1` to `1/1`.

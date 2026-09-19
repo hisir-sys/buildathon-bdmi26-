@@ -1,14 +1,16 @@
-[gd_scene load_steps=17 format=3]
+[gd_scene load_steps=20 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
+[ext_resource type="Script" path="res://scripts/main_room.gd" id="2_main_room"]
+[ext_resource type="Script" path="res://scripts/test_interactable.gd" id="3_test_interactable"]
+[ext_resource type="Script" path="res://scripts/hud.gd" id="4_hud"]
 
 [sub_resource type="Environment" id="Environment_room"]
 background_mode = 1
-background_color = Color(0.07, 0.09, 0.13, 1)
+background_color = Color(0.035, 0.05, 0.09, 1)
 ambient_light_source = 3
-ambient_light_color = Color(0.75, 0.82, 1, 1)
-ambient_light_energy = 0.65
-tonemap_mode = 2
+ambient_light_color = Color(0.7, 0.78, 1, 1)
+ambient_light_energy = 0.7
 
 [sub_resource type="BoxMesh" id="BoxMesh_floor"]
 size = Vector3(20, 0.2, 20)
@@ -17,8 +19,8 @@ size = Vector3(20, 0.2, 20)
 size = Vector3(20, 0.2, 20)
 
 [sub_resource type="StandardMaterial3D" id="Material_floor"]
-albedo_color = Color(0.22, 0.24, 0.27, 1)
-roughness = 0.9
+albedo_color = Color(0.2, 0.22, 0.27, 1)
+roughness = 0.88
 
 [sub_resource type="BoxMesh" id="BoxMesh_back_wall"]
 size = Vector3(20, 4, 0.2)
@@ -27,8 +29,8 @@ size = Vector3(20, 4, 0.2)
 size = Vector3(20, 4, 0.2)
 
 [sub_resource type="StandardMaterial3D" id="Material_back_wall"]
-albedo_color = Color(0.52, 0.5, 0.46, 1)
-roughness = 0.85
+albedo_color = Color(0.18, 0.2, 0.29, 1)
+roughness = 0.8
 
 [sub_resource type="BoxMesh" id="BoxMesh_side_wall"]
 size = Vector3(0.2, 4, 20)
@@ -37,43 +39,56 @@ size = Vector3(0.2, 4, 20)
 size = Vector3(0.2, 4, 20)
 
 [sub_resource type="StandardMaterial3D" id="Material_side_wall"]
-albedo_color = Color(0.45, 0.47, 0.5, 1)
-roughness = 0.85
+albedo_color = Color(0.14, 0.17, 0.25, 1)
+roughness = 0.8
 
-[sub_resource type="BoxMesh" id="BoxMesh_test_cube"]
+[sub_resource type="BoxMesh" id="BoxMesh_test_object"]
 size = Vector3(1.5, 1.5, 1.5)
 
-[sub_resource type="StandardMaterial3D" id="Material_test_cube"]
-albedo_color = Color(0.9, 0.22, 0.06, 1)
-roughness = 0.45
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_test_cube"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_test_object"]
 size = Vector3(1.5, 1.5, 1.5)
 
-[sub_resource type="StandardMaterial3D" id="Material_marker"]
-albedo_color = Color(0.1, 0.8, 0.35, 1)
+[sub_resource type="StandardMaterial3D" id="Material_test_object"]
+albedo_color = Color(0.95, 0.2, 0.04, 1)
+roughness = 0.42
+
+[sub_resource type="BoxMesh" id="BoxMesh_zone"]
+size = Vector3(4, 0.04, 4)
+
+[sub_resource type="StandardMaterial3D" id="Material_zone"]
+albedo_color = Color(0.04, 0.85, 0.9, 1)
 emission_enabled = true
-emission = Color(0.02, 0.35, 0.08, 1)
+emission = Color(0.02, 0.45, 0.5, 1)
 emission_energy_multiplier = 2.0
 
-[sub_resource type="BoxMesh" id="BoxMesh_marker"]
-size = Vector3(5, 0.04, 5)
+[sub_resource type="StyleBoxFlat" id="StyleBox_prompt"]
+bg_color = Color(0.025, 0.05, 0.12, 0.94)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.1, 0.75, 1, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
 
 [node name="MainRoom" type="Node3D"]
+script = ExtResource("2_main_room")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_room")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 rotation_degrees = Vector3(-55, -25, 0)
-light_energy = 1.4
+light_energy = 1.25
 shadow_enabled = true
 
 [node name="FillLight" type="OmniLight3D" parent="."]
 position = Vector3(0, 3.5, 1)
-omni_range = 12.0
+omni_range = 14.0
 light_energy = 2.0
-light_color = Color(1, 0.84, 0.68, 1)
+light_color = Color(1, 0.82, 0.68, 1)
 
 [node name="Floor" type="StaticBody3D" parent="."]
 
@@ -114,20 +129,101 @@ material_override = SubResource("Material_side_wall")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="RightWall"]
 shape = SubResource("BoxShape3D_side_wall")
 
-[node name="TestCube" type="StaticBody3D" parent="."]
-position = Vector3(0, 0.75, -2)
+[node name="TestObject" type="StaticBody3D" parent="." groups=["interactable"]]
+position = Vector3(0, 1.2, -2)
+script = ExtResource("3_test_interactable")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="TestCube"]
-mesh = SubResource("BoxMesh_test_cube")
-material_override = SubResource("Material_test_cube")
+[node name="MeshInstance3D" type="MeshInstance3D" parent="TestObject"]
+mesh = SubResource("BoxMesh_test_object")
+material_override = SubResource("Material_test_object")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="TestCube"]
-shape = SubResource("BoxShape3D_test_cube")
+[node name="CollisionShape3D" type="CollisionShape3D" parent="TestObject"]
+shape = SubResource("BoxShape3D_test_object")
 
-[node name="GreenMarker" type="MeshInstance3D" parent="."]
+[node name="InteractionZone" type="MeshInstance3D" parent="."]
 position = Vector3(0, 0.12, 0)
-mesh = SubResource("BoxMesh_marker")
-material_override = SubResource("Material_marker")
+mesh = SubResource("BoxMesh_zone")
+material_override = SubResource("Material_zone")
 
 [node name="Player" parent="." instance=ExtResource("1_player")]
-position = Vector3(0, 1, 4)
+position = Vector3(0, 0.1, 4)
+
+[node name="HUD" type="CanvasLayer" parent="."]
+script = ExtResource("4_hud")
+
+[node name="Crosshair" type="Label" parent="HUD"]
+offset_left = 634.0
+offset_top = 345.0
+offset_right = 646.0
+offset_bottom = 365.0
+theme_override_colors/font_color = Color(0.8, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 22
+text = "+"
+
+[node name="TaskBoard" type="ColorRect" parent="HUD"]
+offset_left = 24.0
+offset_top = 24.0
+offset_right = 280.0
+offset_bottom = 185.0
+color = Color(0.02, 0.04, 0.1, 0.88)
+
+[node name="Title" type="Label" parent="HUD/TaskBoard"]
+offset_left = 16.0
+offset_top = 12.0
+offset_right = 230.0
+offset_bottom = 38.0
+theme_override_colors/font_color = Color(0.2, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "TASK BOARD"
+
+[node name="TaskLabel" type="Label" parent="HUD/TaskBoard"]
+offset_left = 16.0
+offset_top = 52.0
+offset_right = 235.0
+offset_bottom = 140.0
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 15
+text = "TEST TASK                 0/1\n\nDUSTING                    0/6\nSPIDER WEBS                0/4"
+
+[node name="TimerPanel" type="ColorRect" parent="HUD"]
+offset_left = 505.0
+offset_top = 24.0
+offset_right = 775.0
+offset_bottom = 85.0
+color = Color(0.02, 0.04, 0.1, 0.9)
+
+[node name="TimerLabel" type="Label" parent="HUD/TimerPanel"]
+offset_left = 28.0
+offset_top = 9.0
+offset_right = 240.0
+offset_bottom = 52.0
+theme_override_colors/font_color = Color(1, 0.78, 0.2, 1)
+theme_override_font_sizes/font_size = 24
+text = "OWNER ARRIVES  10:00"
+
+[node name="ToolLabel" type="Label" parent="HUD"]
+offset_left = 24.0
+offset_top = 665.0
+offset_right = 210.0
+offset_bottom = 705.0
+theme_override_colors/font_color = Color(1, 0.9, 0.55, 1)
+theme_override_font_sizes/font_size = 18
+text = "🧹  MOP"
+
+[node name="InteractionPrompt" type="Panel" parent="HUD"]
+offset_left = 430.0
+offset_top = 625.0
+offset_right = 850.0
+offset_bottom = 685.0
+theme_override_styles/panel = SubResource("StyleBox_prompt")
+
+[node name="Label" type="Label" parent="HUD/InteractionPrompt"]
+layout_mode = 0
+offset_left = 18.0
+offset_top = 14.0
+offset_right = 402.0
+offset_bottom = 48.0
+theme_override_colors/font_color = Color(0.85, 0.96, 1, 1)
+theme_override_font_sizes/font_size = 18
+horizontal_alignment = 1
+text = "E  CLEAN THE TEST OBJECT"
