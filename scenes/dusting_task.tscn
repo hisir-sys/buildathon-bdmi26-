@@ -1,0 +1,139 @@
+[gd_scene format=3 uid="uid://bvqwq4j8cx2w"]
+
+[ext_resource type="Script" uid="uid://cewr4q3jie1d7" path="res://scripts/dirty_spot.gd" id="1_jkltj"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_1vivr"]
+size = Vector3(2, 0.1, 2)
+
+[sub_resource type="BoxMesh" id="BoxMesh_1vivr"]
+size = Vector3(0.8, 0.05, 0.8)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jkltj"]
+albedo_color = Color(0.3779188, 0.37791887, 0.37791884, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_8vrlf"]
+size = Vector3(2, 2, 2)
+
+[sub_resource type="BoxMesh" id="BoxMesh_v5gy4"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_qbdty"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_1vivr"]
+
+[node name="DustingTask" type="Node3D" unique_id=655401471]
+
+[node name="DustSpots" type="Node3D" parent="." unique_id=940806558]
+
+[node name="DustSpot5" type="Area3D" parent="DustSpots" unique_id=609978687]
+transform = Transform3D(0.6, 0, 0, 0, 0.6, 0, 0, 0, 0.6, 0, 0.05, -3)
+script = ExtResource("1_jkltj")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DustSpots/DustSpot5" unique_id=1585617280]
+shape = SubResource("BoxShape3D_1vivr")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="DustSpots/DustSpot5" unique_id=601077973]
+mesh = SubResource("BoxMesh_1vivr")
+surface_material_override/0 = SubResource("StandardMaterial3D_jkltj")
+
+[node name="DustSpot4" type="Area3D" parent="DustSpots" unique_id=2138686820]
+transform = Transform3D(0.6, 0, 0, 0, 0.6, 0, 0, 0, 0.6, -3, 0.05, -1)
+script = ExtResource("1_jkltj")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DustSpots/DustSpot4" unique_id=18581284]
+shape = SubResource("BoxShape3D_1vivr")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="DustSpots/DustSpot4" unique_id=334585757]
+mesh = SubResource("BoxMesh_1vivr")
+surface_material_override/0 = SubResource("StandardMaterial3D_jkltj")
+
+[node name="DustSpot2" type="Area3D" parent="DustSpots" unique_id=601804398]
+transform = Transform3D(0.6, 0, 0, 0, 0.6, 0, 0, 0, 0.6, -2, 0.05, 2)
+script = ExtResource("1_jkltj")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DustSpots/DustSpot2" unique_id=834004771]
+shape = SubResource("BoxShape3D_1vivr")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="DustSpots/DustSpot2" unique_id=1200945827]
+mesh = SubResource("BoxMesh_1vivr")
+surface_material_override/0 = SubResource("StandardMaterial3D_jkltj")
+
+[node name="DustSpot3" type="Area3D" parent="DustSpots" unique_id=1100446270]
+transform = Transform3D(0.6, 0, 0, 0, 0.6, 0, 0, 0, 0.6, 3, 0.05, -1)
+collision_layer = 2
+script = ExtResource("1_jkltj")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DustSpots/DustSpot3" unique_id=669130450]
+shape = SubResource("BoxShape3D_1vivr")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="DustSpots/DustSpot3" unique_id=1841498267]
+mesh = SubResource("BoxMesh_1vivr")
+surface_material_override/0 = SubResource("StandardMaterial3D_jkltj")
+
+[node name="DustSpot1" type="Area3D" parent="DustSpots" unique_id=849014540]
+transform = Transform3D(0.6, 0, 0, 0, 0.6, 0, 0, 0, 0.6, 2, 0.05, 2)
+collision_layer = 2
+collision_mask = 4294967044
+script = ExtResource("1_jkltj")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DustSpots/DustSpot1" unique_id=1516047030]
+shape = SubResource("BoxShape3D_1vivr")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="DustSpots/DustSpot1" unique_id=1479866108]
+mesh = SubResource("BoxMesh_1vivr")
+surface_material_override/0 = SubResource("StandardMaterial3D_jkltj")
+
+[node name="SpiderWebs" type="Node3D" parent="." unique_id=524608812]
+
+[node name="Web1" type="Area3D" parent="SpiderWebs" unique_id=2079340072]
+transform = Transform3D(0.70710677, 0, 0.70710677, 0, 1, 0, -0.70710677, 0, 0.70710677, -4.5, 2.7, -4.5)
+collision_layer = 2
+collision_mask = 4
+script = ExtResource("1_jkltj")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="SpiderWebs/Web1" unique_id=504067685]
+shape = SubResource("BoxShape3D_8vrlf")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="SpiderWebs/Web1" unique_id=1519451209]
+transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, 0, 0, 0)
+mesh = SubResource("BoxMesh_v5gy4")
+surface_material_override/0 = SubResource("StandardMaterial3D_qbdty")
+
+[node name="Web3" type="Area3D" parent="SpiderWebs" unique_id=1267450388]
+transform = Transform3D(-0.70710677, 0, 0.70710677, 0, 1, 0, -0.70710677, 0, -0.70710677, -4.5, 2.7, 4.5)
+script = ExtResource("1_jkltj")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="SpiderWebs/Web3" unique_id=1225499163]
+shape = SubResource("BoxShape3D_8vrlf")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="SpiderWebs/Web3" unique_id=434716905]
+transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, 0, 0, 0)
+mesh = SubResource("BoxMesh_v5gy4")
+surface_material_override/0 = SubResource("StandardMaterial3D_qbdty")
+
+[node name="Web4" type="Area3D" parent="SpiderWebs" unique_id=534444021]
+transform = Transform3D(-0.70710677, 0, -0.70710677, 0, 1, 0, 0.70710677, 0, -0.70710677, 4.5, 2.7, 4.5)
+script = ExtResource("1_jkltj")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="SpiderWebs/Web4" unique_id=2076815338]
+shape = SubResource("BoxShape3D_8vrlf")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="SpiderWebs/Web4" unique_id=399458685]
+transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, 0, 0, 0)
+mesh = SubResource("BoxMesh_v5gy4")
+surface_material_override/0 = SubResource("StandardMaterial3D_qbdty")
+
+[node name="Web2" type="Area3D" parent="SpiderWebs" unique_id=250760675]
+transform = Transform3D(0.70710677, 0, -0.70710677, 0, 1, 0, 0.70710677, 0, 0.70710677, 4.5, 2.7, -4.5)
+script = ExtResource("1_jkltj")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="SpiderWebs/Web2" unique_id=1848450417]
+shape = SubResource("BoxShape3D_8vrlf")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="SpiderWebs/Web2" unique_id=1772452673]
+transform = Transform3D(0.6, 0, 0, 0, 0.6, 0, 0, 0, 0.6, 0, 0, 0)
+mesh = SubResource("BoxMesh_v5gy4")
+surface_material_override/0 = SubResource("StandardMaterial3D_qbdty")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=197766112]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.5)
+shape = SubResource("SphereShape3D_1vivr")
