@@ -10,7 +10,7 @@ config_version=5
 
 [application]
 
-config/name="The Cleaner - Interaction Milestone"
+config/name="The Cleaner - Floor Plan V7"
 run/main_scene="res://scenes/main_room.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 
