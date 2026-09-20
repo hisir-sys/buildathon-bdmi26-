@@ -61,7 +61,7 @@ func _place() -> void:
 		0.0,
 		placement_zone.global_position.z
 	)
-	global_rotation = Vector3(0, 0, 0)
+	global_rotation = Vector3(0, deg_to_rad(90.0), 0)
 	scale = Vector3.ONE
 	collision_layer = 1
 	collision_mask = 1
