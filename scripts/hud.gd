@@ -54,17 +54,7 @@ func set_task_counts(dust: int, webs: int, furniture: int, bathroom: int, panel:
 	_refresh_task_board()
 
 
-func set_time_expired() -> void:
-	set_interaction_prompt("TIME IS UP")
-
-
-func _refresh_task_board() -> void:
-	task_label.text = "FURNITURE  %d/%d\nDUSTING  %d\nWEBS  %d\nBATHROOM  %d/%d\nPANEL  %d\nPIPELINE  %d\nFRIDGE  %d" % [
-		furniture_done, furniture_total,
-		dusting_done,
-		webs_done,
-		bathroom_done, bathroom_total,
-		panel_done,
-		pipeline_done,
-		fridge_done
-	]
+func _toggle_pause() -> void:
+	is_paused = not is_paused
+	get_tree().paused = is_paused
+	pause_button.text = "Ⅱ" if is_paused else "▶"

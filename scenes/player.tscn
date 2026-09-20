@@ -1,11 +1,15 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene format=3 uid="uid://ctagamn707vwr"]
 
-[ext_resource type="Script" path="res://scripts/player_controller.gd" id="1_player_controller"]
-[ext_resource type="Script" path="res://scripts/interaction_raycast.gd" id="2_interaction_raycast"]
+[ext_resource type="Script" uid="uid://4vk0a0gjlphb" path="res://scripts/player_controller.gd" id="1_player_controller"]
+[ext_resource type="Script" uid="uid://mlbuj3cpsciu" path="res://scripts/interaction_raycast.gd" id="2_interaction_raycast"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_player"]
 radius = 0.35
 height = 1.8
+
+[sub_resource type="StandardMaterial3D" id="Material_mop"]
+albedo_color = Color(0.48, 0.19, 0.055, 1)
+roughness = 0.7
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_mop_handle"]
 top_radius = 0.035
@@ -19,42 +23,34 @@ height = 0.18
 radial_segments = 10
 rings = 6
 
-[sub_resource type="StandardMaterial3D" id="Material_mop"]
-albedo_color = Color(0.48, 0.19, 0.055, 1)
-roughness = 0.7
-
-[node name="Player" type="CharacterBody3D"]
+[node name="Player" type="CharacterBody3D" unique_id=1607147285]
 script = ExtResource("1_player_controller")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
-position = Vector3(0, 0.9, 0)
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=606882534]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
 shape = SubResource("CapsuleShape3D_player")
 
-[node name="Head" type="Node3D" parent="."]
-position = Vector3(0, 1.6, 0)
+[node name="Head" type="Node3D" parent="." unique_id=1963743685]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
 
-[node name="Camera3D" type="Camera3D" parent="Head"]
+[node name="Camera3D" type="Camera3D" parent="Head" unique_id=737232396]
 current = true
-fov = 75.0
 
-[node name="InteractionRay" type="RayCast3D" parent="Head/Camera3D"]
+[node name="InteractionRay" type="RayCast3D" parent="Head/Camera3D" unique_id=297926001]
 target_position = Vector3(0, 0, -3)
-collision_mask = 1
-enabled = true
 script = ExtResource("2_interaction_raycast")
 
-[node name="Mop" type="Node3D" parent="Head/Camera3D"]
-position = Vector3(0.72, -0.15, -1.15)
-rotation_degrees = Vector3(0, 0, -10)
+[node name="Mop" type="Node3D" parent="Head/Camera3D" unique_id=649434289]
+transform = Transform3D(0.9848077, 0.17364818, 0, -0.17364818, 0.9848077, 0, 0, 0, 1, 0.72, -0.15, -1.15)
 
-[node name="Handle" type="MeshInstance3D" parent="Head/Camera3D/Mop"]
+[node name="Handle" type="MeshInstance3D" parent="Head/Camera3D/Mop" unique_id=1711518150]
+material_override = SubResource("Material_mop")
 mesh = SubResource("CylinderMesh_mop_handle")
-material_override = SubResource("Material_mop")
 
-[node name="Grip" type="MeshInstance3D" parent="Head/Camera3D/Mop"]
-position = Vector3(0, 1.76, 0)
+[node name="Grip" type="MeshInstance3D" parent="Head/Camera3D/Mop" unique_id=1472328945]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.76, 0)
+material_override = SubResource("Material_mop")
 mesh = SubResource("SphereMesh_mop_grip")
-material_override = SubResource("Material_mop")
 
-[node name="HoldPoint" type="Node3D" parent="Head/Camera3D" groups=["hold_point"]]
-position = Vector3(0, -0.65, -2.5)
+[node name="HoldPoint" type="Node3D" parent="Head/Camera3D" unique_id=151806305 groups=["hold_point"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.65, -2.5)
