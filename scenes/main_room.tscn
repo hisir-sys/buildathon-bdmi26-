@@ -1,12 +1,13 @@
-[gd_scene load_steps=36 format=3]
+[gd_scene format=3 uid="uid://c031diuuknlyu"]
 
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
-[ext_resource type="Script" path="res://scripts/main_room.gd" id="2_main_room"]
-[ext_resource type="Script" path="res://scripts/sofa_interactable.gd" id="3_sofa_interactable"]
-[ext_resource type="Script" path="res://scripts/hud.gd" id="4_hud"]
-[ext_resource type="Script" path="res://scripts/game_manager.gd" id="5_game_manager"]
-[ext_resource type="Script" path="res://scripts/dust_spot.gd" id="6_dust_spot"]
-[ext_resource type="Script" path="res://scripts/floor_tiles.gd" id="8_floor_tiles"]
+[ext_resource type="Script" uid="uid://db8nx1exhu7fw" path="res://scripts/main_room.gd" id="2_main_room"]
+[ext_resource type="Script" uid="uid://kam3burnudfy" path="res://scripts/sofa_interactable.gd" id="3_sofa_interactable"]
+[ext_resource type="Script" uid="uid://cgwxqbbdigkcg" path="res://scripts/hud.gd" id="4_hud"]
+[ext_resource type="Script" uid="uid://b2wi1aqo484uw" path="res://scripts/game_manager.gd" id="5_game_manager"]
+[ext_resource type="Script" uid="uid://cyi75sr55g3wy" path="res://scripts/dust_spot.gd" id="6_dust_spot"]
+[ext_resource type="PackedScene" uid="uid://d3i1gu02losto" path="res://scenes/FurnitureTask.tscn" id="8_2noi8"]
+[ext_resource type="Script" uid="uid://biyb45wso2vsd" path="res://scripts/floor_tiles.gd" id="8_floor_tiles"]
 
 [sub_resource type="Environment" id="Environment_room"]
 background_mode = 1
@@ -20,99 +21,17 @@ fog_light_energy = 0.35
 fog_density = 0.006
 fog_sky_affect = 0.25
 
-[sub_resource type="BoxMesh" id="BoxMesh_floor"]
-size = Vector3(20, 0.2, 20)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_floor"]
-size = Vector3(20, 0.2, 20)
-
-[sub_resource type="StandardMaterial3D" id="Material_floor"]
-albedo_color = Color(0.12, 0.055, 0.025, 1)
-roughness = 0.9
-
-[sub_resource type="BoxMesh" id="BoxMesh_back_wall"]
-size = Vector3(20, 4, 0.2)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_back_wall"]
-size = Vector3(20, 4, 0.2)
-
-[sub_resource type="StandardMaterial3D" id="Material_back_wall"]
-albedo_color = Color(0.12, 0.15, 0.24, 1)
-roughness = 0.8
-
-[sub_resource type="BoxMesh" id="BoxMesh_side_wall"]
-size = Vector3(0.2, 4, 20)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_side_wall"]
-size = Vector3(0.2, 4, 20)
-
-[sub_resource type="StandardMaterial3D" id="Material_side_wall"]
-albedo_color = Color(0.1, 0.13, 0.21, 1)
-roughness = 0.8
-
-[sub_resource type="BoxMesh" id="BoxMesh_ceiling"]
-size = Vector3(20, 0.2, 20)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_ceiling"]
-size = Vector3(20, 0.2, 20)
-
-[sub_resource type="StandardMaterial3D" id="Material_ceiling"]
-albedo_color = Color(0.065, 0.075, 0.13, 1)
-roughness = 0.95
-
-[sub_resource type="BoxMesh" id="BoxMesh_sofa_seat"]
-size = Vector3(3, 0.45, 1.25)
-
-[sub_resource type="BoxMesh" id="BoxMesh_sofa_back"]
-size = Vector3(3, 1.45, 0.35)
-
-[sub_resource type="BoxMesh" id="BoxMesh_sofa_arm"]
-size = Vector3(0.35, 0.8, 1.25)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_sofa"]
-size = Vector3(3.7, 1.6, 1.6)
-
-[sub_resource type="StandardMaterial3D" id="Material_sofa"]
-albedo_color = Color(0.66, 0.25, 0.1, 1)
-roughness = 0.72
-
-[sub_resource type="CylinderMesh" id="CylinderMesh_zone"]
-top_radius = 1.9
-bottom_radius = 1.9
-height = 0.04
-radial_segments = 48
-
-[sub_resource type="StandardMaterial3D" id="Material_zone"]
-albedo_color = Color(0.04, 0.85, 0.9, 1)
+[sub_resource type="StandardMaterial3D" id="Material_fixture_blue"]
+albedo_color = Color(0.2, 0.45, 0.95, 1)
 emission_enabled = true
-emission = Color(0.02, 0.45, 0.5, 1)
-emission_energy_multiplier = 2.0
-
-[sub_resource type="CylinderMesh" id="CylinderMesh_dust"]
-top_radius = 0.58
-bottom_radius = 0.58
-height = 0.025
-radial_segments = 32
-
-[sub_resource type="CylinderShape3D" id="CylinderShape3D_dust"]
-radius = 0.58
-height = 0.12
-
-[sub_resource type="StandardMaterial3D" id="Material_dust"]
-albedo_color = Color(0.16, 0.09, 0.045, 1)
-roughness = 1.0
+emission = Color(0.15, 0.35, 1, 1)
+emission_energy_multiplier = 3.0
 
 [sub_resource type="SphereMesh" id="SphereMesh_fixture"]
 radius = 0.18
 height = 0.1
 radial_segments = 16
 rings = 8
-
-[sub_resource type="StandardMaterial3D" id="Material_fixture_blue"]
-albedo_color = Color(0.2, 0.45, 0.95, 1)
-emission_enabled = true
-emission = Color(0.15, 0.35, 1, 1)
-emission_energy_multiplier = 3.0
 
 [sub_resource type="StandardMaterial3D" id="Material_fixture_amber"]
 albedo_color = Color(1, 0.35, 0.12, 1)
@@ -126,6 +45,99 @@ emission_enabled = true
 emission = Color(0.1, 0.7, 0.4, 1)
 emission_energy_multiplier = 2.5
 
+[sub_resource type="StandardMaterial3D" id="Material_floor"]
+albedo_color = Color(0.12, 0.055, 0.025, 1)
+roughness = 0.9
+
+[sub_resource type="BoxMesh" id="BoxMesh_floor"]
+size = Vector3(20, 0.2, 20)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_floor"]
+size = Vector3(20, 0.2, 20)
+
+[sub_resource type="StandardMaterial3D" id="Material_back_wall"]
+albedo_color = Color(0.12, 0.15, 0.24, 1)
+roughness = 0.8
+
+[sub_resource type="BoxMesh" id="BoxMesh_back_wall"]
+size = Vector3(20, 4, 0.2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_back_wall"]
+size = Vector3(20, 4, 0.2)
+
+[sub_resource type="StandardMaterial3D" id="Material_side_wall"]
+albedo_color = Color(0.1, 0.13, 0.21, 1)
+roughness = 0.8
+
+[sub_resource type="BoxMesh" id="BoxMesh_side_wall"]
+size = Vector3(0.2, 4, 20)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_side_wall"]
+size = Vector3(0.2, 4, 20)
+
+[sub_resource type="StandardMaterial3D" id="Material_ceiling"]
+albedo_color = Color(0.065, 0.075, 0.13, 1)
+roughness = 0.95
+
+[sub_resource type="BoxMesh" id="BoxMesh_ceiling"]
+size = Vector3(20, 0.2, 20)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ceiling"]
+size = Vector3(20, 0.2, 20)
+
+[sub_resource type="StandardMaterial3D" id="Material_zone"]
+albedo_color = Color(0.04, 0.85, 0.9, 1)
+emission_enabled = true
+emission = Color(0.02, 0.45, 0.5, 1)
+emission_energy_multiplier = 2.0
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_zone"]
+top_radius = 1.9
+bottom_radius = 1.9
+height = 0.04
+radial_segments = 48
+
+[sub_resource type="StandardMaterial3D" id="Material_sofa"]
+albedo_color = Color(0.66, 0.25, 0.1, 1)
+roughness = 0.72
+
+[sub_resource type="BoxMesh" id="BoxMesh_sofa_seat"]
+size = Vector3(1, 1.333, 0.4)
+
+[sub_resource type="BoxMesh" id="BoxMesh_sofa_back"]
+size = Vector3(1, 1.333, 0.4)
+
+[sub_resource type="BoxMesh" id="BoxMesh_sofa_arm"]
+size = Vector3(0.35, 0.8, 1.8613281)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_sofa"]
+size = Vector3(3.7, 1.6, 1.6)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1vivr"]
+albedo_color = Color(0.19407699, 0.07795448, 0.014319416, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2noi8"]
+albedo_color = Color(0.20096996, 0.10788933, 0.023658574, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_phake"]
+albedo_color = Color(0.29740408, 0.11271902, 0.03920986, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ky753"]
+albedo_color = Color(0.26705334, 0.13751495, 0.07499664, 1)
+
+[sub_resource type="StandardMaterial3D" id="Material_dust"]
+albedo_color = Color(0.16, 0.09, 0.045, 1)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_dust"]
+top_radius = 0.58
+bottom_radius = 0.58
+height = 0.025
+radial_segments = 32
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_dust"]
+height = 0.12
+radius = 0.58
+
 [sub_resource type="StyleBoxFlat" id="StyleBox_prompt"]
 bg_color = Color(0.025, 0.05, 0.12, 0.94)
 border_width_left = 2
@@ -138,210 +150,291 @@ corner_radius_top_right = 4
 corner_radius_bottom_right = 4
 corner_radius_bottom_left = 4
 
-[node name="MainRoom" type="Node3D"]
+[node name="MainRoom" type="Node3D" unique_id=1970699364]
 script = ExtResource("2_main_room")
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=259811830]
 environment = SubResource("Environment_room")
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-rotation_degrees = Vector3(-55, -25, 0)
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=2111525513]
+transform = Transform3D(0.90630776, 0.34618863, -0.24240388, 0, 0.57357645, 0.81915206, 0.42261827, -0.74240386, 0.5198368, 0, 0, 0)
 light_energy = 0.28
 shadow_enabled = true
 
-[node name="CeilingLightLeft" type="OmniLight3D" parent="."]
-position = Vector3(-5, 3.3, -3)
-omni_range = 9.0
-light_energy = 1.8
+[node name="CeilingLightLeft" type="OmniLight3D" parent="." unique_id=302456986]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 3.3, -3)
 light_color = Color(0.45, 0.7, 1, 1)
-
-[node name="BlueBulb" type="MeshInstance3D" parent="."]
-position = Vector3(-5, 3.82, -3)
-mesh = SubResource("SphereMesh_fixture")
-material_override = SubResource("Material_fixture_blue")
-
-[node name="CeilingLightRight" type="OmniLight3D" parent="."]
-position = Vector3(5, 3.3, -3)
+light_energy = 1.8
 omni_range = 9.0
-light_energy = 1.65
+
+[node name="BlueBulb" type="MeshInstance3D" parent="." unique_id=1800835713]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 3.82, -3)
+material_override = SubResource("Material_fixture_blue")
+mesh = SubResource("SphereMesh_fixture")
+
+[node name="CeilingLightRight" type="OmniLight3D" parent="." unique_id=2006305260]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 3.3, -3)
 light_color = Color(1, 0.62, 0.35, 1)
+light_energy = 1.65
+omni_range = 9.0
 
-[node name="AmberBulb" type="MeshInstance3D" parent="."]
-position = Vector3(5, 3.82, -3)
-mesh = SubResource("SphereMesh_fixture")
+[node name="AmberBulb" type="MeshInstance3D" parent="." unique_id=315940149]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 3.82, -3)
 material_override = SubResource("Material_fixture_amber")
-
-[node name="CeilingLightBack" type="OmniLight3D" parent="."]
-position = Vector3(0, 3.3, 5)
-omni_range = 8.0
-light_energy = 1.3
-light_color = Color(0.45, 0.85, 0.7, 1)
-
-[node name="GreenBulb" type="MeshInstance3D" parent="."]
-position = Vector3(0, 3.82, 5)
 mesh = SubResource("SphereMesh_fixture")
-material_override = SubResource("Material_fixture_green")
 
-[node name="GameManager" type="Node" parent="."]
+[node name="CeilingLightBack" type="OmniLight3D" parent="." unique_id=1312014839]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.3, 5)
+light_color = Color(0.45, 0.85, 0.7, 1)
+light_energy = 1.3
+omni_range = 8.0
+
+[node name="GreenBulb" type="MeshInstance3D" parent="." unique_id=542909473]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.82, 5)
+material_override = SubResource("Material_fixture_green")
+mesh = SubResource("SphereMesh_fixture")
+
+[node name="GameManager" type="Node" parent="." unique_id=724273692]
 script = ExtResource("5_game_manager")
 
-[node name="Floor" type="StaticBody3D" parent="."]
+[node name="Floor" type="StaticBody3D" parent="." unique_id=2067508362]
 script = ExtResource("8_floor_tiles")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Floor"]
-mesh = SubResource("BoxMesh_floor")
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Floor" unique_id=911266017]
 material_override = SubResource("Material_floor")
+mesh = SubResource("BoxMesh_floor")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Floor"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Floor" unique_id=1827437102]
 shape = SubResource("BoxShape3D_floor")
 
-[node name="BackWall" type="StaticBody3D" parent="."]
-position = Vector3(0, 2, -10)
+[node name="BackWall" type="StaticBody3D" parent="." unique_id=738786821]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, -10)
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="BackWall"]
-mesh = SubResource("BoxMesh_back_wall")
+[node name="MeshInstance3D" type="MeshInstance3D" parent="BackWall" unique_id=263739253]
 material_override = SubResource("Material_back_wall")
+mesh = SubResource("BoxMesh_back_wall")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="BackWall"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BackWall" unique_id=1660497747]
 shape = SubResource("BoxShape3D_back_wall")
 
-[node name="LeftWall" type="StaticBody3D" parent="."]
-position = Vector3(-10, 2, 0)
+[node name="LeftWall" type="StaticBody3D" parent="." unique_id=195558322]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 2, 0)
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="LeftWall"]
-mesh = SubResource("BoxMesh_side_wall")
+[node name="MeshInstance3D" type="MeshInstance3D" parent="LeftWall" unique_id=1085378212]
 material_override = SubResource("Material_side_wall")
+mesh = SubResource("BoxMesh_side_wall")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="LeftWall"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="LeftWall" unique_id=1669416997]
 shape = SubResource("BoxShape3D_side_wall")
 
-[node name="RightWall" type="StaticBody3D" parent="."]
-position = Vector3(10, 2, 0)
+[node name="RightWall" type="StaticBody3D" parent="." unique_id=1539145093]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 2, 0)
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="RightWall"]
-mesh = SubResource("BoxMesh_side_wall")
+[node name="MeshInstance3D" type="MeshInstance3D" parent="RightWall" unique_id=1751587692]
 material_override = SubResource("Material_side_wall")
+mesh = SubResource("BoxMesh_side_wall")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="RightWall"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="RightWall" unique_id=288202483]
 shape = SubResource("BoxShape3D_side_wall")
 
-[node name="Ceiling" type="StaticBody3D" parent="."]
-position = Vector3(0, 4, 0)
+[node name="Ceiling" type="StaticBody3D" parent="." unique_id=854234822]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, 0)
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Ceiling"]
-mesh = SubResource("BoxMesh_ceiling")
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Ceiling" unique_id=744293055]
 material_override = SubResource("Material_ceiling")
+mesh = SubResource("BoxMesh_ceiling")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Ceiling"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ceiling" unique_id=2128817432]
 shape = SubResource("BoxShape3D_ceiling")
 
-[node name="SofaPlacementZone" type="MeshInstance3D" parent="."]
-position = Vector3(7, 0.18, 0.8)
-mesh = SubResource("CylinderMesh_zone")
+[node name="SofaPlacementZone" type="MeshInstance3D" parent="." unique_id=1966542418]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0.18, 0.8)
 material_override = SubResource("Material_zone")
+mesh = SubResource("CylinderMesh_zone")
 
-[node name="Sofa" type="StaticBody3D" parent="." groups=["interactable"]]
-position = Vector3(0, 0, 0)
+[node name="Chair1Zone" type="MeshInstance3D" parent="." unique_id=444946465]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0.18, 0.8)
+material_override = SubResource("Material_zone")
+mesh = SubResource("CylinderMesh_zone")
+
+[node name="Chair2Zone" type="MeshInstance3D" parent="." unique_id=1022204603]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0.18, 0.8)
+material_override = SubResource("Material_zone")
+mesh = SubResource("CylinderMesh_zone")
+
+[node name="Tabel1Zone" type="MeshInstance3D" parent="." unique_id=1495620778]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0.18, 0.8)
+material_override = SubResource("Material_zone")
+mesh = SubResource("CylinderMesh_zone")
+
+[node name="Sofa" type="StaticBody3D" parent="." unique_id=165527946 groups=["interactable"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.7773397)
 script = ExtResource("3_sofa_interactable")
 placement_zone_path = NodePath("../SofaPlacementZone")
 
-[node name="Seat" type="MeshInstance3D" parent="Sofa"]
-position = Vector3(0, 0.45, 0)
+[node name="Seat" type="MeshInstance3D" parent="Sofa" unique_id=129798116]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
+material_override = SubResource("Material_sofa")
 mesh = SubResource("BoxMesh_sofa_seat")
-material_override = SubResource("Material_sofa")
 
-[node name="Back" type="MeshInstance3D" parent="Sofa"]
-position = Vector3(0, 1.2, 0.45)
+[node name="Back" type="MeshInstance3D" parent="Sofa" unique_id=1470802809]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0.45)
+material_override = SubResource("Material_sofa")
 mesh = SubResource("BoxMesh_sofa_back")
-material_override = SubResource("Material_sofa")
 
-[node name="LeftArm" type="MeshInstance3D" parent="Sofa"]
-position = Vector3(-1.35, 0.7, 0)
+[node name="LeftArm" type="MeshInstance3D" parent="Sofa" unique_id=1993928359]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.35, 0.7, 0)
+material_override = SubResource("Material_sofa")
 mesh = SubResource("BoxMesh_sofa_arm")
-material_override = SubResource("Material_sofa")
 
-[node name="RightArm" type="MeshInstance3D" parent="Sofa"]
-position = Vector3(1.35, 0.7, 0)
+[node name="RightArm" type="MeshInstance3D" parent="Sofa" unique_id=1649509352]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.3133893, 0.5318195, -0.86261606)
+material_override = SubResource("Material_sofa")
 mesh = SubResource("BoxMesh_sofa_arm")
-material_override = SubResource("Material_sofa")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Sofa"]
-position = Vector3(0, 0.8, 0)
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Sofa" unique_id=1524545237]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
 shape = SubResource("BoxShape3D_sofa")
 
-[node name="DustSpot1" type="StaticBody3D" parent="." groups=["interactable", "dust_spot"]]
-position = Vector3(-6, 0.12, 3)
+[node name="Tabel1" type="StaticBody3D" parent="." unique_id=8867066 groups=["interactable"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8454108, 0, 1.9912895)
+script = ExtResource("3_sofa_interactable")
+placement_zone_path = NodePath("../Tabel1Zone")
+
+[node name="Seat" type="MeshInstance3D" parent="Tabel1" unique_id=2090745350]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
+material_override = SubResource("Material_sofa")
+mesh = SubResource("BoxMesh_sofa_seat")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Tabel1" unique_id=1322320842]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+shape = SubResource("BoxShape3D_sofa")
+
+[node name="Chair2" type="StaticBody3D" parent="." unique_id=1491592262 groups=["interactable"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.857107, 0, -1.9746869)
+script = ExtResource("3_sofa_interactable")
+placement_zone_path = NodePath("../Chair2Zone")
+
+[node name="Seat" type="MeshInstance3D" parent="Chair2" unique_id=952994306]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, -4.5353003)
+material_override = SubResource("Material_sofa")
+mesh = SubResource("BoxMesh_sofa_seat")
+
+[node name="Back" type="MeshInstance3D" parent="Chair2" unique_id=1570950502]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0.45)
+material_override = SubResource("Material_sofa")
+mesh = SubResource("BoxMesh_sofa_back")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Chair2" unique_id=1071016961]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+shape = SubResource("BoxShape3D_sofa")
+
+[node name="Chair1" type="StaticBody3D" parent="." unique_id=1914595273 groups=["interactable"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.63832, 0, 1.961869)
+script = ExtResource("3_sofa_interactable")
+placement_zone_path = NodePath("../Chair1Zone")
+
+[node name="Seat" type="MeshInstance3D" parent="Chair1" unique_id=1787131694]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
+material_override = SubResource("Material_sofa")
+mesh = SubResource("BoxMesh_sofa_seat")
+surface_material_override/0 = SubResource("StandardMaterial3D_1vivr")
+
+[node name="Back" type="MeshInstance3D" parent="Chair1" unique_id=1711893818]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0.45)
+material_override = SubResource("Material_sofa")
+mesh = SubResource("BoxMesh_sofa_back")
+surface_material_override/0 = SubResource("StandardMaterial3D_2noi8")
+
+[node name="LeftArm" type="MeshInstance3D" parent="Chair1" unique_id=1242160414]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8430109, 0.7, -0.56284225)
+material_override = SubResource("Material_sofa")
+mesh = SubResource("BoxMesh_sofa_arm")
+surface_material_override/0 = SubResource("StandardMaterial3D_phake")
+
+[node name="RightArm" type="MeshInstance3D" parent="Chair1" unique_id=108915246]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.35, 0.7, 0)
+material_override = SubResource("Material_sofa")
+mesh = SubResource("BoxMesh_sofa_arm")
+surface_material_override/0 = SubResource("StandardMaterial3D_ky753")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Chair1" unique_id=46732885]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+shape = SubResource("BoxShape3D_sofa")
+
+[node name="DustSpot1" type="StaticBody3D" parent="." unique_id=1019761664 groups=["dust_spot", "interactable"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0.12, 3)
 script = ExtResource("6_dust_spot")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="DustSpot1"]
-mesh = SubResource("CylinderMesh_dust")
+[node name="MeshInstance3D" type="MeshInstance3D" parent="DustSpot1" unique_id=1536884194]
 material_override = SubResource("Material_dust")
+mesh = SubResource("CylinderMesh_dust")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="DustSpot1"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DustSpot1" unique_id=1124082332]
 shape = SubResource("CylinderShape3D_dust")
 
-[node name="DustSpot2" type="StaticBody3D" parent="." groups=["interactable", "dust_spot"]]
-position = Vector3(-2, 0.12, 2)
+[node name="DustSpot2" type="StaticBody3D" parent="." unique_id=590469389 groups=["dust_spot", "interactable"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0.12, 2)
 script = ExtResource("6_dust_spot")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="DustSpot2"]
-mesh = SubResource("CylinderMesh_dust")
+[node name="MeshInstance3D" type="MeshInstance3D" parent="DustSpot2" unique_id=1889688861]
 material_override = SubResource("Material_dust")
+mesh = SubResource("CylinderMesh_dust")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="DustSpot2"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DustSpot2" unique_id=985987796]
 shape = SubResource("CylinderShape3D_dust")
 
-[node name="DustSpot3" type="StaticBody3D" parent="." groups=["interactable", "dust_spot"]]
-position = Vector3(3, 0.12, 3)
+[node name="DustSpot3" type="StaticBody3D" parent="." unique_id=1089835904 groups=["dust_spot", "interactable"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0.12, 3)
 script = ExtResource("6_dust_spot")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="DustSpot3"]
-mesh = SubResource("CylinderMesh_dust")
+[node name="MeshInstance3D" type="MeshInstance3D" parent="DustSpot3" unique_id=314590630]
 material_override = SubResource("Material_dust")
+mesh = SubResource("CylinderMesh_dust")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="DustSpot3"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DustSpot3" unique_id=954863935]
 shape = SubResource("CylinderShape3D_dust")
 
-[node name="DustSpot4" type="StaticBody3D" parent="." groups=["interactable", "dust_spot"]]
-position = Vector3(6, 0.12, 1)
+[node name="DustSpot4" type="StaticBody3D" parent="." unique_id=430053672 groups=["dust_spot", "interactable"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0.12, 1)
 script = ExtResource("6_dust_spot")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="DustSpot4"]
-mesh = SubResource("CylinderMesh_dust")
+[node name="MeshInstance3D" type="MeshInstance3D" parent="DustSpot4" unique_id=1045463549]
 material_override = SubResource("Material_dust")
+mesh = SubResource("CylinderMesh_dust")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="DustSpot4"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DustSpot4" unique_id=1973571084]
 shape = SubResource("CylinderShape3D_dust")
 
-[node name="DustSpot5" type="StaticBody3D" parent="." groups=["interactable", "dust_spot"]]
-position = Vector3(-5, 0.12, -5)
+[node name="DustSpot5" type="StaticBody3D" parent="." unique_id=1378094656 groups=["dust_spot", "interactable"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.12, -5)
 script = ExtResource("6_dust_spot")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="DustSpot5"]
-mesh = SubResource("CylinderMesh_dust")
+[node name="MeshInstance3D" type="MeshInstance3D" parent="DustSpot5" unique_id=19674493]
 material_override = SubResource("Material_dust")
+mesh = SubResource("CylinderMesh_dust")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="DustSpot5"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DustSpot5" unique_id=197410827]
 shape = SubResource("CylinderShape3D_dust")
 
-[node name="DustSpot6" type="StaticBody3D" parent="." groups=["interactable", "dust_spot"]]
-position = Vector3(2, 0.12, -5)
+[node name="DustSpot6" type="StaticBody3D" parent="." unique_id=474267826 groups=["dust_spot", "interactable"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0.12, -5)
 script = ExtResource("6_dust_spot")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="DustSpot6"]
-mesh = SubResource("CylinderMesh_dust")
+[node name="MeshInstance3D" type="MeshInstance3D" parent="DustSpot6" unique_id=1939540221]
 material_override = SubResource("Material_dust")
+mesh = SubResource("CylinderMesh_dust")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="DustSpot6"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DustSpot6" unique_id=1126124917]
 shape = SubResource("CylinderShape3D_dust")
 
-[node name="Player" parent="." instance=ExtResource("1_player")]
-position = Vector3(0, 0.1, 4)
+[node name="Player" parent="." unique_id=1019295309 instance=ExtResource("1_player")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 4)
 
-[node name="HUD" type="CanvasLayer" parent="."]
+[node name="HUD" type="CanvasLayer" parent="." unique_id=1906126321]
 script = ExtResource("4_hud")
 
-[node name="Crosshair" type="Label" parent="HUD"]
+[node name="Crosshair" type="Label" parent="HUD" unique_id=648592043]
 offset_left = 634.0
 offset_top = 345.0
 offset_right = 646.0
@@ -350,14 +443,15 @@ theme_override_colors/font_color = Color(0.8, 0.95, 1, 1)
 theme_override_font_sizes/font_size = 22
 text = "+"
 
-[node name="TaskBoard" type="ColorRect" parent="HUD"]
+[node name="TaskBoard" type="ColorRect" parent="HUD" unique_id=1538825899]
 offset_left = 24.0
 offset_top = 24.0
 offset_right = 305.0
 offset_bottom = 244.0
 color = Color(0.02, 0.04, 0.1, 0.88)
 
-[node name="Title" type="Label" parent="HUD/TaskBoard"]
+[node name="Title" type="Label" parent="HUD/TaskBoard" unique_id=1924234047]
+layout_mode = 0
 offset_left = 16.0
 offset_top = 12.0
 offset_right = 260.0
@@ -366,23 +460,30 @@ theme_override_colors/font_color = Color(0.2, 0.85, 1, 1)
 theme_override_font_sizes/font_size = 18
 text = "TASK BOARD"
 
-[node name="TaskLabel" type="Label" parent="HUD/TaskBoard"]
+[node name="TaskLabel" type="Label" parent="HUD/TaskBoard" unique_id=1804802234]
+layout_mode = 0
 offset_left = 16.0
 offset_top = 52.0
 offset_right = 280.0
 offset_bottom = 230.0
 theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
 theme_override_font_sizes/font_size = 14
-text = "DUSTING                    0/6\nREWIRE PANEL              0/1\nPIPELINE                   0/1\nFRIDGE                     0/1\nFURNITURE                 0/1\nWASHROOM                  0/1"
+text = "DUSTING                    0/6
+REWIRE PANEL              0/1
+PIPELINE                   0/1
+FRIDGE                     0/1
+FURNITURE                 0/1
+WASHROOM                  0/1"
 
-[node name="TimerPanel" type="ColorRect" parent="HUD"]
+[node name="TimerPanel" type="ColorRect" parent="HUD" unique_id=1586264680]
 offset_left = 505.0
 offset_top = 24.0
 offset_right = 775.0
 offset_bottom = 92.0
 color = Color(0.02, 0.04, 0.1, 0.9)
 
-[node name="TimerCaption" type="Label" parent="HUD/TimerPanel"]
+[node name="TimerCaption" type="Label" parent="HUD/TimerPanel" unique_id=1922613796]
+layout_mode = 0
 offset_left = 28.0
 offset_top = 6.0
 offset_right = 242.0
@@ -392,7 +493,8 @@ theme_override_font_sizes/font_size = 10
 text = "OWNER ARRIVES IN"
 horizontal_alignment = 1
 
-[node name="TimerLabel" type="Label" parent="HUD/TimerPanel"]
+[node name="TimerLabel" type="Label" parent="HUD/TimerPanel" unique_id=1217117039]
+layout_mode = 0
 offset_left = 28.0
 offset_top = 22.0
 offset_right = 240.0
@@ -402,14 +504,15 @@ theme_override_font_sizes/font_size = 25
 text = "10:00"
 horizontal_alignment = 1
 
-[node name="ScorePanel" type="ColorRect" parent="HUD"]
+[node name="ScorePanel" type="ColorRect" parent="HUD" unique_id=1966465604]
 offset_left = 1105.0
 offset_top = 24.0
 offset_right = 1215.0
 offset_bottom = 92.0
 color = Color(0.02, 0.04, 0.1, 0.9)
 
-[node name="ScoreCaption" type="Label" parent="HUD/ScorePanel"]
+[node name="ScoreCaption" type="Label" parent="HUD/ScorePanel" unique_id=1291784254]
+layout_mode = 0
 offset_left = 8.0
 offset_top = 7.0
 offset_right = 109.0
@@ -419,7 +522,8 @@ theme_override_font_sizes/font_size = 10
 text = "SCORE"
 horizontal_alignment = 1
 
-[node name="ScoreLabel" type="Label" parent="HUD/ScorePanel"]
+[node name="ScoreLabel" type="Label" parent="HUD/ScorePanel" unique_id=404305151]
+layout_mode = 0
 offset_left = 8.0
 offset_top = 22.0
 offset_right = 109.0
@@ -429,7 +533,7 @@ theme_override_font_sizes/font_size = 25
 text = "50"
 horizontal_alignment = 1
 
-[node name="SoundButton" type="Button" parent="HUD"]
+[node name="SoundButton" type="Button" parent="HUD" unique_id=1865920642]
 offset_left = 1222.0
 offset_top = 24.0
 offset_right = 1252.0
@@ -437,7 +541,7 @@ offset_bottom = 64.0
 theme_override_font_sizes/font_size = 18
 text = "🔊"
 
-[node name="PauseButton" type="Button" parent="HUD"]
+[node name="PauseButton" type="Button" parent="HUD" unique_id=1706575384]
 offset_left = 1258.0
 offset_top = 70.0
 offset_right = 1280.0
@@ -445,7 +549,7 @@ offset_bottom = 110.0
 theme_override_font_sizes/font_size = 18
 text = "Ⅱ"
 
-[node name="ToolLabel" type="Label" parent="HUD"]
+[node name="ToolLabel" type="Label" parent="HUD" unique_id=163343684]
 offset_left = 24.0
 offset_top = 665.0
 offset_right = 210.0
@@ -454,14 +558,14 @@ theme_override_colors/font_color = Color(1, 0.9, 0.55, 1)
 theme_override_font_sizes/font_size = 18
 text = "MOP"
 
-[node name="InteractionPrompt" type="Panel" parent="HUD"]
+[node name="InteractionPrompt" type="Panel" parent="HUD" unique_id=186190297]
 offset_left = 430.0
 offset_top = 625.0
 offset_right = 850.0
 offset_bottom = 685.0
 theme_override_styles/panel = SubResource("StyleBox_prompt")
 
-[node name="Label" type="Label" parent="HUD/InteractionPrompt"]
+[node name="Label" type="Label" parent="HUD/InteractionPrompt" unique_id=115622208]
 layout_mode = 0
 offset_left = 18.0
 offset_top = 14.0
@@ -469,5 +573,7 @@ offset_right = 402.0
 offset_bottom = 48.0
 theme_override_colors/font_color = Color(0.85, 0.96, 1, 1)
 theme_override_font_sizes/font_size = 18
-horizontal_alignment = 1
 text = "E  INTERACT"
+horizontal_alignment = 1
+
+[node name="FurnitureTask" parent="." unique_id=1595018874 instance=ExtResource("8_2noi8")]

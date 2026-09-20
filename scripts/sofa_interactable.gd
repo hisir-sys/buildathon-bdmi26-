@@ -4,11 +4,16 @@ signal placed
 
 @export var placement_zone_path: NodePath
 
-@onready var placement_zone: Node3D = get_node(placement_zone_path)
+@onready var placement_zone: Node3D = get_node_or_null(placement_zone_path)
 @onready var collision_shape: CollisionShape3D = $CollisionShape3D
 
 var is_carried: bool = false
 var is_placed: bool = false
+
+
+func _ready() -> void:
+	if placement_zone == null:
+		push_warning("%s has no placement_zone_path set!" % name)
 
 
 func get_interaction_prompt() -> String:
@@ -16,12 +21,12 @@ func get_interaction_prompt() -> String:
 		return ""
 
 	if not is_carried:
-		return "E  PICK UP THE SOFA"
+		return "E  PICK UP"
 
-	if global_position.distance_to(placement_zone.global_position) <= 1.8:
-		return "E  PLACE THE SOFA"
+	if placement_zone != null and global_position.distance_to(placement_zone.global_position) <= 1.8:
+		return "E  PLACE HERE"
 
-	return "CARRY SOFA TO THE HIGHLIGHTED ZONE"
+	return "CARRY TO THE HIGHLIGHTED ZONE"
 
 
 func interact() -> void:
@@ -30,7 +35,7 @@ func interact() -> void:
 
 	if not is_carried:
 		_pick_up()
-	elif global_position.distance_to(placement_zone.global_position) <= 1.8:
+	elif placement_zone != null and global_position.distance_to(placement_zone.global_position) <= 1.8:
 		_place()
 
 
@@ -51,6 +56,9 @@ func _pick_up() -> void:
 
 
 func _place() -> void:
+	if placement_zone == null:
+		return
+
 	is_carried = false
 	is_placed = true
 	remove_from_group("carried_interactable")
