@@ -8,6 +8,10 @@ extends Node3D
 var dust_cleaned: int = 0
 var webs_cleared: int = 0
 var furniture_placed: int = 0
+var ambience_time: float = 0.0
+var ceiling_lights: Array[OmniLight3D] = []
+var light_bulbs: Array[MeshInstance3D] = []
+var light_base_energy: Array[float] = [1.8, 1.65, 1.3]
 
 
 func _ready() -> void:
@@ -24,7 +28,24 @@ func _ready() -> void:
 	for spider_web in get_tree().get_nodes_in_group("spider_web"):
 		spider_web.cleared.connect(_on_web_cleared)
 
+	ceiling_lights = [$CeilingLightLeft, $CeilingLightRight, $CeilingLightBack]
+	light_bulbs = [$BlueBulb, $AmberBulb, $GreenBulb]
 	hud.set_task_counts(dust_cleaned, webs_cleared, furniture_placed)
+
+
+func _process(delta: float) -> void:
+	ambience_time += delta
+	for index in range(ceiling_lights.size()):
+		var pulse := 0.62 + 0.38 * (0.5 + 0.5 * sin(ambience_time * (1.15 + index * 0.16) + index * 2.0))
+		var glitch_wave := sin(ambience_time * (3.3 + index * 0.45) + index * 1.7)
+		var glitch := 0.38 if glitch_wave > 0.94 else 1.0
+		var energy := light_base_energy[index] * pulse * glitch
+		ceiling_lights[index].light_energy = energy
+
+		var bulb_material := light_bulbs[index].material_override as StandardMaterial3D
+		if bulb_material != null:
+			bulb_material.emission_energy_multiplier = 2.5 * pulse * glitch
+		light_bulbs[index].visible = energy > light_base_energy[index] * 0.3
 
 
 func _on_dust_cleaned() -> void:

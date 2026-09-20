@@ -53,7 +53,7 @@ func _create_scattered_dust() -> void:
 
 	var dust_material := StandardMaterial3D.new()
 	dust_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	dust_material.albedo_color = Color(0.28, 0.19, 0.12, 0.3)
+	dust_material.albedo_color = Color(0.48, 0.3, 0.055, 0.34)
 	dust_material.roughness = 1.0
 	dust_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 

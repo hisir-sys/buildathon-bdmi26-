@@ -53,10 +53,10 @@ func interact() -> void:
 func _create_corner_web() -> void:
 	var web_material := StandardMaterial3D.new()
 	web_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	web_material.albedo_color = Color(0.78, 0.86, 1.0, 0.86)
+	web_material.albedo_color = Color(0.7, 0.78, 0.94, 0.56)
 	web_material.emission_enabled = true
-	web_material.emission = Color(0.18, 0.28, 0.5, 1)
-	web_material.emission_energy_multiplier = 1.2
+	web_material.emission = Color(0.12, 0.2, 0.38, 1)
+	web_material.emission_energy_multiplier = 0.65
 	web_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	web_material.no_depth_test = true
 	thread_material = web_material
@@ -64,15 +64,15 @@ func _create_corner_web() -> void:
 	var web_mesh := ImmediateMesh.new()
 	web_mesh.surface_begin(Mesh.PRIMITIVE_LINES, web_material)
 
-	var radius := 2.6
-	var spoke_count := 12
+	var radius := 1.3
+	var spoke_count := 9
 	for spoke in range(spoke_count):
 		var angle := (PI * 0.5) * float(spoke) / float(spoke_count - 1)
 		var endpoint := Vector3(cos(angle) * radius, -sin(angle) * radius, 0.0)
 		_add_line(web_mesh, Vector3.ZERO, endpoint)
 
-	for ring_index in range(1, 7):
-		var ring_radius := radius * float(ring_index) / 6.0
+	for ring_index in range(1, 5):
+		var ring_radius := radius * float(ring_index) / 4.0
 		for segment in range(spoke_count - 1):
 			var angle_a := (PI * 0.5) * float(segment) / float(spoke_count - 1)
 			var angle_b := (PI * 0.5) * float(segment + 1) / float(spoke_count - 1)
@@ -97,8 +97,8 @@ func _add_line(mesh: ImmediateMesh, start: Vector3, end: Vector3) -> void:
 	var direction := end - start
 	var thread := MeshInstance3D.new()
 	var thread_mesh := CylinderMesh.new()
-	thread_mesh.top_radius = 0.018
-	thread_mesh.bottom_radius = 0.018
+	thread_mesh.top_radius = 0.005
+	thread_mesh.bottom_radius = 0.005
 	thread_mesh.height = direction.length()
 	thread_mesh.radial_segments = 6
 	thread.mesh = thread_mesh

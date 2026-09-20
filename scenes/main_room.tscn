@@ -1,4 +1,4 @@
-[gd_scene load_steps=39 format=3]
+[gd_scene load_steps=40 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
 [ext_resource type="Script" path="res://scripts/main_room.gd" id="2_main_room"]
@@ -7,6 +7,7 @@
 [ext_resource type="Script" path="res://scripts/game_manager.gd" id="5_game_manager"]
 [ext_resource type="Script" path="res://scripts/dust_spot.gd" id="6_dust_spot"]
 [ext_resource type="Script" path="res://scripts/spider_web.gd" id="7_spider_web"]
+[ext_resource type="Script" path="res://scripts/floor_tiles.gd" id="8_floor_tiles"]
 
 [sub_resource type="Environment" id="Environment_room"]
 background_mode = 1
@@ -27,8 +28,8 @@ size = Vector3(20, 0.2, 20)
 size = Vector3(20, 0.2, 20)
 
 [sub_resource type="StandardMaterial3D" id="Material_floor"]
-albedo_color = Color(0.2, 0.22, 0.27, 1)
-roughness = 0.88
+albedo_color = Color(0.12, 0.055, 0.025, 1)
+roughness = 0.9
 
 [sub_resource type="BoxMesh" id="BoxMesh_back_wall"]
 size = Vector3(20, 4, 0.2)
@@ -106,7 +107,7 @@ roughness = 1.0
 size = Vector3(1.7, 0.025, 1.7)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_web"]
-size = Vector3(2.3, 2.3, 0.12)
+size = Vector3(1.4, 1.4, 0.06)
 
 [sub_resource type="StandardMaterial3D" id="Material_web"]
 albedo_color = Color(0.65, 0.8, 0.95, 0.45)
@@ -200,6 +201,7 @@ material_override = SubResource("Material_fixture_green")
 script = ExtResource("5_game_manager")
 
 [node name="Floor" type="StaticBody3D" parent="."]
+script = ExtResource("8_floor_tiles")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Floor"]
 mesh = SubResource("BoxMesh_floor")
@@ -249,7 +251,7 @@ material_override = SubResource("Material_ceiling")
 shape = SubResource("BoxShape3D_ceiling")
 
 [node name="SofaPlacementZone" type="MeshInstance3D" parent="."]
-position = Vector3(3, 0.12, -2)
+position = Vector3(3, 0.18, -2)
 mesh = SubResource("CylinderMesh_zone")
 material_override = SubResource("Material_zone")
 
