@@ -7,7 +7,7 @@ const PipelineTaskScript = preload("res://scripts/pipeline_task.gd")
 
 @onready var hud: CanvasLayer = $HUD
 @onready var interaction_ray: RayCast3D = $Player/Head/Camera3D/InteractionRay
-@onready var sofa: StaticBody3D = $Sofa
+@onready var furniture_pieces: Array = [$Sofa, $Chair1, $Chair2, $Table1]
 @onready var game_manager: Node = $GameManager
 
 var dust_cleaned: int = 0
@@ -27,8 +27,15 @@ var light_base_energy: Array[float] = [1.8, 1.65, 1.3]
 
 func _ready() -> void:
 	interaction_ray.target_changed.connect(hud.set_interaction_prompt)
-	sofa.placed.connect(hud.mark_sofa_complete)
-	sofa.placed.connect(_on_sofa_placed)
+
+	for piece in furniture_pieces:
+		if piece == null:
+			push_warning("A furniture piece is missing/null in furniture_pieces array.")
+			continue
+		if not piece.has_signal("placed"):
+			push_warning("%s has no 'placed' signal - check its script is attached." % piece.name)
+			continue
+		piece.placed.connect(_on_furniture_piece_placed)
 
 	game_manager.time_changed.connect(hud.set_timer)
 	game_manager.time_expired.connect(_on_time_expired)
@@ -56,8 +63,6 @@ func _ready() -> void:
 
 
 func _build_floor_plan_props() -> void:
-	# The floor-plan additions are built from simple meshes so the project has
-	# no external asset dependencies and remains easy to edit in Godot.
 	_add_front_wall()
 	_build_mop_station(Vector3(-6.7, 0.0, -9.55))
 	_build_rug(Vector3(0.0, 0.18, -6.6))
@@ -238,15 +243,10 @@ func _build_bathroom() -> void:
 	var bathroom_floor := _material(Color(0.24, 0.27, 0.3, 1))
 	var bathroom_ceiling := _material(Color(0.08, 0.1, 0.15, 1))
 
-	# The bathroom is a 6.4m x 6m room built inside the back-right corner
-	# of the existing 20m x 20m room. The original outer walls stay intact.
-	# The front wall has a doorway gap so the bathroom can be entered.
 	_static_box("BathroomFloor", Vector3(6.4, 0.2, 6.0), Vector3(6.4, 0.0, -6.6), bathroom_floor)
 	_static_box("BathroomLeftWall", Vector3(0.2, 4.0, 6.0), Vector3(3.3, 2.0, -6.6), wall_material)
 	_static_box("BathroomRightWall", Vector3(0.2, 4.0, 6.0), Vector3(9.5, 2.0, -6.6), wall_material)
 	_static_box("BathroomBackWall", Vector3(6.4, 4.0, 0.2), Vector3(6.4, 2.0, -9.55), wall_material)
-	# The front wall is split to leave a small doorway (kept narrower than a
-	# regular door, as bathroom doors typically are) instead of one solid wall.
 	_static_box("BathroomFrontWallLeft", Vector3(3.3, 4.0, 0.2), Vector3(4.85, 2.0, -3.65), wall_material)
 	_static_box("BathroomFrontWallRight", Vector3(2.1, 4.0, 0.2), Vector3(8.55, 2.0, -3.65), wall_material)
 	_static_box("BathroomDoorHeader", Vector3(1.0, 2.0, 0.2), Vector3(7.0, 3.0, -3.65), wall_material)
@@ -299,8 +299,6 @@ func _build_commode(parent: Node3D) -> void:
 	var commode_root := StaticBody3D.new()
 	commode_root.name = "Commode"
 	commode_root.position = Vector3(8.65, 0.0, -8.3)
-	# The tank is fixed to the right wall and the bowl faces left,
-	# toward the basin, exactly as in the floor-plan reference.
 	commode_root.rotation_degrees.y = -90.0
 	parent.add_child(commode_root)
 	var porcelain := _material(Color(0.64, 0.68, 0.72, 1))
@@ -308,7 +306,6 @@ func _build_commode(parent: Node3D) -> void:
 	var bowl := _sphere(commode_root, "Bowl", 0.58, Vector3(0, 0.35, 0), porcelain)
 	bowl.scale = Vector3(1.0, 0.62, 1.0)
 	_torus(commode_root, "Seat", 0.52, 0.1, Vector3(0, 0.67, 0), dark)
-	# The tank is against the back wall; the bowl faces the room and doorway.
 	_box(commode_root, "Tank", Vector3(0.95, 1.05, 0.42), Vector3(0, 0.98, -0.48), porcelain)
 	_box(commode_root, "TankLid", Vector3(1.05, 0.08, 0.5), Vector3(0, 1.54, -0.48), porcelain)
 	_box(commode_root, "FlushButton", Vector3(0.18, 0.05, 0.12), Vector3(0, 1.61, -0.48), dark)
@@ -335,7 +332,6 @@ func _build_bathtub(parent: Node3D) -> void:
 	var tub_root := StaticBody3D.new()
 	tub_root.name = "Bathtub"
 	tub_root.position = Vector3(8.3, 0.0, -5.55)
-	# The tub is against the far-right wall between the toilet and doorway.
 	tub_root.rotation_degrees.y = 0.0
 	parent.add_child(tub_root)
 	var porcelain := _material(Color(0.62, 0.68, 0.73, 1))
@@ -378,9 +374,6 @@ func _build_dirty_bathroom_mirror(parent: Node3D) -> void:
 
 
 func _build_storage_rack(parent: Node3D) -> void:
-	# Mounted flat on the left wall, moved away from the basin. It has no
-	# rotation applied - built directly with its open shelf side facing
-	# +x (across the room, toward the bathtub) so the wall mount is exact.
 	var rack := _new_prop_root("StorageRack", Vector3(3.42, 0.0, -5.15))
 	parent.add_child(rack)
 	var wood := _material(Color(0.32, 0.16, 0.07, 1))
@@ -397,8 +390,6 @@ func _build_storage_rack(parent: Node3D) -> void:
 
 
 func _build_bathroom_door(world_position: Vector3) -> void:
-	# Hinged at the left jamb of the doorway opening, swung open (ajar) into
-	# the bathroom rather than sitting flush - reads as a door left ajar.
 	var hinge := Node3D.new()
 	hinge.name = "BathroomDoorHinge"
 	hinge.position = Vector3(world_position.x - 0.45, 0.0, world_position.z)
@@ -416,8 +407,6 @@ func _build_bathroom_door(world_position: Vector3) -> void:
 	var door_material := _material(Color(0.28, 0.16, 0.08, 1))
 	var panel_material := _material(Color(0.34, 0.19, 0.09, 1))
 	var handle_material := _material(Color(0.55, 0.5, 0.35, 1), Color(0.1, 0.09, 0.05, 1), 0.15)
-	# The door is kept a little smaller than a regular interior door, matching
-	# how bathroom doors are usually undersized.
 	_box(door, "DoorSlab", Vector3(0.86, 1.9, 0.05), Vector3(0, 0.95, 0), door_material)
 	_box(door, "PanelTop", Vector3(0.62, 0.7, 0.015), Vector3(0, 1.35, 0.033), panel_material)
 	_box(door, "PanelBottom", Vector3(0.62, 0.62, 0.015), Vector3(0, 0.5, 0.033), panel_material)
@@ -449,7 +438,6 @@ func _build_hanging_lamp(world_position: Vector3) -> void:
 	var bulb_material := _material(Color(1.0, 0.25, 0.18, 1), Color(1.0, 0.06, 0.02, 1), 3.0)
 	_cylinder(root, "Cable", 0.035, 1.1, Vector3(0, 3.5, 0), cable)
 	var shade_mesh := _cylinder(root, "Shade", 0.42, 0.24, Vector3(0, 2.92, 0), shade)
-	# A shallow cone-like shade reads correctly from below without external assets.
 	shade_mesh.scale = Vector3(1.0, 0.7, 1.0)
 	_sphere(root, "RedBulb", 0.14, Vector3(0, 2.72, 0), bulb_material)
 	var lamp_light := OmniLight3D.new()
@@ -547,6 +535,8 @@ func _add_body_collision(body: StaticBody3D, size: Vector3, local_position: Vect
 	collision.position = local_position
 	collision.shape = shape
 	body.add_child(collision)
+
+
 func _process(delta: float) -> void:
 	ambience_time += delta
 	for index in range(ceiling_lights.size()):
@@ -576,8 +566,8 @@ func _on_web_cleared() -> void:
 	hud.set_score(score)
 
 
-func _on_sofa_placed() -> void:
-	furniture_placed = 1
+func _on_furniture_piece_placed() -> void:
+	furniture_placed += 1
 	score += 10
 	hud.set_task_counts(dust_cleaned, webs_cleared, furniture_placed, bathroom_mirrors_cleaned + bathroom_door_cleaned, panel_repaired, pipeline_cleaned, fridge_cleaned)
 	hud.set_score(score)

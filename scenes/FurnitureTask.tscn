@@ -1,0 +1,92 @@
+[gd_scene format=3 uid="uid://d3i1gu02losto"]
+
+[ext_resource type="Script" uid="uid://bcjbe2ivsyfnw" path="res://scripts/furniture_task.gd" id="1_mos0y"]
+[ext_resource type="Script" uid="uid://cswgw3o31ajef" path="res://scripts/furniture_piece.gd" id="2_c1t7r"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_1vivr"]
+size = Vector3(1.1459961, 1, 1.1333008)
+
+[sub_resource type="BoxMesh" id="BoxMesh_1vivr"]
+size = Vector3(1.107, 1, 1.115)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fo80j"]
+albedo_color = Color(0.36035472, 0.18215561, 0.104473256, 1)
+
+[node name="FurnitureTask" type="Node3D" unique_id=1595018874]
+script = ExtResource("1_mos0y")
+
+[node name="PiledFurniture" type="Node3D" parent="." unique_id=393161917]
+
+[node name="Piece1" type="Area3D" parent="PiledFurniture" unique_id=1366552889]
+transform = Transform3D(0.99946934, -0.02752214, 0.017422665, 0.027782269, 0.99950343, -0.014868388, -0.017004795, 0.015344549, 0.9997376, 0, 0, 0)
+collision_layer = 2
+script = ExtResource("2_c1t7r")
+target_spot_path = NodePath("../../TargetSpots/Spot1")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="PiledFurniture/Piece1" unique_id=100753243]
+transform = Transform3D(0.9995615, 0.025245197, -0.015475798, -0.025030252, 0.9995897, 0.013929529, 0.015821088, -0.013536073, 0.9997832, -0.07296604, 0.0018271594, -0.0678053)
+shape = SubResource("BoxShape3D_1vivr")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="PiledFurniture/Piece1" unique_id=1482289635]
+transform = Transform3D(1, -5.2386895e-10, 0, 1.6298145e-09, 0.99999994, 0, 0, -9.313226e-10, 0.99999994, -0.89098686, 0.012259364, -0.071972616)
+mesh = SubResource("BoxMesh_1vivr")
+surface_material_override/0 = SubResource("StandardMaterial3D_fo80j")
+
+[node name="Piece2" type="Area3D" parent="PiledFurniture" unique_id=1345527842]
+transform = Transform3D(0.99946934, -0.02752214, 0.017422665, 0.027782269, 0.99950343, -0.014868388, -0.017004795, 0.015344549, 0.9997376, 1.5787188, 0, 0)
+collision_layer = 2
+script = ExtResource("2_c1t7r")
+target_spot_path = NodePath("../../TargetSpots/Spot2")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="PiledFurniture/Piece2" unique_id=562934227]
+transform = Transform3D(0.9995615, 0.025245197, -0.015475798, -0.025030252, 0.9995897, 0.013929529, 0.015821088, -0.013536073, 0.9997832, -0.07296604, 0.0018271594, -0.0678053)
+shape = SubResource("BoxShape3D_1vivr")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="PiledFurniture/Piece2" unique_id=2057905520]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.053466797, -0.010803223, -0.057373047)
+mesh = SubResource("BoxMesh_1vivr")
+surface_material_override/0 = SubResource("StandardMaterial3D_fo80j")
+
+[node name="Piece3" type="Area3D" parent="PiledFurniture" unique_id=367177986]
+transform = Transform3D(0.99946934, -0.02752214, 0.017422665, 0.027782269, 0.99950343, -0.014868388, -0.017004795, 0.015344549, 0.9997376, -3.0436635, 0, 0)
+collision_layer = 2
+script = ExtResource("2_c1t7r")
+target_spot_path = NodePath("../../TargetSpots/Spot3")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="PiledFurniture/Piece3" unique_id=1812696540]
+transform = Transform3D(0.9995615, 0.025245197, -0.015475798, -0.025030252, 0.9995897, 0.013929529, 0.015821088, -0.013536073, 0.9997832, -0.07296604, 0.0018271594, -0.0678053)
+shape = SubResource("BoxShape3D_1vivr")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="PiledFurniture/Piece3" unique_id=1313199789]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.053466797, -0.010803223, -0.057373047)
+mesh = SubResource("BoxMesh_1vivr")
+surface_material_override/0 = SubResource("StandardMaterial3D_fo80j")
+
+[node name="Piece4" type="Area3D" parent="PiledFurniture" unique_id=516881659]
+transform = Transform3D(0.99946934, -0.02752214, 0.017422665, 0.027782269, 0.99950343, -0.014868388, -0.017004795, 0.015344549, 0.9997376, -3.0436635, 0, 1.602025)
+collision_layer = 2
+script = ExtResource("2_c1t7r")
+target_spot_path = NodePath("../../TargetSpots/Spot4")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="PiledFurniture/Piece4" unique_id=1025299824]
+transform = Transform3D(0.9995615, 0.025245197, -0.015475798, -0.025030252, 0.9995897, 0.013929529, 0.015821088, -0.013536073, 0.9997832, -0.07296604, 0.0018271594, -0.0678053)
+shape = SubResource("BoxShape3D_1vivr")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="PiledFurniture/Piece4" unique_id=1332345173]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.053466797, -0.010803223, -0.057373047)
+mesh = SubResource("BoxMesh_1vivr")
+surface_material_override/0 = SubResource("StandardMaterial3D_fo80j")
+
+[node name="TargetSpots" type="Node3D" parent="." unique_id=1053375402]
+
+[node name="Spot1" type="Marker3D" parent="TargetSpots" unique_id=1292537349]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4929057, 0, 0)
+
+[node name="Spot2" type="Marker3D" parent="TargetSpots" unique_id=1872980703]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.2068058, 0, 0)
+
+[node name="Spot3" type="Marker3D" parent="TargetSpots" unique_id=1912832958]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.0661187, 0, -0.20693016)
+
+[node name="Spot4" type="Marker3D" parent="TargetSpots" unique_id=35550501]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.0661187, 0, 1.361839)
