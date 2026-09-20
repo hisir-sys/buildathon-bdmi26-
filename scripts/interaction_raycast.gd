@@ -4,6 +4,7 @@ signal target_changed(prompt_text: String)
 signal interacted(target: Node)
 
 var current_target: Node = null
+var last_prompt: String = ""
 
 
 func _ready() -> void:
@@ -24,15 +25,16 @@ func _process(_delta: float) -> void:
 	elif hit != null and hit.has_method("get_interaction_prompt"):
 		next_target = hit
 
-	if next_target == current_target:
+	var next_prompt := ""
+	if next_target != null:
+		next_prompt = next_target.get_interaction_prompt()
+
+	if next_target == current_target and next_prompt == last_prompt:
 		return
 
 	current_target = next_target
-
-	if current_target == null:
-		target_changed.emit("")
-	else:
-		target_changed.emit(current_target.get_interaction_prompt())
+	last_prompt = next_prompt
+	target_changed.emit(next_prompt)
 
 
 func _unhandled_input(event: InputEvent) -> void:
