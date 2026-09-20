@@ -177,7 +177,7 @@ shape = SubResource("BoxShape3D_sofa")
 [node name="Player" parent="." unique_id=2119086631 instance=ExtResource("1_player")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 4)
 
-[node name="HUD" type="CanvasLayer" parent="." unique_id=689347552]
+[node name="HUD" type="CanvasLayer" parent="." unique_id=689347552 groups=["hud"]]
 script = ExtResource("4_hud")
 
 [node name="Crosshair" type="Label" parent="HUD" unique_id=409135674]
