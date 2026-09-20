@@ -1,16 +1,19 @@
-[gd_scene load_steps=23 format=3]
+[gd_scene load_steps=35 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
 [ext_resource type="Script" path="res://scripts/main_room.gd" id="2_main_room"]
 [ext_resource type="Script" path="res://scripts/sofa_interactable.gd" id="3_sofa_interactable"]
 [ext_resource type="Script" path="res://scripts/hud.gd" id="4_hud"]
+[ext_resource type="Script" path="res://scripts/game_manager.gd" id="5_game_manager"]
+[ext_resource type="Script" path="res://scripts/dust_spot.gd" id="6_dust_spot"]
+[ext_resource type="Script" path="res://scripts/spider_web.gd" id="7_spider_web"]
 
 [sub_resource type="Environment" id="Environment_room"]
 background_mode = 1
-background_color = Color(0.035, 0.05, 0.09, 1)
+background_color = Color(0.02, 0.035, 0.07, 1)
 ambient_light_source = 3
-ambient_light_color = Color(0.7, 0.78, 1, 1)
-ambient_light_energy = 0.7
+ambient_light_color = Color(0.62, 0.7, 0.95, 1)
+ambient_light_energy = 0.52
 
 [sub_resource type="BoxMesh" id="BoxMesh_floor"]
 size = Vector3(20, 0.2, 20)
@@ -29,7 +32,7 @@ size = Vector3(20, 4, 0.2)
 size = Vector3(20, 4, 0.2)
 
 [sub_resource type="StandardMaterial3D" id="Material_back_wall"]
-albedo_color = Color(0.18, 0.2, 0.29, 1)
+albedo_color = Color(0.12, 0.15, 0.24, 1)
 roughness = 0.8
 
 [sub_resource type="BoxMesh" id="BoxMesh_side_wall"]
@@ -39,8 +42,18 @@ size = Vector3(0.2, 4, 20)
 size = Vector3(0.2, 4, 20)
 
 [sub_resource type="StandardMaterial3D" id="Material_side_wall"]
-albedo_color = Color(0.14, 0.17, 0.25, 1)
+albedo_color = Color(0.1, 0.13, 0.21, 1)
 roughness = 0.8
+
+[sub_resource type="BoxMesh" id="BoxMesh_ceiling"]
+size = Vector3(20, 0.2, 20)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ceiling"]
+size = Vector3(20, 0.2, 20)
+
+[sub_resource type="StandardMaterial3D" id="Material_ceiling"]
+albedo_color = Color(0.035, 0.045, 0.08, 1)
+roughness = 0.95
 
 [sub_resource type="BoxMesh" id="BoxMesh_sofa_seat"]
 size = Vector3(3, 0.45, 1.25)
@@ -70,6 +83,34 @@ emission_enabled = true
 emission = Color(0.02, 0.45, 0.5, 1)
 emission_energy_multiplier = 2.0
 
+[sub_resource type="CylinderMesh" id="CylinderMesh_dust"]
+top_radius = 0.58
+bottom_radius = 0.58
+height = 0.025
+radial_segments = 32
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_dust"]
+radius = 0.58
+height = 0.12
+
+[sub_resource type="StandardMaterial3D" id="Material_dust"]
+albedo_color = Color(0.16, 0.09, 0.045, 1)
+roughness = 1.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_web"]
+size = Vector3(1.7, 0.025, 1.7)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_web"]
+size = Vector3(1.7, 0.12, 1.7)
+
+[sub_resource type="StandardMaterial3D" id="Material_web"]
+albedo_color = Color(0.65, 0.8, 0.95, 0.45)
+transparency = 1
+shading_mode = 0
+emission_enabled = true
+emission = Color(0.2, 0.35, 0.5, 1)
+emission_energy_multiplier = 0.8
+
 [sub_resource type="StyleBoxFlat" id="StyleBox_prompt"]
 bg_color = Color(0.025, 0.05, 0.12, 0.94)
 border_width_left = 2
@@ -90,14 +131,29 @@ environment = SubResource("Environment_room")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 rotation_degrees = Vector3(-55, -25, 0)
-light_energy = 1.25
+light_energy = 0.85
 shadow_enabled = true
 
-[node name="FillLight" type="OmniLight3D" parent="."]
-position = Vector3(0, 3.5, 1)
-omni_range = 14.0
+[node name="CeilingLightLeft" type="OmniLight3D" parent="."]
+position = Vector3(-5, 3.3, -3)
+omni_range = 9.0
+light_energy = 3.0
+light_color = Color(0.45, 0.7, 1, 1)
+
+[node name="CeilingLightRight" type="OmniLight3D" parent="."]
+position = Vector3(5, 3.3, -3)
+omni_range = 9.0
+light_energy = 3.0
+light_color = Color(1, 0.62, 0.35, 1)
+
+[node name="CeilingLightBack" type="OmniLight3D" parent="."]
+position = Vector3(0, 3.3, 5)
+omni_range = 8.0
 light_energy = 2.0
-light_color = Color(1, 0.82, 0.68, 1)
+light_color = Color(0.45, 0.85, 0.7, 1)
+
+[node name="GameManager" type="Node" parent="."]
+script = ExtResource("5_game_manager")
 
 [node name="Floor" type="StaticBody3D" parent="."]
 
@@ -138,6 +194,16 @@ material_override = SubResource("Material_side_wall")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="RightWall"]
 shape = SubResource("BoxShape3D_side_wall")
 
+[node name="Ceiling" type="StaticBody3D" parent="."]
+position = Vector3(0, 4, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Ceiling"]
+mesh = SubResource("BoxMesh_ceiling")
+material_override = SubResource("Material_ceiling")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ceiling"]
+shape = SubResource("BoxShape3D_ceiling")
+
 [node name="SofaPlacementZone" type="MeshInstance3D" parent="."]
 position = Vector3(3, 0.12, -2)
 mesh = SubResource("CylinderMesh_zone")
@@ -171,6 +237,116 @@ material_override = SubResource("Material_sofa")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Sofa"]
 position = Vector3(0, 0.8, 0)
 shape = SubResource("BoxShape3D_sofa")
+
+[node name="DustSpot1" type="StaticBody3D" parent="." groups=["interactable", "dust_spot"]]
+position = Vector3(-6, 0.12, 3)
+script = ExtResource("6_dust_spot")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="DustSpot1"]
+mesh = SubResource("CylinderMesh_dust")
+material_override = SubResource("Material_dust")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DustSpot1"]
+shape = SubResource("CylinderShape3D_dust")
+
+[node name="DustSpot2" type="StaticBody3D" parent="." groups=["interactable", "dust_spot"]]
+position = Vector3(-2, 0.12, 2)
+script = ExtResource("6_dust_spot")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="DustSpot2"]
+mesh = SubResource("CylinderMesh_dust")
+material_override = SubResource("Material_dust")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DustSpot2"]
+shape = SubResource("CylinderShape3D_dust")
+
+[node name="DustSpot3" type="StaticBody3D" parent="." groups=["interactable", "dust_spot"]]
+position = Vector3(3, 0.12, 3)
+script = ExtResource("6_dust_spot")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="DustSpot3"]
+mesh = SubResource("CylinderMesh_dust")
+material_override = SubResource("Material_dust")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DustSpot3"]
+shape = SubResource("CylinderShape3D_dust")
+
+[node name="DustSpot4" type="StaticBody3D" parent="." groups=["interactable", "dust_spot"]]
+position = Vector3(6, 0.12, 1)
+script = ExtResource("6_dust_spot")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="DustSpot4"]
+mesh = SubResource("CylinderMesh_dust")
+material_override = SubResource("Material_dust")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DustSpot4"]
+shape = SubResource("CylinderShape3D_dust")
+
+[node name="DustSpot5" type="StaticBody3D" parent="." groups=["interactable", "dust_spot"]]
+position = Vector3(-5, 0.12, -5)
+script = ExtResource("6_dust_spot")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="DustSpot5"]
+mesh = SubResource("CylinderMesh_dust")
+material_override = SubResource("Material_dust")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DustSpot5"]
+shape = SubResource("CylinderShape3D_dust")
+
+[node name="DustSpot6" type="StaticBody3D" parent="." groups=["interactable", "dust_spot"]]
+position = Vector3(2, 0.12, -5)
+script = ExtResource("6_dust_spot")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="DustSpot6"]
+mesh = SubResource("CylinderMesh_dust")
+material_override = SubResource("Material_dust")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DustSpot6"]
+shape = SubResource("CylinderShape3D_dust")
+
+[node name="Web1" type="StaticBody3D" parent="." groups=["interactable", "spider_web"]]
+position = Vector3(-6, 3.85, -4)
+script = ExtResource("7_spider_web")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Web1"]
+mesh = SubResource("BoxMesh_web")
+material_override = SubResource("Material_web")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Web1"]
+shape = SubResource("BoxShape3D_web")
+
+[node name="Web2" type="StaticBody3D" parent="." groups=["interactable", "spider_web"]]
+position = Vector3(0, 3.85, -6)
+script = ExtResource("7_spider_web")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Web2"]
+mesh = SubResource("BoxMesh_web")
+material_override = SubResource("Material_web")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Web2"]
+shape = SubResource("BoxShape3D_web")
+
+[node name="Web3" type="StaticBody3D" parent="." groups=["interactable", "spider_web"]]
+position = Vector3(6, 3.85, -3)
+script = ExtResource("7_spider_web")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Web3"]
+mesh = SubResource("BoxMesh_web")
+material_override = SubResource("Material_web")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Web3"]
+shape = SubResource("BoxShape3D_web")
+
+[node name="Web4" type="StaticBody3D" parent="." groups=["interactable", "spider_web"]]
+position = Vector3(2, 3.85, 3)
+script = ExtResource("7_spider_web")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Web4"]
+mesh = SubResource("BoxMesh_web")
+material_override = SubResource("Material_web")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Web4"]
+shape = SubResource("BoxShape3D_web")
 
 [node name="Player" parent="." instance=ExtResource("1_player")]
 position = Vector3(0, 0.1, 4)
@@ -253,4 +429,4 @@ offset_bottom = 48.0
 theme_override_colors/font_color = Color(0.85, 0.96, 1, 1)
 theme_override_font_sizes/font_size = 18
 horizontal_alignment = 1
-text = "E  PICK UP THE SOFA"
+text = "E  INTERACT"

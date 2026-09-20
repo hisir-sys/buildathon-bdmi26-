@@ -1,4 +1,4 @@
-# The Cleaner - sofa placement milestone
+# The Cleaner - cleaning systems milestone
 
 ## Run
 
@@ -10,7 +10,7 @@
 
 - **WASD**: move
 - **Mouse**: look around
-- **E**: pick up or place the sofa
+- **E**: interact with dust, spider webs, and the sofa
 - **Escape**: release or recapture the mouse
 
-Look at the sofa. Press **E** to pick it up, carry it to the cyan highlighted zone, then press **E** again to place it. The task board changes from `0/1` to `1/1`.
+The room now has a 10-minute countdown, a ceiling, ceiling lights, six dust spots, four spider webs, and the sofa pickup/place task.
