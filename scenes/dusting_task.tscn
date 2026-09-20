@@ -9,7 +9,7 @@ size = Vector3(2, 0.1, 2)
 size = Vector3(0.8, 0.05, 0.8)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jkltj"]
-albedo_color = Color(0.3779188, 0.37791887, 0.37791884, 1)
+albedo_color = Color(0.31431597, 0.31431618, 0.31431603, 1)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_8vrlf"]
 size = Vector3(2, 2, 2)
@@ -25,40 +25,43 @@ size = Vector3(2, 2, 2)
 [node name="DustSpots" type="Node3D" parent="." unique_id=940806558]
 
 [node name="DustSpot5" type="Area3D" parent="DustSpots" unique_id=609978687]
-transform = Transform3D(0.6, 0, 0, 0, 0.6, 0, 0, 0, 0.6, 0, 0.05, -3)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, -3)
 script = ExtResource("1_jkltj")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="DustSpots/DustSpot5" unique_id=1585617280]
 shape = SubResource("BoxShape3D_1vivr")
 
 [node name="MeshInstance3D2" type="MeshInstance3D" parent="DustSpots/DustSpot5" unique_id=601077973]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.088288546, 0)
 mesh = SubResource("BoxMesh_1vivr")
 surface_material_override/0 = SubResource("StandardMaterial3D_jkltj")
 
 [node name="DustSpot4" type="Area3D" parent="DustSpots" unique_id=2138686820]
-transform = Transform3D(0.6, 0, 0, 0, 0.6, 0, 0, 0, 0.6, -3, 0.05, -1)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0.05, -1)
 script = ExtResource("1_jkltj")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="DustSpots/DustSpot4" unique_id=18581284]
 shape = SubResource("BoxShape3D_1vivr")
 
 [node name="MeshInstance3D2" type="MeshInstance3D" parent="DustSpots/DustSpot4" unique_id=334585757]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5268495, 0.40754974, 2.645823)
 mesh = SubResource("BoxMesh_1vivr")
 surface_material_override/0 = SubResource("StandardMaterial3D_jkltj")
 
 [node name="DustSpot2" type="Area3D" parent="DustSpots" unique_id=601804398]
-transform = Transform3D(0.6, 0, 0, 0, 0.6, 0, 0, 0, 0.6, -2, 0.05, 2)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0.05, 2)
 script = ExtResource("1_jkltj")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="DustSpots/DustSpot2" unique_id=834004771]
 shape = SubResource("BoxShape3D_1vivr")
 
 [node name="MeshInstance3D2" type="MeshInstance3D" parent="DustSpots/DustSpot2" unique_id=1200945827]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.1972404, 0.68987936, 2.1900063)
 mesh = SubResource("BoxMesh_1vivr")
 surface_material_override/0 = SubResource("StandardMaterial3D_jkltj")
 
 [node name="DustSpot3" type="Area3D" parent="DustSpots" unique_id=1100446270]
-transform = Transform3D(0.6, 0, 0, 0, 0.6, 0, 0, 0, 0.6, 3, 0.05, -1)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0.05, -1)
 collision_layer = 2
 script = ExtResource("1_jkltj")
 
@@ -66,11 +69,12 @@ script = ExtResource("1_jkltj")
 shape = SubResource("BoxShape3D_1vivr")
 
 [node name="MeshInstance3D2" type="MeshInstance3D" parent="DustSpots/DustSpot3" unique_id=1841498267]
+transform = Transform3D(1.9999995, 0, 0, 0, 1.9999995, 0, 0, 0, 1.9999995, -0.8345723, 0.074181676, 0)
 mesh = SubResource("BoxMesh_1vivr")
 surface_material_override/0 = SubResource("StandardMaterial3D_jkltj")
 
 [node name="DustSpot1" type="Area3D" parent="DustSpots" unique_id=849014540]
-transform = Transform3D(0.6, 0, 0, 0, 0.6, 0, 0, 0, 0.6, 2, 0.05, 2)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0.1, 5.213)
 collision_layer = 2
 collision_mask = 4294967044
 script = ExtResource("1_jkltj")
@@ -79,6 +83,7 @@ script = ExtResource("1_jkltj")
 shape = SubResource("BoxShape3D_1vivr")
 
 [node name="MeshInstance3D2" type="MeshInstance3D" parent="DustSpots/DustSpot1" unique_id=1479866108]
+transform = Transform3D(1.9999996, 0, 0, 0, 1.9999996, 0, 0, 0, 1.9999996, -16.364445, 0.14383459, -9.559836)
 mesh = SubResource("BoxMesh_1vivr")
 surface_material_override/0 = SubResource("StandardMaterial3D_jkltj")
 
@@ -135,5 +140,5 @@ mesh = SubResource("BoxMesh_v5gy4")
 surface_material_override/0 = SubResource("StandardMaterial3D_qbdty")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=197766112]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.3557153, 0, -1.0629183)
 shape = SubResource("SphereShape3D_1vivr")
