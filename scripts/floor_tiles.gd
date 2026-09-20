@@ -6,6 +6,10 @@ const TILE_WIDTH := 0.47
 const TILE_DEPTH := 0.96
 const COLUMN_STEP := 0.5
 const ROW_STEP := 1.0
+const BATHROOM_MIN_X := 3.0
+const BATHROOM_MAX_X := 9.8
+const BATHROOM_MIN_Z := -10.0
+const BATHROOM_MAX_Z := -3.2
 
 
 func _ready() -> void:
@@ -30,13 +34,23 @@ func _ready() -> void:
 
 	for x in range(TILE_COLUMNS):
 		for z in range(TILE_ROWS):
-			var tile := MeshInstance3D.new()
-			tile.mesh = tile_mesh
-			tile.material_override = wood_materials[(x * 3 + z * 5) % wood_materials.size()]
-			tile.position = Vector3(
+			var tile_position := Vector3(
 				-9.75 + x * COLUMN_STEP,
 				0.125,
 				-9.5 + z * ROW_STEP
 			)
+			# Leave the bathroom footprint to its own tile set so the two
+			# materials do not occupy the same surface.
+			if (
+				tile_position.x >= BATHROOM_MIN_X
+				and tile_position.x <= BATHROOM_MAX_X
+				and tile_position.z >= BATHROOM_MIN_Z
+				and tile_position.z <= BATHROOM_MAX_Z
+			):
+				continue
+			var tile := MeshInstance3D.new()
+			tile.mesh = tile_mesh
+			tile.material_override = wood_materials[(x * 3 + z * 5) % wood_materials.size()]
+			tile.position = tile_position
 			tile.rotation.y = deg_to_rad(((x + z) % 2) * 0.7)
 			add_child(tile)

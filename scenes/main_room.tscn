@@ -1,4 +1,4 @@
-[gd_scene load_steps=40 format=3]
+[gd_scene load_steps=36 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
 [ext_resource type="Script" path="res://scripts/main_room.gd" id="2_main_room"]
@@ -6,7 +6,6 @@
 [ext_resource type="Script" path="res://scripts/hud.gd" id="4_hud"]
 [ext_resource type="Script" path="res://scripts/game_manager.gd" id="5_game_manager"]
 [ext_resource type="Script" path="res://scripts/dust_spot.gd" id="6_dust_spot"]
-[ext_resource type="Script" path="res://scripts/spider_web.gd" id="7_spider_web"]
 [ext_resource type="Script" path="res://scripts/floor_tiles.gd" id="8_floor_tiles"]
 
 [sub_resource type="Environment" id="Environment_room"]
@@ -102,20 +101,6 @@ height = 0.12
 [sub_resource type="StandardMaterial3D" id="Material_dust"]
 albedo_color = Color(0.16, 0.09, 0.045, 1)
 roughness = 1.0
-
-[sub_resource type="BoxMesh" id="BoxMesh_web"]
-size = Vector3(1.7, 0.025, 1.7)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_web"]
-size = Vector3(1.4, 1.4, 0.06)
-
-[sub_resource type="StandardMaterial3D" id="Material_web"]
-albedo_color = Color(0.65, 0.8, 0.95, 0.45)
-transparency = 1
-shading_mode = 0
-emission_enabled = true
-emission = Color(0.2, 0.35, 0.5, 1)
-emission_energy_multiplier = 0.8
 
 [sub_resource type="SphereMesh" id="SphereMesh_fixture"]
 radius = 0.18
@@ -251,12 +236,12 @@ material_override = SubResource("Material_ceiling")
 shape = SubResource("BoxShape3D_ceiling")
 
 [node name="SofaPlacementZone" type="MeshInstance3D" parent="."]
-position = Vector3(3, 0.18, -2)
+position = Vector3(7, 0.18, 0.8)
 mesh = SubResource("CylinderMesh_zone")
 material_override = SubResource("Material_zone")
 
 [node name="Sofa" type="StaticBody3D" parent="." groups=["interactable"]]
-position = Vector3(-3, 0, -2)
+position = Vector3(0, 0, 0)
 script = ExtResource("3_sofa_interactable")
 placement_zone_path = NodePath("../SofaPlacementZone")
 
@@ -350,53 +335,6 @@ material_override = SubResource("Material_dust")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="DustSpot6"]
 shape = SubResource("CylinderShape3D_dust")
 
-[node name="Web1" type="StaticBody3D" parent="." groups=["interactable", "spider_web"]]
-position = Vector3(-9.82, 3.7, -9.78)
-script = ExtResource("7_spider_web")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Web1"]
-mesh = SubResource("BoxMesh_web")
-material_override = SubResource("Material_web")
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Web1"]
-shape = SubResource("BoxShape3D_web")
-
-[node name="Web2" type="StaticBody3D" parent="." groups=["interactable", "spider_web"]]
-position = Vector3(9.82, 3.7, -9.78)
-rotation_degrees = Vector3(0, 180, 0)
-script = ExtResource("7_spider_web")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Web2"]
-mesh = SubResource("BoxMesh_web")
-material_override = SubResource("Material_web")
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Web2"]
-shape = SubResource("BoxShape3D_web")
-
-[node name="Web3" type="StaticBody3D" parent="." groups=["interactable", "spider_web"]]
-position = Vector3(-9.82, 3.7, -9)
-rotation_degrees = Vector3(0, -90, 0)
-script = ExtResource("7_spider_web")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Web3"]
-mesh = SubResource("BoxMesh_web")
-material_override = SubResource("Material_web")
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Web3"]
-shape = SubResource("BoxShape3D_web")
-
-[node name="Web4" type="StaticBody3D" parent="." groups=["interactable", "spider_web"]]
-position = Vector3(9.82, 3.7, -9)
-rotation_degrees = Vector3(0, 90, 0)
-script = ExtResource("7_spider_web")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Web4"]
-mesh = SubResource("BoxMesh_web")
-material_override = SubResource("Material_web")
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Web4"]
-shape = SubResource("BoxShape3D_web")
-
 [node name="Player" parent="." instance=ExtResource("1_player")]
 position = Vector3(0, 0.1, 4)
 
@@ -415,14 +353,14 @@ text = "+"
 [node name="TaskBoard" type="ColorRect" parent="HUD"]
 offset_left = 24.0
 offset_top = 24.0
-offset_right = 280.0
-offset_bottom = 185.0
+offset_right = 305.0
+offset_bottom = 244.0
 color = Color(0.02, 0.04, 0.1, 0.88)
 
 [node name="Title" type="Label" parent="HUD/TaskBoard"]
 offset_left = 16.0
 offset_top = 12.0
-offset_right = 230.0
+offset_right = 260.0
 offset_bottom = 38.0
 theme_override_colors/font_color = Color(0.2, 0.85, 1, 1)
 theme_override_font_sizes/font_size = 18
@@ -431,27 +369,81 @@ text = "TASK BOARD"
 [node name="TaskLabel" type="Label" parent="HUD/TaskBoard"]
 offset_left = 16.0
 offset_top = 52.0
-offset_right = 235.0
-offset_bottom = 140.0
+offset_right = 280.0
+offset_bottom = 230.0
 theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
-theme_override_font_sizes/font_size = 15
-text = "FURNITURE                  0/1\n\nDUSTING                    0/6\nSPIDER WEBS                0/4"
+theme_override_font_sizes/font_size = 14
+text = "DUSTING                    0/6\nREWIRE PANEL              0/1\nPIPELINE                   0/1\nFRIDGE                     0/1\nFURNITURE                 0/1\nWASHROOM                  0/1"
 
 [node name="TimerPanel" type="ColorRect" parent="HUD"]
 offset_left = 505.0
 offset_top = 24.0
 offset_right = 775.0
-offset_bottom = 85.0
+offset_bottom = 92.0
 color = Color(0.02, 0.04, 0.1, 0.9)
+
+[node name="TimerCaption" type="Label" parent="HUD/TimerPanel"]
+offset_left = 28.0
+offset_top = 6.0
+offset_right = 242.0
+offset_bottom = 24.0
+theme_override_colors/font_color = Color(0.38, 0.52, 0.7, 1)
+theme_override_font_sizes/font_size = 10
+text = "OWNER ARRIVES IN"
+horizontal_alignment = 1
 
 [node name="TimerLabel" type="Label" parent="HUD/TimerPanel"]
 offset_left = 28.0
-offset_top = 9.0
+offset_top = 22.0
 offset_right = 240.0
-offset_bottom = 52.0
+offset_bottom = 68.0
 theme_override_colors/font_color = Color(1, 0.78, 0.2, 1)
-theme_override_font_sizes/font_size = 24
-text = "OWNER ARRIVES  10:00"
+theme_override_font_sizes/font_size = 25
+text = "10:00"
+horizontal_alignment = 1
+
+[node name="ScorePanel" type="ColorRect" parent="HUD"]
+offset_left = 1105.0
+offset_top = 24.0
+offset_right = 1215.0
+offset_bottom = 92.0
+color = Color(0.02, 0.04, 0.1, 0.9)
+
+[node name="ScoreCaption" type="Label" parent="HUD/ScorePanel"]
+offset_left = 8.0
+offset_top = 7.0
+offset_right = 109.0
+offset_bottom = 24.0
+theme_override_colors/font_color = Color(0.38, 0.52, 0.7, 1)
+theme_override_font_sizes/font_size = 10
+text = "SCORE"
+horizontal_alignment = 1
+
+[node name="ScoreLabel" type="Label" parent="HUD/ScorePanel"]
+offset_left = 8.0
+offset_top = 22.0
+offset_right = 109.0
+offset_bottom = 61.0
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 25
+text = "50"
+horizontal_alignment = 1
+
+[node name="SoundButton" type="Button" parent="HUD"]
+offset_left = 1222.0
+offset_top = 24.0
+offset_right = 1252.0
+offset_bottom = 64.0
+theme_override_font_sizes/font_size = 18
+text = "🔊"
+
+[node name="PauseButton" type="Button" parent="HUD"]
+offset_left = 1258.0
+offset_top = 70.0
+offset_right = 1280.0
+offset_bottom = 110.0
+theme_override_font_sizes/font_size = 18
+text = "Ⅱ"
 
 [node name="ToolLabel" type="Label" parent="HUD"]
 offset_left = 24.0
