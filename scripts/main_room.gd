@@ -15,8 +15,8 @@ var webs_cleared: int = 0
 var furniture_placed: int = 0
 var bathroom_mirrors_cleaned: int = 0
 var bathroom_door_cleaned: int = 0
+var bathroom_pipe_cleaned: int = 0
 var panel_repaired: int = 0
-var pipeline_cleaned: int = 0
 var fridge_cleaned: int = 0
 var score: int = 50
 var ambience_time: float = 0.0
@@ -51,7 +51,7 @@ func _ready() -> void:
 
 	ceiling_lights = [$CeilingLightLeft, $CeilingLightRight, $CeilingLightBack]
 	light_bulbs = [$BlueBulb, $AmberBulb, $GreenBulb]
-	hud.set_task_counts(dust_cleaned, webs_cleared, furniture_placed, bathroom_mirrors_cleaned + bathroom_door_cleaned, panel_repaired, pipeline_cleaned, fridge_cleaned)
+	hud.set_task_counts(dust_cleaned, webs_cleared, furniture_placed, bathroom_mirrors_cleaned + bathroom_door_cleaned + bathroom_pipe_cleaned, panel_repaired, fridge_cleaned)
 	hud.set_score(score)
 
 
@@ -61,7 +61,6 @@ func _build_floor_plan_props() -> void:
 	_add_front_wall()
 	_build_mop_station(Vector3(-6.7, 0.0, -9.55))
 	_build_rug(Vector3(0.0, 0.18, -6.6))
-	_build_broken_mirror(Vector3(2.6, 2.25, -9.84))
 	_build_cabinet(Vector3(7.0, 0.0, 6.4))
 	_build_tv(Vector3(0.0, 0.0, 9.78))
 	_build_broken_floor(Vector3(-5.8, 0.0, 6.7))
@@ -184,19 +183,6 @@ func _build_rug(world_position: Vector3) -> void:
 		_box(root, "RugStripe%d" % x, Vector3(0.08, 0.02, 1.9), Vector3(x * 0.75, 0.09, 0), border)
 
 
-func _build_broken_mirror(world_position: Vector3) -> void:
-	var root := _new_prop_root("BrokenMirror", world_position)
-	var frame := _material(Color(0.24, 0.27, 0.34, 1))
-	var glass := _material(Color(0.13, 0.28, 0.39, 0.72), Color(0.06, 0.16, 0.25, 1), 0.4)
-	_box(root, "MirrorFrame", Vector3(3.0, 2.3, 0.14), Vector3.ZERO, frame)
-	_box(root, "MirrorGlass", Vector3(2.65, 1.95, 0.04), Vector3(0, 0, 0.09), glass)
-	for index in range(4):
-		var shard := _box(root, "Crack%d" % index, Vector3(0.035, 1.85, 0.025), Vector3(-0.95 + index * 0.62, 0.0, 0.12), frame)
-		shard.rotation_degrees = Vector3(0, 0, -28.0 + index * 17.0)
-	var diagonal_crack := _box(root, "CrackDiagonal", Vector3(0.035, 2.2, 0.025), Vector3(0.2, 0.0, 0.13), frame)
-	diagonal_crack.rotation_degrees.z = 63.0
-
-
 func _build_cabinet(world_position: Vector3) -> void:
 	var root := _new_prop_root("Cabinet", world_position)
 	var wood := _material(Color(0.28, 0.12, 0.055, 1))
@@ -245,23 +231,30 @@ func _build_bathroom() -> void:
 	_static_box("BathroomLeftWall", Vector3(0.2, 4.0, 6.0), Vector3(3.3, 2.0, -6.6), wall_material)
 	_static_box("BathroomRightWall", Vector3(0.2, 4.0, 6.0), Vector3(9.5, 2.0, -6.6), wall_material)
 	_static_box("BathroomBackWall", Vector3(6.4, 4.0, 0.2), Vector3(6.4, 2.0, -9.55), wall_material)
-	# The front wall is split to leave a small doorway (kept narrower than a
-	# regular door, as bathroom doors typically are) instead of one solid wall.
-	_static_box("BathroomFrontWallLeft", Vector3(3.3, 4.0, 0.2), Vector3(4.85, 2.0, -3.65), wall_material)
-	_static_box("BathroomFrontWallRight", Vector3(2.1, 4.0, 0.2), Vector3(8.55, 2.0, -3.65), wall_material)
-	_static_box("BathroomDoorHeader", Vector3(1.0, 2.0, 0.2), Vector3(7.0, 3.0, -3.65), wall_material)
-	_build_bathroom_door(Vector3(7.0, 0.0, -3.65))
+	# The front wall is split to leave a doorway (sized up from the previous
+	# pass, but still narrower than a regular interior door - true to how
+	# bathroom doors are usually undersized) instead of one solid wall.
+	# Shifted further left along the front wall (away from the commode/tub
+	# corner) so the door isn't crowded against the right-side fixtures.
+	_static_box("BathroomFrontWallLeft", Vector3(2.6, 4.0, 0.2), Vector3(4.5, 2.0, -3.65), wall_material)
+	_static_box("BathroomFrontWallRight", Vector3(2.6, 4.0, 0.2), Vector3(8.3, 2.0, -3.65), wall_material)
+	_static_box("BathroomDoorHeader", Vector3(1.2, 1.85, 0.2), Vector3(6.4, 3.075, -3.65), wall_material)
+	_build_bathroom_door(Vector3(6.4, 0.0, -3.65))
 	_static_box("BathroomCeiling", Vector3(6.4, 0.2, 6.0), Vector3(6.4, 4.0, -6.6), bathroom_ceiling)
 	var tile_root := _new_prop_root("BathroomFloorTiles", Vector3.ZERO)
 	var tile_a := _material(Color(0.31, 0.34, 0.37, 1))
 	var tile_b := _material(Color(0.25, 0.29, 0.33, 1))
+	# Tiles are sized and centered to fill exactly between the inner wall
+	# faces (x: 3.4 to 9.4, z: -9.45 to -3.75) with a small uniform gap
+	# between tiles, so the grid neither overlaps the main-room floor nor
+	# leaves a bare strip at the walls.
 	for column in range(6):
 		for row in range(6):
 			_box(
 				tile_root,
 				"Tile%d_%d" % [column, row],
-				Vector3(0.94, 0.035, 0.9),
-				Vector3(3.87 + column * 0.98, 0.13, -9.0 + row * 1.0),
+				Vector3(0.96, 0.035, 0.91),
+				Vector3(3.9 + column * 1.0, 0.13, -8.975 + row * 0.95),
 				tile_a if (column + row) % 2 == 0 else tile_b
 			)
 	var bathroom_light := OmniLight3D.new()
@@ -278,6 +271,7 @@ func _build_bathroom() -> void:
 	_build_bathtub(bathroom)
 	_build_dirty_bathroom_mirror(bathroom)
 	_build_storage_rack(bathroom)
+	_build_bathroom_pipe(bathroom)
 
 
 func _build_basin(parent: Node3D) -> void:
@@ -397,17 +391,18 @@ func _build_storage_rack(parent: Node3D) -> void:
 
 
 func _build_bathroom_door(world_position: Vector3) -> void:
-	# Hinged at the left jamb of the doorway opening, swung open (ajar) into
-	# the bathroom rather than sitting flush - reads as a door left ajar.
+	# Hinged at the left jamb of the doorway opening. Rests at a small ajar
+	# crack by default; SPACE swings it fully open/closed (handled by
+	# DirtyDoorScript, which also owns the dust-wipe interaction on E).
 	var hinge := Node3D.new()
 	hinge.name = "BathroomDoorHinge"
-	hinge.position = Vector3(world_position.x - 0.45, 0.0, world_position.z)
-	hinge.rotation_degrees.y = -32.0
+	hinge.position = Vector3(world_position.x - 0.55, 0.0, world_position.z)
+	hinge.rotation_degrees.y = -6.0
 	add_child(hinge)
 
 	var door := StaticBody3D.new()
 	door.name = "BathroomDoor"
-	door.position = Vector3(0.45, 0.0, 0.0)
+	door.position = Vector3(0.55, 0.0, 0.0)
 	door.set_script(DirtyDoorScript)
 	door.add_to_group("interactable")
 	door.add_to_group("bathroom_door")
@@ -416,29 +411,61 @@ func _build_bathroom_door(world_position: Vector3) -> void:
 	var door_material := _material(Color(0.28, 0.16, 0.08, 1))
 	var panel_material := _material(Color(0.34, 0.19, 0.09, 1))
 	var handle_material := _material(Color(0.55, 0.5, 0.35, 1), Color(0.1, 0.09, 0.05, 1), 0.15)
-	# The door is kept a little smaller than a regular interior door, matching
-	# how bathroom doors are usually undersized.
-	_box(door, "DoorSlab", Vector3(0.86, 1.9, 0.05), Vector3(0, 0.95, 0), door_material)
-	_box(door, "PanelTop", Vector3(0.62, 0.7, 0.015), Vector3(0, 1.35, 0.033), panel_material)
-	_box(door, "PanelBottom", Vector3(0.62, 0.62, 0.015), Vector3(0, 0.5, 0.033), panel_material)
-	_cylinder(door, "Handle", 0.025, 0.14, Vector3(0.36, 0.95, 0.05), handle_material).rotation_degrees.x = 90.0
+	# Sized up from the previous pass, but still a touch smaller than a
+	# regular interior door - matching how bathroom doors are usually built.
+	_box(door, "DoorSlab", Vector3(1.05, 2.05, 0.05), Vector3(0, 1.025, 0), door_material)
+	_box(door, "PanelTop", Vector3(0.78, 0.78, 0.015), Vector3(0, 1.46, 0.033), panel_material)
+	_box(door, "PanelBottom", Vector3(0.78, 0.68, 0.015), Vector3(0, 0.56, 0.033), panel_material)
+	_cylinder(door, "Handle", 0.028, 0.16, Vector3(0.44, 1.025, 0.05), handle_material).rotation_degrees.x = 90.0
 
 	var dust_material := StandardMaterial3D.new()
 	dust_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	dust_material.albedo_color = Color(0.42, 0.34, 0.18, 0.55)
 	dust_material.roughness = 1.0
-	_box(door, "DirtLayer", Vector3(0.7, 1.55, 0.02), Vector3(0, 0.95, 0.045), dust_material)
+	_box(door, "DirtLayer", Vector3(0.85, 1.7, 0.02), Vector3(0, 1.025, 0.045), dust_material)
 	for index in range(3):
-		var smudge := _box(door, "DirtSmudge%d" % index, Vector3(0.5 - index * 0.08, 0.16, 0.015), Vector3(0, 1.5 - index * 0.4, 0.05), dust_material)
+		var smudge := _box(door, "DirtSmudge%d" % index, Vector3(0.6 - index * 0.08, 0.18, 0.015), Vector3(0, 1.65 - index * 0.42, 0.05), dust_material)
 		smudge.rotation_degrees.z = -6.0 + index * 5.0
 
-	_add_body_collision(door, Vector3(0.9, 1.9, 0.4), Vector3(0, 0.95, 0))
+	_add_body_collision(door, Vector3(1.1, 2.05, 0.4), Vector3(0, 1.025, 0))
+
+
+func _build_bathroom_pipe(parent: Node3D) -> void:
+	# A leaking wall pipe mounted along the right wall, near the bathtub -
+	# reuses the same rotate-to-connect puzzle as the main-room pipeline,
+	# with its own task_kind so it's tracked as part of the washroom tasks.
+	# No extra decorative ring/porthole is added next to it.
+	var pipe := StaticBody3D.new()
+	pipe.name = "BathroomPipe"
+	pipe.position = Vector3(9.3, 1.45, -5.7)
+	pipe.set_script(PipelineTaskScript)
+	pipe.set("task_kind", "bathroom_pipe")
+	pipe.add_to_group("interactable")
+	pipe.add_to_group("repair_task")
+	var metal := _material(Color(0.62, 0.68, 0.73, 1))
+	var rust := _material(Color(0.72, 0.2, 0.08, 1), Color(0.32, 0.03, 0.01, 1), 0.35)
+	_cylinder(pipe, "Pipe", 0.11, 3.25, Vector3.ZERO, metal).rotation_degrees.x = 90.0
+	var back_joint := _torus(pipe, "PipeJointBack", 0.15, 0.035, Vector3(0, 0, -1.0), metal)
+	back_joint.rotation_degrees.x = 90.0
+	var front_joint := _torus(pipe, "PipeJointFront", 0.15, 0.035, Vector3(0, 0, 1.0), metal)
+	front_joint.rotation_degrees.x = 90.0
+	_cylinder(pipe, "Valve", 0.28, 0.12, Vector3(0, 0, 0.18), rust).rotation_degrees.x = 90.0
+	_cylinder(pipe, "ValveStem", 0.05, 0.38, Vector3(0, 0.25, 0.18), rust)
+	_torus(pipe, "ValveHandle", 0.2, 0.045, Vector3(0, 0.45, 0.18), rust)
+	_box(pipe, "StatusLight", Vector3(0.12, 0.12, 0.12), Vector3(0, 0.18, 0), _material(Color(0.95, 0.25, 0.1, 1), Color(0.7, 0.04, 0.01, 1), 2.0))
+	_add_body_collision(pipe, Vector3(0.3, 0.3, 3.1), Vector3.ZERO)
+	var leak_collision := CollisionShape3D.new()
+	var leak_shape := BoxShape3D.new()
+	leak_shape.size = Vector3(0.9, 0.28, 0.9)
+	leak_collision.position = Vector3(0.0, -1.3, 0.15)
+	leak_collision.shape = leak_shape
+	pipe.add_child(leak_collision)
+	parent.add_child(pipe)
 
 
 func _build_reference_game_props() -> void:
 	_build_hanging_lamp(Vector3(0.0, 0.0, 0.0))
 	_build_refrigerator(Vector3(-7.15, 0.0, -1.0))
-	_build_pipeline(Vector3(-0.5, 1.45, -9.78))
 	_build_rewire_panel(Vector3(9.78, 2.4, -3.7))
 
 
@@ -483,36 +510,6 @@ func _build_refrigerator(world_position: Vector3) -> void:
 	_box(fridge, "StatusLight", Vector3(0.12, 0.12, 0.06), Vector3(-0.72, 3.0, -0.78), _material(Color(0.95, 0.2, 0.12, 1), Color(0.8, 0.04, 0.02, 1), 2.5))
 	_add_body_collision(fridge, Vector3(2.15, 3.35, 1.35), Vector3(0, 1.68, 0))
 	add_child(fridge)
-
-
-func _build_pipeline(world_position: Vector3) -> void:
-	var pipe := StaticBody3D.new()
-	pipe.name = "Pipeline"
-	pipe.position = world_position
-	pipe.rotation_degrees.y = 90.0
-	pipe.set_script(PipelineTaskScript)
-	pipe.set("task_kind", "pipeline")
-	pipe.add_to_group("interactable")
-	pipe.add_to_group("repair_task")
-	var metal := _material(Color(0.62, 0.68, 0.73, 1))
-	var rust := _material(Color(0.72, 0.2, 0.08, 1), Color(0.32, 0.03, 0.01, 1), 0.35)
-	_cylinder(pipe, "Pipe", 0.11, 3.25, Vector3.ZERO, metal).rotation_degrees.x = 90.0
-	var left_joint := _torus(pipe, "PipeJointLeft", 0.15, 0.035, Vector3(0, 0, -1.0), metal)
-	left_joint.rotation_degrees.x = 90.0
-	var right_joint := _torus(pipe, "PipeJointRight", 0.15, 0.035, Vector3(0, 0, 1.0), metal)
-	right_joint.rotation_degrees.x = 90.0
-	_cylinder(pipe, "Valve", 0.28, 0.12, Vector3(0, 0, 0.18), rust).rotation_degrees.x = 90.0
-	_cylinder(pipe, "ValveStem", 0.05, 0.38, Vector3(0, 0.25, 0.18), rust)
-	_torus(pipe, "ValveHandle", 0.2, 0.045, Vector3(0, 0.45, 0.18), rust)
-	_box(pipe, "StatusLight", Vector3(0.12, 0.12, 0.12), Vector3(0, 0.18, 0), _material(Color(0.95, 0.25, 0.1, 1), Color(0.7, 0.04, 0.01, 1), 2.0))
-	_add_body_collision(pipe, Vector3(0.3, 0.3, 3.1), Vector3.ZERO)
-	var leak_collision := CollisionShape3D.new()
-	var leak_shape := BoxShape3D.new()
-	leak_shape.size = Vector3(0.9, 0.28, 0.9)
-	leak_collision.position = Vector3(0.0, -1.3, 0.15)
-	leak_collision.shape = leak_shape
-	pipe.add_child(leak_collision)
-	add_child(pipe)
 
 
 func _build_rewire_panel(world_position: Vector3) -> void:
@@ -565,35 +562,35 @@ func _process(delta: float) -> void:
 func _on_dust_cleaned() -> void:
 	dust_cleaned += 1
 	score += 5
-	hud.set_task_counts(dust_cleaned, webs_cleared, furniture_placed, bathroom_mirrors_cleaned + bathroom_door_cleaned, panel_repaired, pipeline_cleaned, fridge_cleaned)
+	hud.set_task_counts(dust_cleaned, webs_cleared, furniture_placed, bathroom_mirrors_cleaned + bathroom_door_cleaned + bathroom_pipe_cleaned, panel_repaired, fridge_cleaned)
 	hud.set_score(score)
 
 
 func _on_web_cleared() -> void:
 	webs_cleared += 1
 	score += 5
-	hud.set_task_counts(dust_cleaned, webs_cleared, furniture_placed, bathroom_mirrors_cleaned + bathroom_door_cleaned, panel_repaired, pipeline_cleaned, fridge_cleaned)
+	hud.set_task_counts(dust_cleaned, webs_cleared, furniture_placed, bathroom_mirrors_cleaned + bathroom_door_cleaned + bathroom_pipe_cleaned, panel_repaired, fridge_cleaned)
 	hud.set_score(score)
 
 
 func _on_sofa_placed() -> void:
 	furniture_placed = 1
 	score += 10
-	hud.set_task_counts(dust_cleaned, webs_cleared, furniture_placed, bathroom_mirrors_cleaned + bathroom_door_cleaned, panel_repaired, pipeline_cleaned, fridge_cleaned)
+	hud.set_task_counts(dust_cleaned, webs_cleared, furniture_placed, bathroom_mirrors_cleaned + bathroom_door_cleaned + bathroom_pipe_cleaned, panel_repaired, fridge_cleaned)
 	hud.set_score(score)
 
 
 func _on_bathroom_mirror_cleaned() -> void:
 	bathroom_mirrors_cleaned = 1
 	score += 10
-	hud.set_task_counts(dust_cleaned, webs_cleared, furniture_placed, bathroom_mirrors_cleaned + bathroom_door_cleaned, panel_repaired, pipeline_cleaned, fridge_cleaned)
+	hud.set_task_counts(dust_cleaned, webs_cleared, furniture_placed, bathroom_mirrors_cleaned + bathroom_door_cleaned + bathroom_pipe_cleaned, panel_repaired, fridge_cleaned)
 	hud.set_score(score)
 
 
 func _on_bathroom_door_cleaned() -> void:
 	bathroom_door_cleaned = 1
 	score += 10
-	hud.set_task_counts(dust_cleaned, webs_cleared, furniture_placed, bathroom_mirrors_cleaned + bathroom_door_cleaned, panel_repaired, pipeline_cleaned, fridge_cleaned)
+	hud.set_task_counts(dust_cleaned, webs_cleared, furniture_placed, bathroom_mirrors_cleaned + bathroom_door_cleaned + bathroom_pipe_cleaned, panel_repaired, fridge_cleaned)
 	hud.set_score(score)
 
 
@@ -601,12 +598,12 @@ func _on_repair_task_completed(task_kind: String) -> void:
 	match task_kind:
 		"panel":
 			panel_repaired = 1
-		"pipeline":
-			pipeline_cleaned = 1
 		"fridge":
 			fridge_cleaned = 1
+		"bathroom_pipe":
+			bathroom_pipe_cleaned = 1
 	score += 10
-	hud.set_task_counts(dust_cleaned, webs_cleared, furniture_placed, bathroom_mirrors_cleaned + bathroom_door_cleaned, panel_repaired, pipeline_cleaned, fridge_cleaned)
+	hud.set_task_counts(dust_cleaned, webs_cleared, furniture_placed, bathroom_mirrors_cleaned + bathroom_door_cleaned + bathroom_pipe_cleaned, panel_repaired, fridge_cleaned)
 	hud.set_score(score)
 
 

@@ -38,9 +38,12 @@ func _process(_delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not event.is_action_pressed("interact"):
+	if event.is_action_pressed("interact"):
+		if current_target != null and current_target.has_method("interact"):
+			current_target.interact()
+			interacted.emit(current_target)
 		return
 
-	if current_target != null and current_target.has_method("interact"):
-		current_target.interact()
-		interacted.emit(current_target)
+	if event.is_action_pressed("toggle_door"):
+		if current_target != null and current_target.has_method("toggle_open"):
+			current_target.toggle_open()

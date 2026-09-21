@@ -373,7 +373,7 @@ offset_right = 280.0
 offset_bottom = 230.0
 theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
 theme_override_font_sizes/font_size = 14
-text = "DUSTING                    0/6\nREWIRE PANEL              0/1\nPIPELINE                   0/1\nFRIDGE                     0/1\nFURNITURE                 0/1\nWASHROOM                  0/1"
+text = "DUSTING                    0/6\nREWIRE PANEL              0/1\nFRIDGE                     0/1\nFURNITURE                 0/1\nWASHROOM                  0/3"
 
 [node name="TimerPanel" type="ColorRect" parent="HUD"]
 offset_left = 505.0

@@ -29,17 +29,15 @@ func set_task_counts(
 	furniture_placed: int,
 	bathroom_mirrors_cleaned: int = 0,
 	panel_repaired: int = 0,
-	pipeline_cleaned: int = 0,
 	fridge_cleaned: int = 0
 ) -> void:
 	task_label.text = (
 		"DUSTING                    %d/6\n"
 		+ "REWIRE PANEL              %d/1\n"
-		+ "PIPELINE                   %d/1\n"
 		+ "FRIDGE                     %d/1\n"
 		+ "FURNITURE                 %d/1\n"
-	+ "WASHROOM                  %d/2"
-) % [dust_cleaned, panel_repaired, pipeline_cleaned, fridge_cleaned, furniture_placed, bathroom_mirrors_cleaned]
+	+ "WASHROOM                  %d/3"
+) % [dust_cleaned, panel_repaired, fridge_cleaned, furniture_placed, bathroom_mirrors_cleaned]
 
 
 func set_score(score: int) -> void:

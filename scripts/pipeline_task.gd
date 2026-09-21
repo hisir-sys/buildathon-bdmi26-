@@ -8,6 +8,10 @@ const UP := 1
 const RIGHT := 2
 const DOWN := 4
 const LEFT := 8
+# Inlet is the middle row's leftmost cell (▶ sits beside it), outlet is the
+# middle row's rightmost cell (◀ sits beside it) - matches the reference.
+const INLET_INDEX := GRID_COLUMNS  # row 1, col 0
+const OUTLET_INDEX := GRID_COLUMNS * 2 - 1  # row 1, col 3
 
 @export var task_kind: String = "pipeline"
 
@@ -15,7 +19,10 @@ var is_complete: bool = false
 var puzzle_open: bool = false
 var overlay: CanvasLayer
 var cell_buttons: Array[Button] = []
+var status_label: Label
 var current_masks: Array[int] = []
+# Defines each slot's fixed pipe shape (used only to seed current_masks below
+# via rotation - the win condition is live connectivity, not matching this).
 var target_masks: Array[int] = [
 	6, 10, 10, 12,
 	13, 5, 5, 7,
@@ -144,14 +151,14 @@ func _open_puzzle() -> void:
 		panel.add_child(cell)
 		cell_buttons.append(cell)
 
-	var status := Label.new()
-	status.name = "PipelineStatus"
-	status.position = Vector2(24, 466)
-	status.size = Vector2(280, 28)
-	status.text = "NO FLOW YET"
-	status.add_theme_color_override("font_color", Color(0.55, 0.65, 0.78, 1))
-	status.add_theme_font_size_override("font_size", 13)
-	panel.add_child(status)
+	status_label = Label.new()
+	status_label.name = "PipelineStatus"
+	status_label.position = Vector2(24, 466)
+	status_label.size = Vector2(280, 28)
+	status_label.text = "NO FLOW YET"
+	status_label.add_theme_color_override("font_color", Color(0.55, 0.65, 0.78, 1))
+	status_label.add_theme_font_size_override("font_size", 13)
+	panel.add_child(status_label)
 
 	var walk_away := Button.new()
 	walk_away.position = Vector2(420, 462)
@@ -179,34 +186,80 @@ func _on_cell_pressed(index: int) -> void:
 		return
 	current_masks[index] = _rotate_mask(current_masks[index], 1)
 	_refresh_cells()
-	if _is_solved():
-		_complete_puzzle()
 
 
 func _refresh_cells() -> void:
+	var connected := _compute_connected_cells()
 	for index in range(cell_buttons.size()):
 		var cell := cell_buttons[index]
 		cell.text = _mask_symbol(current_masks[index])
 		cell.tooltip_text = "Rotate pipe"
-		if current_masks[index] == target_masks[index]:
-			cell.add_theme_color_override("font_color", Color(0.54, 0.67, 0.82, 1))
+		if connected[index]:
+			cell.add_theme_color_override("font_color", Color(0.65, 0.97, 1.0, 1))
+			cell.add_theme_stylebox_override("normal", _panel_style(Color(0.06, 0.32, 0.5, 1), Color(0.2, 0.85, 1.0, 1), 2))
 		else:
 			cell.add_theme_color_override("font_color", Color(0.38, 0.48, 0.64, 1))
+			cell.add_theme_stylebox_override("normal", _panel_style(Color(0.06, 0.12, 0.23, 1), Color(0.1, 0.2, 0.36, 1), 1))
+
+	if connected[OUTLET_INDEX] and (current_masks[OUTLET_INDEX] & RIGHT):
+		_complete_puzzle()
+	elif status_label != null:
+		status_label.text = "NO FLOW YET"
+		status_label.add_theme_color_override("font_color", Color(0.55, 0.65, 0.78, 1))
 
 
-func _is_solved() -> bool:
-	for index in range(target_masks.size()):
-		if current_masks[index] != target_masks[index]:
-			return false
-	return true
+# Live connectivity flood-fill from the inlet, following current (rotated)
+# pipe orientations rather than a single predetermined target layout - this
+# is what lights connected segments up cyan in real time as you rotate.
+func _compute_connected_cells() -> Array[bool]:
+	var visited: Array[bool] = []
+	visited.resize(current_masks.size())
+	visited.fill(false)
+	if not (current_masks[INLET_INDEX] & LEFT):
+		return visited
+
+	visited[INLET_INDEX] = true
+	var queue: Array[int] = [INLET_INDEX]
+	while queue.size() > 0:
+		var idx: int = queue.pop_back()
+		var row := idx / GRID_COLUMNS
+		var col := idx % GRID_COLUMNS
+		var mask := current_masks[idx]
+
+		if mask & RIGHT and col < GRID_COLUMNS - 1:
+			var right_idx := idx + 1
+			if not visited[right_idx] and current_masks[right_idx] & LEFT:
+				visited[right_idx] = true
+				queue.append(right_idx)
+		if mask & LEFT and col > 0:
+			var left_idx := idx - 1
+			if not visited[left_idx] and current_masks[left_idx] & RIGHT:
+				visited[left_idx] = true
+				queue.append(left_idx)
+		if mask & DOWN and row < GRID_ROWS - 1:
+			var down_idx := idx + GRID_COLUMNS
+			if not visited[down_idx] and current_masks[down_idx] & UP:
+				visited[down_idx] = true
+				queue.append(down_idx)
+		if mask & UP and row > 0:
+			var up_idx := idx - GRID_COLUMNS
+			if not visited[up_idx] and current_masks[up_idx] & DOWN:
+				visited[up_idx] = true
+				queue.append(up_idx)
+
+	return visited
 
 
 func _complete_puzzle() -> void:
 	is_complete = true
+	if status_label != null:
+		status_label.text = "FLOW RESTORED — WATER RUNNING"
+		status_label.add_theme_color_override("font_color", Color(0.35, 1.0, 0.55, 1))
 	_hide_leak()
 	for flow_part in flow_parts:
 		flow_part.visible = true
 	completed.emit(task_kind)
+	await get_tree().create_timer(1.2).timeout
 	_close_puzzle()
 
 

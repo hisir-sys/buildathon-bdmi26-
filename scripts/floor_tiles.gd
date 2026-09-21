@@ -6,10 +6,10 @@ const TILE_WIDTH := 0.47
 const TILE_DEPTH := 0.96
 const COLUMN_STEP := 0.5
 const ROW_STEP := 1.0
-const BATHROOM_MIN_X := 3.0
-const BATHROOM_MAX_X := 9.8
-const BATHROOM_MIN_Z := -10.0
-const BATHROOM_MAX_Z := -3.2
+const BATHROOM_MIN_X := 3.2
+const BATHROOM_MAX_X := 9.6
+const BATHROOM_MIN_Z := -9.65
+const BATHROOM_MAX_Z := -3.55
 
 
 func _ready() -> void:
@@ -40,12 +40,22 @@ func _ready() -> void:
 				-9.5 + z * ROW_STEP
 			)
 			# Leave the bathroom footprint to its own tile set so the two
-			# materials do not occupy the same surface.
+			# materials do not occupy the same surface. A plank is nearly as
+			# deep/wide as its own grid step, so checking only the center
+			# point let planks whose center sat just outside the boundary
+			# still physically overlap into the bathroom by up to half a
+			# tile. This checks each plank's full edge-to-edge extent
+			# against the bathroom's wall footprint instead, so a plank is
+			# skipped the moment any part of it would overlap.
+			var tile_min_x := tile_position.x - TILE_WIDTH * 0.5
+			var tile_max_x := tile_position.x + TILE_WIDTH * 0.5
+			var tile_min_z := tile_position.z - TILE_DEPTH * 0.5
+			var tile_max_z := tile_position.z + TILE_DEPTH * 0.5
 			if (
-				tile_position.x >= BATHROOM_MIN_X
-				and tile_position.x <= BATHROOM_MAX_X
-				and tile_position.z >= BATHROOM_MIN_Z
-				and tile_position.z <= BATHROOM_MAX_Z
+				tile_max_x >= BATHROOM_MIN_X
+				and tile_min_x <= BATHROOM_MAX_X
+				and tile_max_z >= BATHROOM_MIN_Z
+				and tile_min_z <= BATHROOM_MAX_Z
 			):
 				continue
 			var tile := MeshInstance3D.new()
