@@ -66,20 +66,3 @@ res://
 └── README.md
 ```
 
-## Team
-
-| Member | Responsibilities |
-|---|---|
-| **Soham (Member 1)** | Game manager & countdown timer, player movement/interaction, wire puzzle, pipeline puzzle, fridge task, diamond choice logic, four-branch ending system, repo/branch management |
-| **Member 2** | Dusting & spider web task, furniture task, washroom task, on-screen task instructions, timer UI |
-| **Member 3** | Asset sourcing & crediting, start screen, ending screens, playtesting & bug reports |
-
-## Coding Standards
-
-- **Engine/Language:** Godot 4.x, GDScript only
-- **Files & folders:** `snake_case`
-- **Classes/Nodes:** `PascalCase`
-- **Variables & functions:** `snake_case`
-- **Constants:** `ALL_CAPS`
-- **Signals:** past tense, `snake_case`
-- One script per node/behavior; commit small and often
