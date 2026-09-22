@@ -20,6 +20,25 @@ var canvas: Control
 var status_label: Label
 var connected_count: int = 0
 
+var top_wires: Array[MeshInstance3D] = []
+var bottom_wires: Array[MeshInstance3D] = []
+var top_frays: Array[MeshInstance3D] = []
+var bottom_frays: Array[MeshInstance3D] = []
+var center_ring: MeshInstance3D
+var center_ring_light: OmniLight3D
+var status_light: MeshInstance3D
+
+
+func _ready() -> void:
+	for index in range(4):
+		top_wires.append(get_node_or_null("TopWire%d" % index))
+		bottom_wires.append(get_node_or_null("BottomWire%d" % index))
+		top_frays.append(get_node_or_null("TopFray%d" % index))
+		bottom_frays.append(get_node_or_null("BottomFray%d" % index))
+	center_ring = get_node_or_null("CenterRing")
+	center_ring_light = get_node_or_null("CenterRingLight")
+	status_light = get_node_or_null("StatusLight")
+
 
 func interact() -> void:
 	if is_complete or puzzle_open:
@@ -68,10 +87,25 @@ func _open_puzzle() -> void:
 	var instructions := Label.new()
 	instructions.position = Vector2(24, 54)
 	instructions.size = Vector2(452, 40)
-	instructions.text = "DRAG EACH LEFT WIRE TO ITS MATCHING COLOR AND SHAPE ON THE RIGHT.\nTHE CLOCK IS STILL RUNNING."
+	instructions.text = "DRAG EACH FRAYED WIRE TO ITS MATCHING COLOR AND SHAPE.\nTHE CLOCK IS STILL RUNNING."
 	instructions.add_theme_color_override("font_color", Color(0.68, 0.77, 0.9, 1))
 	instructions.add_theme_font_size_override("font_size", 12)
 	panel.add_child(instructions)
+
+	# The two dark "conduit" columns the wires emerge from, like the
+	# reference - a subtler backdrop than a flat panel.
+	var conduit_style := _panel_style(Color(0.055, 0.06, 0.075, 1.0), Color(0.02, 0.02, 0.03, 1.0), 1)
+	var left_conduit := Panel.new()
+	left_conduit.position = Vector2(4, 104)
+	left_conduit.size = Vector2(74, 340)
+	left_conduit.add_theme_stylebox_override("panel", conduit_style)
+	panel.add_child(left_conduit)
+
+	var right_conduit := Panel.new()
+	right_conduit.position = Vector2(398, 104)
+	right_conduit.size = Vector2(74, 340)
+	right_conduit.add_theme_stylebox_override("panel", conduit_style)
+	panel.add_child(right_conduit)
 
 	canvas = Control.new()
 	canvas.name = "RewireCanvas"
@@ -151,9 +185,38 @@ func _complete_puzzle() -> void:
 	if status_label != null:
 		status_label.text = "WIRING FIXED"
 		status_label.add_theme_color_override("font_color", Color(0.35, 1.0, 0.55, 1))
+	_apply_fixed_visual()
 	completed.emit(task_kind)
 	await get_tree().create_timer(1.0).timeout
 	_close_puzzle()
+
+
+func _apply_fixed_visual() -> void:
+	# The frayed break in each wire disappears and the strand glows
+	# brighter, reading as freshly rejoined.
+	for wire in top_wires + bottom_wires:
+		if wire == null:
+			continue
+		var wire_material := wire.material_override as StandardMaterial3D
+		if wire_material != null:
+			wire_material.emission_energy_multiplier = 2.4
+	for fray in top_frays + bottom_frays:
+		if fray != null:
+			fray.visible = false
+	if center_ring != null:
+		var ring_material := center_ring.material_override as StandardMaterial3D
+		if ring_material != null:
+			ring_material.albedo_color = Color(0.2, 1.0, 0.5, 1)
+			ring_material.emission = Color(0.25, 1.0, 0.5, 1)
+			ring_material.emission_energy_multiplier = 2.6
+	if center_ring_light != null:
+		center_ring_light.light_color = Color(0.3, 1.0, 0.55, 1)
+		center_ring_light.light_energy = 1.8
+	if status_light != null:
+		var status_material := status_light.material_override as StandardMaterial3D
+		if status_material != null:
+			status_material.albedo_color = Color(0.2, 1.0, 0.4, 1)
+			status_material.emission = Color(0.2, 1.0, 0.4, 1)
 
 
 func _close_puzzle() -> void:

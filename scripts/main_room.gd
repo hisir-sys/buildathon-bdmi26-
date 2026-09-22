@@ -23,7 +23,7 @@ var score: int = 50
 var ambience_time: float = 0.0
 var ceiling_lights: Array[OmniLight3D] = []
 var light_bulbs: Array[MeshInstance3D] = []
-var light_base_energy: Array[float] = [0.4, 0.36, 0.32, 0.36, 0.36, 0.32]
+var light_base_energy: Array[float] = [0.22, 0.2, 0.17, 0.2, 0.2, 0.17]
 var lights_fixed: bool = false
 var light_is_on: Array[bool] = []
 var light_next_change: Array[float] = []
@@ -532,36 +532,69 @@ func _build_rewire_panel(world_position: Vector3) -> void:
 	panel.set("task_kind", "panel")
 	panel.add_to_group("interactable")
 	panel.add_to_group("repair_task")
+
+	# Soft cyan halo glowing out from behind the panel, matching the
+	# reference. A big dim omni-light plus a translucent unshaded disc so
+	# the glow reads even without bloom.
+	var halo_light := OmniLight3D.new()
+	halo_light.name = "HaloGlow"
+	halo_light.position = Vector3(0, 0.25, 0.35)
+	halo_light.omni_range = 4.5
+	halo_light.light_energy = 2.0
+	halo_light.light_color = Color(0.25, 0.85, 1.0, 1)
+	panel.add_child(halo_light)
+
+	var halo_material := _material(Color(0.1, 0.4, 0.55, 0.16), Color(0.2, 0.8, 1.0, 1), 1.4)
+	halo_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	halo_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var halo_disc := _cylinder(panel, "HaloDisc", 1.15, 0.01, Vector3(0, 0.05, 0.2), halo_material)
+	halo_disc.rotation_degrees.x = 90.0
+
 	var frame := _material(Color(0.03, 0.045, 0.075, 1))
 	var panel_material := _material(Color(0.05, 0.07, 0.11, 1))
 	_box(panel, "PanelFrame", Vector3(1.35, 1.95, 0.12), Vector3.ZERO, frame)
 	_box(panel, "PanelFace", Vector3(1.05, 1.6, 0.05), Vector3(0, 0, -0.09), panel_material)
 
-	# Colorful wire stubs poking out of the top and bottom edges, like the
-	# reference image - purely visual for now (the drag-to-reconnect
-	# mechanic is a separate, bigger build).
+	# Colorful wire stubs poking out of the top and bottom edges at an
+	# angle, each with a small dark "frayed" tip - broken until the panel
+	# is repaired, at which point the fray caps hide and the wires glow
+	# brighter, reading as freshly reconnected.
 	var stub_colors: Array[Color] = [
 		Color(0.15, 0.85, 0.85, 1),
 		Color(0.55, 0.9, 0.2, 1),
 		Color(1.0, 0.35, 0.75, 1),
 		Color(0.95, 0.8, 0.15, 1)
 	]
+	var tilt_angles: Array[float] = [-22.0, -8.0, 8.0, 22.0]
+	var fray_material := _material(Color(0.32, 0.22, 0.14, 1))
+
 	for index in range(4):
 		var stub_x := -0.4 + index * 0.27
+		var tilt := tilt_angles[index]
 		var top_color := stub_colors[index]
 		var bottom_color := stub_colors[(index + 2) % stub_colors.size()]
-		_box(panel, "TopWire%d" % index, Vector3(0.05, 0.34, 0.05), Vector3(stub_x, 0.97, -0.1), _material(top_color, top_color, 1.2))
-		_box(panel, "BottomWire%d" % index, Vector3(0.05, 0.34, 0.05), Vector3(stub_x, -0.97, -0.1), _material(bottom_color, bottom_color, 1.2))
 
-	# The soft cyan glow floating above the panel, matching the reference.
-	var glow_light := OmniLight3D.new()
-	glow_light.name = "PanelGlow"
-	glow_light.position = Vector3(0, 1.55, 0.3)
-	glow_light.omni_range = 3.0
-	glow_light.light_energy = 1.3
-	glow_light.light_color = Color(0.25, 0.85, 1.0, 1)
-	panel.add_child(glow_light)
-	_sphere(panel, "GlowOrb", 0.12, Vector3(0, 1.55, 0.3), _material(Color(0.4, 0.9, 1.0, 1), Color(0.4, 0.9, 1.0, 1), 3.0))
+		var top_rod := _cylinder(panel, "TopWire%d" % index, 0.035, 0.42, Vector3(stub_x, 0.95, -0.1), _material(top_color, top_color, 1.3))
+		top_rod.rotation_degrees.z = tilt
+		_sphere(panel, "TopFray%d" % index, 0.045, Vector3(stub_x + sin(deg_to_rad(tilt)) * 0.22, 1.16, -0.1), fray_material)
+
+		var bottom_rod := _cylinder(panel, "BottomWire%d" % index, 0.035, 0.42, Vector3(stub_x, -0.95, -0.1), _material(bottom_color, bottom_color, 1.3))
+		bottom_rod.rotation_degrees.z = -tilt
+		_sphere(panel, "BottomFray%d" % index, 0.045, Vector3(stub_x - sin(deg_to_rad(tilt)) * 0.22, -1.16, -0.1), fray_material)
+
+	# The glowing ring at the panel's center - dim amber while broken,
+	# brightens to green once every wire is reconnected.
+	var ring_material := _material(Color(0.6, 0.32, 0.05, 1), Color(1.0, 0.55, 0.1, 1), 1.6)
+	var ring := _torus(panel, "CenterRing", 0.16, 0.11, Vector3(0, 0, -0.1), ring_material)
+	ring.rotation_degrees.x = 90.0
+
+	var ring_light := OmniLight3D.new()
+	ring_light.name = "CenterRingLight"
+	ring_light.position = Vector3(0, 0, 0.2)
+	ring_light.omni_range = 2.2
+	ring_light.light_energy = 1.1
+	ring_light.light_color = Color(1.0, 0.6, 0.15, 1)
+	panel.add_child(ring_light)
 
 	_box(panel, "StatusLight", Vector3(0.12, 0.12, 0.06), Vector3(0.57, 0.45, -0.14), _material(Color(1.0, 0.15, 0.08, 1), Color(1.0, 0.15, 0.08, 1), 2.4))
 	_add_body_collision(panel, Vector3(1.35, 1.95, 0.3), Vector3.ZERO)
@@ -582,10 +615,10 @@ func _process(delta: float) -> void:
 		# Wiring is repaired: lights stop flickering and hold a steady,
 		# properly-lit glow instead.
 		for index in range(ceiling_lights.size()):
-			ceiling_lights[index].light_energy = light_base_energy[index] * 2.2
+			ceiling_lights[index].light_energy = light_base_energy[index] * 3.0
 			var fixed_bulb_material := light_bulbs[index].material_override as StandardMaterial3D
 			if fixed_bulb_material != null:
-				fixed_bulb_material.emission_energy_multiplier = 1.6
+				fixed_bulb_material.emission_energy_multiplier = 1.8
 			light_bulbs[index].visible = true
 		return
 
@@ -606,7 +639,7 @@ func _process(delta: float) -> void:
 
 		var bulb_material := light_bulbs[index].material_override as StandardMaterial3D
 		if bulb_material != null:
-			bulb_material.emission_energy_multiplier = 1.1 if light_is_on[index] else 0.0
+			bulb_material.emission_energy_multiplier = 0.6 if light_is_on[index] else 0.0
 		light_bulbs[index].visible = light_is_on[index]
 
 

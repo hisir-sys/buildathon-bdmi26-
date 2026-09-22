@@ -1,8 +1,16 @@
 extends CanvasLayer
 
+const COLOR_CLEAN := "#ff5c4d"
+const COLOR_MECH := "#4da8ff"
+const COLOR_WASH := "#5cf0a0"
+const COLOR_DONE := "#5c6b82"
+const COLOR_TEXT := "#e4edf7"
+
 @onready var interaction_panel: Control = $InteractionPrompt
+@onready var interaction_key_badge: Control = $InteractionPrompt/KeyBadge
 @onready var interaction_label: Label = $InteractionPrompt/Label
-@onready var task_label: Label = $TaskBoard/TaskLabel
+@onready var task_label: RichTextLabel = $TaskBoard/TaskLabel
+@onready var task_fraction_label: Label = $TaskBoard/Fraction
 @onready var score_label: Label = $ScorePanel/ScoreLabel
 @onready var sound_button: Button = $SoundButton
 @onready var pause_button: Button = $PauseButton
@@ -20,7 +28,12 @@ func _ready() -> void:
 
 func set_interaction_prompt(prompt_text: String) -> void:
 	interaction_panel.visible = not prompt_text.is_empty()
-	interaction_label.text = prompt_text
+	if prompt_text.begins_with("E  "):
+		interaction_key_badge.visible = true
+		interaction_label.text = prompt_text.substr(3)
+	else:
+		interaction_key_badge.visible = false
+		interaction_label.text = prompt_text
 
 
 func set_task_counts(
@@ -31,13 +44,28 @@ func set_task_counts(
 	panel_repaired: int = 0,
 	fridge_cleaned: int = 0
 ) -> void:
-	task_label.text = (
-		"DUSTING                    %d/6\n"
-		+ "REWIRE PANEL              %d/1\n"
-		+ "FRIDGE                     %d/1\n"
-		+ "FURNITURE                 %d/1\n"
-	+ "WASHROOM                  %d/3"
-) % [dust_cleaned, panel_repaired, fridge_cleaned, furniture_placed, bathroom_mirrors_cleaned]
+	var rows := [
+		_task_row("DUSTING", dust_cleaned, 6, COLOR_CLEAN),
+		_task_row("REWIRE PANEL", panel_repaired, 1, COLOR_MECH),
+		_task_row("FRIDGE", fridge_cleaned, 1, COLOR_MECH),
+		_task_row("FURNITURE", furniture_placed, 1, COLOR_CLEAN),
+		_task_row("WASHROOM", bathroom_mirrors_cleaned, 3, COLOR_WASH),
+	]
+	task_label.text = "\n".join(rows)
+
+	var done := int(dust_cleaned >= 6) + panel_repaired + fridge_cleaned + furniture_placed + int(bathroom_mirrors_cleaned >= 3)
+	task_fraction_label.text = "%d/5" % done
+
+
+func _task_row(label_text: String, current: int, total: int, accent_color: String) -> String:
+	var is_done := current >= total
+	var padded_label := label_text
+	while padded_label.length() < 14:
+		padded_label += " "
+	var count_text := "%d/%d" % [current, total]
+	if is_done:
+		return "[color=%s]✓[/color] [s][color=%s]%s %s[/color][/s]" % [accent_color, COLOR_DONE, padded_label, count_text]
+	return "[color=%s]◆[/color] [color=%s]%s[/color] %s" % [accent_color, COLOR_TEXT, padded_label, count_text]
 
 
 func set_score(score: int) -> void:
