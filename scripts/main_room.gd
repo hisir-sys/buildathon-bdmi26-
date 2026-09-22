@@ -3,6 +3,7 @@ extends Node3D
 const DirtyMirrorScript = preload("res://scripts/dirty_mirror.gd")
 const DirtyDoorScript = preload("res://scripts/dirty_door.gd")
 const RepairTaskScript = preload("res://scripts/repair_task.gd")
+const RewireTaskScript = preload("res://scripts/rewire_task.gd")
 const PipelineTaskScript = preload("res://scripts/pipeline_task.gd")
 
 @onready var hud: CanvasLayer = $HUD
@@ -22,7 +23,8 @@ var score: int = 50
 var ambience_time: float = 0.0
 var ceiling_lights: Array[OmniLight3D] = []
 var light_bulbs: Array[MeshInstance3D] = []
-var light_base_energy: Array[float] = [0.55, 0.5, 0.45, 0.5, 0.5, 0.45]
+var light_base_energy: Array[float] = [0.4, 0.36, 0.32, 0.36, 0.36, 0.32]
+var lights_fixed: bool = false
 var light_is_on: Array[bool] = []
 var light_next_change: Array[float] = []
 
@@ -57,7 +59,7 @@ func _ready() -> void:
 	light_is_on.fill(true)
 	light_next_change.resize(ceiling_lights.size())
 	for index in range(light_next_change.size()):
-		light_next_change[index] = randf_range(2.0, 6.0)
+		light_next_change[index] = randf_range(1.2, 3.2)
 	hud.set_task_counts(dust_cleaned, webs_cleared, furniture_placed, bathroom_mirrors_cleaned + bathroom_door_cleaned + bathroom_pipe_cleaned, panel_repaired, fridge_cleaned)
 	hud.set_score(score)
 
@@ -526,11 +528,8 @@ func _build_rewire_panel(world_position: Vector3) -> void:
 	# Mounted on the left wall (mirrors the old right-wall mount), facing
 	# into the room.
 	panel.rotation_degrees.y = 90.0
-	panel.set_script(RepairTaskScript)
+	panel.set_script(RewireTaskScript)
 	panel.set("task_kind", "panel")
-	panel.set("task_label", "REWIRE PANEL")
-	panel.set("action_label", "FIX THE WIRING")
-	panel.set("duration_seconds", 6.0)
 	panel.add_to_group("interactable")
 	panel.add_to_group("repair_task")
 	var frame := _material(Color(0.03, 0.045, 0.075, 1))
@@ -578,16 +577,29 @@ func _add_body_collision(body: StaticBody3D, size: Vector3, local_position: Vect
 	body.add_child(collision)
 func _process(delta: float) -> void:
 	ambience_time += delta
-	# Haunted-house flicker: each light stays fully on for a stretch, then
-	# snaps completely dark for a short beat (not just dimmer - genuinely
-	# off, energy 0), then back on, each on its own staggered schedule.
+
+	if lights_fixed:
+		# Wiring is repaired: lights stop flickering and hold a steady,
+		# properly-lit glow instead.
+		for index in range(ceiling_lights.size()):
+			ceiling_lights[index].light_energy = light_base_energy[index] * 2.2
+			var fixed_bulb_material := light_bulbs[index].material_override as StandardMaterial3D
+			if fixed_bulb_material != null:
+				fixed_bulb_material.emission_energy_multiplier = 1.6
+			light_bulbs[index].visible = true
+		return
+
+	# Haunted-house flicker: each light stays on for a short stretch, then
+	# snaps completely dark for a beat (not just dimmer - genuinely off,
+	# energy 0), then back on, each on its own staggered schedule. Fixing
+	# the wiring panel (above) is what stops this.
 	for index in range(ceiling_lights.size()):
 		if ambience_time >= light_next_change[index]:
 			light_is_on[index] = not light_is_on[index]
 			if light_is_on[index]:
-				light_next_change[index] = ambience_time + randf_range(5.0, 10.0)
+				light_next_change[index] = ambience_time + randf_range(2.0, 4.5)
 			else:
-				light_next_change[index] = ambience_time + randf_range(0.4, 1.1)
+				light_next_change[index] = ambience_time + randf_range(0.2, 0.6)
 
 		var energy := light_base_energy[index] if light_is_on[index] else 0.0
 		ceiling_lights[index].light_energy = energy
@@ -637,6 +649,7 @@ func _on_repair_task_completed(task_kind: String) -> void:
 	match task_kind:
 		"panel":
 			panel_repaired = 1
+			lights_fixed = true
 		"fridge":
 			fridge_cleaned = 1
 		"bathroom_pipe":
