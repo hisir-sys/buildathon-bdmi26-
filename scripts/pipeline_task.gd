@@ -2,6 +2,8 @@ extends StaticBody3D
 
 signal completed(task_kind: String)
 
+const PipeCellIconScript = preload("res://scripts/pipe_cell_icon.gd")
+
 const GRID_COLUMNS := 4
 const GRID_ROWS := 3
 const UP := 1
@@ -19,6 +21,7 @@ var is_complete: bool = false
 var puzzle_open: bool = false
 var overlay: CanvasLayer
 var cell_buttons: Array[Button] = []
+var cell_icons: Array[Control] = []
 var status_label: Label
 var current_masks: Array[int] = []
 # Defines each slot's fixed pipe shape (used only to seed current_masks below
@@ -134,6 +137,7 @@ func _open_puzzle() -> void:
 	panel.add_child(outlet)
 
 	cell_buttons.clear()
+	cell_icons.clear()
 	for index in range(current_masks.size()):
 		var cell := Button.new()
 		var column := index % GRID_COLUMNS
@@ -141,15 +145,20 @@ func _open_puzzle() -> void:
 		cell.position = Vector2(70 + column * 112, 163 + row * 100)
 		cell.size = Vector2(104, 92)
 		cell.focus_mode = Control.FOCUS_NONE
-		cell.add_theme_font_size_override("font_size", 42)
-		cell.add_theme_color_override("font_color", Color(0.53, 0.63, 0.78, 1))
-		cell.add_theme_color_override("font_hover_color", Color(0.8, 0.9, 1.0, 1))
+		cell.text = ""
 		cell.add_theme_stylebox_override("normal", _panel_style(Color(0.06, 0.12, 0.23, 1), Color(0.1, 0.2, 0.36, 1), 1))
 		cell.add_theme_stylebox_override("hover", _panel_style(Color(0.09, 0.18, 0.32, 1), Color(0.2, 0.55, 0.75, 1), 2))
 		cell.add_theme_stylebox_override("pressed", _panel_style(Color(0.04, 0.1, 0.2, 1), Color(0.25, 0.8, 1.0, 1), 2))
 		cell.pressed.connect(_on_cell_pressed.bind(index))
 		panel.add_child(cell)
 		cell_buttons.append(cell)
+
+		var icon := Control.new()
+		icon.set_script(PipeCellIconScript)
+		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		icon.set_anchors_preset(Control.PRESET_FULL_RECT)
+		cell.add_child(icon)
+		cell_icons.append(icon)
 
 	status_label = Label.new()
 	status_label.name = "PipelineStatus"
@@ -191,15 +200,14 @@ func _on_cell_pressed(index: int) -> void:
 func _refresh_cells() -> void:
 	var connected := _compute_connected_cells()
 	for index in range(cell_buttons.size()):
-		var cell := cell_buttons[index]
-		cell.text = _mask_symbol(current_masks[index])
-		cell.tooltip_text = "Rotate pipe"
+		var icon := cell_icons[index] as Control
+		icon.set("mask", current_masks[index])
 		if connected[index]:
-			cell.add_theme_color_override("font_color", Color(0.65, 0.97, 1.0, 1))
-			cell.add_theme_stylebox_override("normal", _panel_style(Color(0.06, 0.32, 0.5, 1), Color(0.2, 0.85, 1.0, 1), 2))
+			icon.set("line_color", Color(0.35, 0.95, 1.0, 1))
+			cell_buttons[index].add_theme_stylebox_override("normal", _panel_style(Color(0.06, 0.32, 0.5, 1), Color(0.2, 0.85, 1.0, 1), 2))
 		else:
-			cell.add_theme_color_override("font_color", Color(0.38, 0.48, 0.64, 1))
-			cell.add_theme_stylebox_override("normal", _panel_style(Color(0.06, 0.12, 0.23, 1), Color(0.1, 0.2, 0.36, 1), 1))
+			icon.set("line_color", Color(0.44, 0.53, 0.68, 1))
+			cell_buttons[index].add_theme_stylebox_override("normal", _panel_style(Color(0.06, 0.12, 0.23, 1), Color(0.1, 0.2, 0.36, 1), 1))
 
 	if connected[OUTLET_INDEX] and (current_masks[OUTLET_INDEX] & RIGHT):
 		_complete_puzzle()
@@ -287,42 +295,6 @@ func _rotate_mask(mask: int, turns: int) -> int:
 			rotated |= UP
 		result = rotated
 	return result
-
-
-func _mask_symbol(mask: int) -> String:
-	match mask:
-		1:
-			return "╵"
-		2:
-			return "╴"
-		3:
-			return "└"
-		4:
-			return "╷"
-		5:
-			return "│"
-		6:
-			return "┌"
-		7:
-			return "├"
-		8:
-			return "╶"
-		9:
-			return "┘"
-		10:
-			return "─"
-		11:
-			return "┴"
-		12:
-			return "┐"
-		13:
-			return "┤"
-		14:
-			return "┬"
-		15:
-			return "┼"
-		_:
-			return "·"
 
 
 func _panel_style(background: Color, border: Color, border_width: int) -> StyleBoxFlat:

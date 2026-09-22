@@ -1,44 +1,85 @@
-# The Cleaner - bathroom layout V24
+# The Cleaner
 
-## Run
+A first-person, timed cleaning-and-repair game built in **Godot 4.7.2** with **GDScript**, made for a Buildathon.
 
-1. Extract this folder.
-2. Open `project.godot` in Godot 4.7.2.
-3. Press **F5**.
+## Story
+
+Lucas works for a wealthy homeowner who leaves him a simple job: clean and fix up the house, no rush — he's got 6 hours. Lucas gets to work.
+
+Then a message comes in. The owner isn't gone for 6 hours after all — she's on her way back **right now**, and will be home in **10 minutes**.
+
+Lucas has 10 minutes to get as much done as he can before the front door opens.
+
+Along the way, Lucas finds a locked chest holding an **antique diamond**. Nobody's watching. Nobody would know.
+
+What Lucas does next — and how much of the house actually got fixed — decides how the night ends.
+
+## Objective
+
+You have **10 minutes**. Fix and clean whatever you can, in any order you like:
+
+- Reconnect the **electrical wiring** — pick the right wire before the circuit blows
+- Repair the **broken pipeline** — drag the segments back into place
+- Get the **fridge** back where it belongs and plugged in
+- Clear the **piled-up furniture**
+- **Dust** the room and clear the spider webs
+- Scrub the **washroom** clean
+
+Along the way, decide: **take the diamond, or leave it.**
 
 ## Controls
 
-- **WASD**: move
-- **Mouse**: look around
-- **E**: interact with dust, spider webs, furniture, and bathroom fixtures
-- **SPACE**: open/close the bathroom door (only while looking at it)
-- **Escape**: release or recapture the mouse
+| Input | Action |
+|---|---|
+| **WASD** | Move |
+| **Mouse** | Look around |
+| **E** | Interact with dust, spider webs, furniture, wiring, pipes, fridge, and bathroom fixtures |
+| **Space** | Open/close the bathroom door (only while looking at it) |
+| **Escape** | Release or recapture the mouse cursor |
 
-The room now has a 10-minute countdown, a ceiling, blinking colored ceiling lights, a 40-column by 20-row wooden tiled floor, a first-person mop handle, six scattered yellow-gold dust piles, four corner spider webs, and the sofa pickup/place task.
+## Endings
 
-The latest floor-plan pass also adds:
+How the night ends depends on two things: **how much of the house got fixed**, and **whether the diamond was taken**.
 
-- A mop station and rug on the back wall
-- A sofa placement zone and cabinet on the right side
-- A TV centered on the front wall
-- A broken-floor area on the front-left
-- A closed bathroom built inside the back-right corner of the main room
-- A commode, basin, and dirty mirror that takes 8 seconds to clean
-- A compact score/task HUD with sound and pause controls
-- A hanging red-bulb lamp, refrigerator, and rewire panel
-- A visible falling-water leak and puddle at the bathroom pipe that stop once it's reconnected
-- Interactions for cleaning the refrigerator, opening the pipeline puzzle, and rewiring the panel
-- The bathroom mirror remains in place after cleaning; only its dirt disappears
-- The bathroom stays inside the original room footprint; it does not expand the main room
-- The bathroom is compacted with a bathtub, improved toilet, and dirty mirror
-- The bathroom uses its own tile surface without overlapping the main-room floor tiles
-- Spider webs are currently removed from the playable room and task board; they can be reintroduced later
-- A wall-mounted storage rack on the bathroom's left wall, moved away from the basin, with its open shelf side facing the bathtub
-- A bathroom door sized up from the previous pass and shifted further left along the front wall (away from the commode/tub corner), resting slightly ajar; SPACE swings it fully open/closed while E still wipes the dust off it (6 seconds), counted toward WASHROOM (now 0/3)
-- The only pipeline in the game is now the bathroom one, mounted on its right wall near the bathtub - the old main-room pipe and the broken-mirror "window" beside it have been removed, and the PIPELINE line is gone from the task board (its progress is tracked under WASHROOM instead)
-- The pipeline puzzle now does a live connectivity check: as you rotate segments, any unbroken run of pipe from the inlet lights up cyan in real time and goes dark again the instant a rotation breaks it - it solves the moment the lit run reaches the outlet, not by matching one fixed layout. On solve it shows "FLOW RESTORED — WATER RUNNING" for a beat before the panel closes
-- Fixed the floor-tile seam for real: the previous fix only checked each plank's center point against the bathroom boundary, but a plank is nearly as deep as its own grid step, so a plank could still visually overlap into the bathroom by up to half a tile even with its center outside the line. The check now compares each plank's full edge-to-edge extent, so nothing overlaps
+- **Full Pay** — the house is in order, and the diamond stayed put.
+- **Docked Pay** — some tasks were left unfinished.
+- **No Pay** — most of the house is still a mess when the owner walks in.
+- **Caught Red-Handed** — the diamond went missing, and it gets noticed.
 
-These props are generated from code at runtime, so the ZIP stays self-contained and does not need downloaded textures or 3D assets.
+## Running the Game
 
-Dust and web tasks take 10 seconds each. Look at a task and press **E** once to start cleaning; the interaction prompt shows live progress until it disappears.
+1. Extract/clone this folder.
+2. Open `project.godot` in **Godot 4.7.2**.
+3. Press **F5** to run.
+
+## Project Structure
+
+```
+res://
+├── scenes/          # .tscn files, one folder per major scene/task
+├── scripts/         # .gd files, mirrors scenes/
+├── assets/
+│   ├── sprites/
+│   ├── audio/
+│   └── fonts/
+├── ui/               # menus, HUD, prompts, pause screen
+└── README.md
+```
+
+## Team
+
+| Member | Responsibilities |
+|---|---|
+| **Soham (Member 1)** | Game manager & countdown timer, player movement/interaction, wire puzzle, pipeline puzzle, fridge task, diamond choice logic, four-branch ending system, repo/branch management |
+| **Member 2** | Dusting & spider web task, furniture task, washroom task, on-screen task instructions, timer UI |
+| **Member 3** | Asset sourcing & crediting, start screen, ending screens, playtesting & bug reports |
+
+## Coding Standards
+
+- **Engine/Language:** Godot 4.x, GDScript only
+- **Files & folders:** `snake_case`
+- **Classes/Nodes:** `PascalCase`
+- **Variables & functions:** `snake_case`
+- **Constants:** `ALL_CAPS`
+- **Signals:** past tense, `snake_case`
+- One script per node/behavior; commit small and often

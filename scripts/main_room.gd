@@ -22,7 +22,9 @@ var score: int = 50
 var ambience_time: float = 0.0
 var ceiling_lights: Array[OmniLight3D] = []
 var light_bulbs: Array[MeshInstance3D] = []
-var light_base_energy: Array[float] = [1.8, 1.65, 1.3]
+var light_base_energy: Array[float] = [0.55, 0.5, 0.45, 0.5, 0.5, 0.45]
+var light_is_on: Array[bool] = []
+var light_next_change: Array[float] = []
 
 
 func _ready() -> void:
@@ -49,8 +51,13 @@ func _ready() -> void:
 	for repair_task in get_tree().get_nodes_in_group("repair_task"):
 		repair_task.completed.connect(_on_repair_task_completed)
 
-	ceiling_lights = [$CeilingLightLeft, $CeilingLightRight, $CeilingLightBack]
-	light_bulbs = [$BlueBulb, $AmberBulb, $GreenBulb]
+	ceiling_lights = [$CeilingLightLeft, $CeilingLightRight, $CeilingLightBack, $CeilingLightFrontLeft, $CeilingLightFrontRight, $CeilingLightCenter]
+	light_bulbs = [$BlueBulb, $AmberBulb, $GreenBulb, $FrontLeftBulb, $FrontRightBulb, $CenterBulb]
+	light_is_on.resize(ceiling_lights.size())
+	light_is_on.fill(true)
+	light_next_change.resize(ceiling_lights.size())
+	for index in range(light_next_change.size()):
+		light_next_change[index] = randf_range(2.0, 6.0)
 	hud.set_task_counts(dust_cleaned, webs_cleared, furniture_placed, bathroom_mirrors_cleaned + bathroom_door_cleaned + bathroom_pipe_cleaned, panel_repaired, fridge_cleaned)
 	hud.set_score(score)
 
@@ -149,7 +156,7 @@ func _add_front_wall() -> void:
 	wall.position = Vector3(0.0, 2.0, 10.0)
 	add_child(wall)
 
-	var wall_material := _material(Color(0.095, 0.12, 0.19, 1))
+	var wall_material := _material(Color(0.78, 0.74, 0.5, 1))
 	_box(wall, "MeshInstance3D", Vector3(20.0, 4.0, 0.2), Vector3.ZERO, wall_material)
 	var collision := CollisionShape3D.new()
 	var shape := BoxShape3D.new()
@@ -220,7 +227,7 @@ func _build_broken_floor(world_position: Vector3) -> void:
 
 
 func _build_bathroom() -> void:
-	var wall_material := _material(Color(0.16, 0.2, 0.27, 1))
+	var wall_material := _material(Color(0.75, 0.71, 0.48, 1))
 	var bathroom_floor := _material(Color(0.24, 0.27, 0.3, 1))
 	var bathroom_ceiling := _material(Color(0.08, 0.1, 0.15, 1))
 
@@ -466,7 +473,7 @@ func _build_bathroom_pipe(parent: Node3D) -> void:
 func _build_reference_game_props() -> void:
 	_build_hanging_lamp(Vector3(0.0, 0.0, 0.0))
 	_build_refrigerator(Vector3(-7.15, 0.0, -1.0))
-	_build_rewire_panel(Vector3(9.78, 2.4, -3.7))
+	_build_rewire_panel(Vector3(-9.78, 2.2, -4.5))
 
 
 func _build_hanging_lamp(world_position: Vector3) -> void:
@@ -516,24 +523,49 @@ func _build_rewire_panel(world_position: Vector3) -> void:
 	var panel := StaticBody3D.new()
 	panel.name = "RewirePanel"
 	panel.position = world_position
-	panel.rotation_degrees.y = -90.0
+	# Mounted on the left wall (mirrors the old right-wall mount), facing
+	# into the room.
+	panel.rotation_degrees.y = 90.0
 	panel.set_script(RepairTaskScript)
 	panel.set("task_kind", "panel")
 	panel.set("task_label", "REWIRE PANEL")
-	panel.set("action_label", "REWIRE PANEL")
+	panel.set("action_label", "FIX THE WIRING")
 	panel.set("duration_seconds", 6.0)
 	panel.add_to_group("interactable")
 	panel.add_to_group("repair_task")
 	var frame := _material(Color(0.03, 0.045, 0.075, 1))
-	var panel_material := _material(Color(0.16, 0.2, 0.28, 1))
-	var red := _material(Color(1.0, 0.15, 0.08, 1), Color(0.8, 0.02, 0.01, 1), 2.4)
-	_box(panel, "PanelFrame", Vector3(1.9, 1.55, 0.12), Vector3.ZERO, frame)
-	_box(panel, "PanelFace", Vector3(1.55, 1.18, 0.05), Vector3(0, 0, -0.09), panel_material)
+	var panel_material := _material(Color(0.05, 0.07, 0.11, 1))
+	_box(panel, "PanelFrame", Vector3(1.35, 1.95, 0.12), Vector3.ZERO, frame)
+	_box(panel, "PanelFace", Vector3(1.05, 1.6, 0.05), Vector3(0, 0, -0.09), panel_material)
+
+	# Colorful wire stubs poking out of the top and bottom edges, like the
+	# reference image - purely visual for now (the drag-to-reconnect
+	# mechanic is a separate, bigger build).
+	var stub_colors: Array[Color] = [
+		Color(0.15, 0.85, 0.85, 1),
+		Color(0.55, 0.9, 0.2, 1),
+		Color(1.0, 0.35, 0.75, 1),
+		Color(0.95, 0.8, 0.15, 1)
+	]
 	for index in range(4):
-		var wire := _box(panel, "Wire%d" % index, Vector3(0.06, 0.75, 0.025), Vector3(-0.5 + index * 0.32, 0, -0.13), red)
-		wire.rotation_degrees.z = -18.0 + index * 10.0
-	_box(panel, "StatusLight", Vector3(0.12, 0.12, 0.06), Vector3(0.57, 0.45, -0.14), red)
-	_add_body_collision(panel, Vector3(1.9, 1.55, 0.3), Vector3.ZERO)
+		var stub_x := -0.4 + index * 0.27
+		var top_color := stub_colors[index]
+		var bottom_color := stub_colors[(index + 2) % stub_colors.size()]
+		_box(panel, "TopWire%d" % index, Vector3(0.05, 0.34, 0.05), Vector3(stub_x, 0.97, -0.1), _material(top_color, top_color, 1.2))
+		_box(panel, "BottomWire%d" % index, Vector3(0.05, 0.34, 0.05), Vector3(stub_x, -0.97, -0.1), _material(bottom_color, bottom_color, 1.2))
+
+	# The soft cyan glow floating above the panel, matching the reference.
+	var glow_light := OmniLight3D.new()
+	glow_light.name = "PanelGlow"
+	glow_light.position = Vector3(0, 1.55, 0.3)
+	glow_light.omni_range = 3.0
+	glow_light.light_energy = 1.3
+	glow_light.light_color = Color(0.25, 0.85, 1.0, 1)
+	panel.add_child(glow_light)
+	_sphere(panel, "GlowOrb", 0.12, Vector3(0, 1.55, 0.3), _material(Color(0.4, 0.9, 1.0, 1), Color(0.4, 0.9, 1.0, 1), 3.0))
+
+	_box(panel, "StatusLight", Vector3(0.12, 0.12, 0.06), Vector3(0.57, 0.45, -0.14), _material(Color(1.0, 0.15, 0.08, 1), Color(1.0, 0.15, 0.08, 1), 2.4))
+	_add_body_collision(panel, Vector3(1.35, 1.95, 0.3), Vector3.ZERO)
 	add_child(panel)
 
 
@@ -546,17 +578,24 @@ func _add_body_collision(body: StaticBody3D, size: Vector3, local_position: Vect
 	body.add_child(collision)
 func _process(delta: float) -> void:
 	ambience_time += delta
+	# Haunted-house flicker: each light stays fully on for a stretch, then
+	# snaps completely dark for a short beat (not just dimmer - genuinely
+	# off, energy 0), then back on, each on its own staggered schedule.
 	for index in range(ceiling_lights.size()):
-		var pulse := 0.62 + 0.38 * (0.5 + 0.5 * sin(ambience_time * (1.15 + index * 0.16) + index * 2.0))
-		var glitch_wave := sin(ambience_time * (3.3 + index * 0.45) + index * 1.7)
-		var glitch := 0.38 if glitch_wave > 0.94 else 1.0
-		var energy := light_base_energy[index] * pulse * glitch
+		if ambience_time >= light_next_change[index]:
+			light_is_on[index] = not light_is_on[index]
+			if light_is_on[index]:
+				light_next_change[index] = ambience_time + randf_range(5.0, 10.0)
+			else:
+				light_next_change[index] = ambience_time + randf_range(0.4, 1.1)
+
+		var energy := light_base_energy[index] if light_is_on[index] else 0.0
 		ceiling_lights[index].light_energy = energy
 
 		var bulb_material := light_bulbs[index].material_override as StandardMaterial3D
 		if bulb_material != null:
-			bulb_material.emission_energy_multiplier = 2.5 * pulse * glitch
-		light_bulbs[index].visible = energy > light_base_energy[index] * 0.3
+			bulb_material.emission_energy_multiplier = 1.1 if light_is_on[index] else 0.0
+		light_bulbs[index].visible = light_is_on[index]
 
 
 func _on_dust_cleaned() -> void:
