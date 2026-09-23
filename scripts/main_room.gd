@@ -6,9 +6,11 @@ const RepairTaskScript = preload("res://scripts/repair_task.gd")
 const RewireTaskScript = preload("res://scripts/rewire_task.gd")
 const PipelineTaskScript = preload("res://scripts/pipeline_task.gd")
 const FurnitureScript = preload("res://scripts/sofa_interactable.gd")
+const PowerSwitchScript = preload("res://scripts/power_switch.gd")
 
 @onready var hud: CanvasLayer = $HUD
 @onready var interaction_ray: RayCast3D = $Player/Head/Camera3D/InteractionRay
+@onready var player: PlayerController = $Player
 @onready var sofa: StaticBody3D = $Sofa
 @onready var game_manager: Node = $GameManager
 @onready var world_environment: WorldEnvironment = $WorldEnvironment
@@ -32,10 +34,15 @@ var light_is_on: Array[bool] = []
 var light_next_change: Array[float] = []
 var repair_spotlights: Array[SpotLight3D] = []
 var repair_bulbs: Array[MeshInstance3D] = []
+var fridge_status_light: MeshInstance3D
+var fridge_interior_light: OmniLight3D
+var fridge_is_powered: bool = false
 
 
 func _ready() -> void:
 	interaction_ray.target_changed.connect(hud.set_interaction_prompt)
+	player.tool_selected.connect(hud.set_active_tool)
+	hud.set_active_tool(player.current_tool)
 
 	game_manager.time_changed.connect(hud.set_timer)
 	game_manager.time_expired.connect(_on_time_expired)
@@ -202,10 +209,21 @@ func _build_rug(world_position: Vector3) -> void:
 
 
 func _build_cabinet(world_position: Vector3) -> void:
-	var root := StaticBody3D.new()
-	root.name = "Cabinet"
-	root.position = world_position
-	add_child(root)
+	# The cabinet is already standing in place at game start (no corner pile,
+	# no pink target) but stays pick-up-and-move-able like the rest of the
+	# furniture.
+	var root := _new_furniture_item(
+		"Cabinet",
+		"CABINET",
+		world_position,
+		world_position,
+		Vector3(2.6, 0.04, 1.35),
+		Vector3.ZERO,
+		0.55,
+		Vector3.ZERO,
+		true,
+		false
+	)
 	var wood := _material(Color(0.28, 0.12, 0.055, 1))
 	var trim := _material(Color(0.56, 0.27, 0.09, 1))
 	_box(root, "CabinetBody", Vector3(2.5, 2.2, 1.25), Vector3(0, 1.1, 0), wood)
@@ -242,16 +260,18 @@ func _build_broken_floor(world_position: Vector3) -> void:
 
 
 func _build_furniture_items() -> void:
-	# The furniture starts compactly stacked in the front-right corner. Each
-	# item gets its own pink footprint only after the player picks it up.
+	# The furniture starts scrambled in a loose, overlapping pile in the
+	# front-right corner - not a neat row - so it reads as "not put away
+	# yet". Each item gets its own pink footprint only after it's picked up.
 	var table := _new_furniture_item(
 		"DiningTable",
 		"DINING TABLE",
-		Vector3(6.0, 0.0, 4.8),
+		Vector3(6.5, 0.0, 4.35),
 		Vector3(-5.8, 0.0, -6.2),
 		Vector3(2.9, 0.04, 1.65),
 		Vector3(0.0, 0.0, 0.0),
-		0.72
+		0.72,
+		Vector3(0.0, 16.0, 0.0)
 	)
 	var table_wood := _material(Color(0.36, 0.16, 0.065, 1))
 	var table_trim := _material(Color(0.58, 0.28, 0.1, 1))
@@ -270,22 +290,24 @@ func _build_furniture_items() -> void:
 	var chair_a := _new_furniture_item(
 		"DiningChairA",
 		"CHAIR 1",
-		Vector3(7.9, 0.0, 4.65),
+		Vector3(8.3, 0.0, 5.3),
 		Vector3(-5.8, 0.0, -4.55),
 		Vector3(0.95, 0.04, 0.95),
 		Vector3(0.0, 0.0, 0.0),
-		0.82
+		0.82,
+		Vector3(0.0, -32.0, 0.0)
 	)
 	_build_dining_chair_meshes(chair_a)
 
 	var chair_b := _new_furniture_item(
 		"DiningChairB",
 		"CHAIR 2",
-		Vector3(7.9, 0.0, 3.25),
+		Vector3(7.35, 0.0, 2.5),
 		Vector3(-5.8, 0.0, -7.85),
 		Vector3(0.95, 0.04, 0.95),
 		Vector3(0.0, 180.0, 0.0),
-		0.82
+		0.82,
+		Vector3(0.0, 205.0, 0.0)
 	)
 	_build_dining_chair_meshes(chair_b)
 
@@ -297,19 +319,25 @@ func _new_furniture_item(
 	target_position: Vector3,
 	highlight_size: Vector3,
 	target_rotation: Vector3,
-	carry_scale: float
+	carry_scale: float,
+	start_rotation: Vector3 = Vector3.ZERO,
+	starts_placed: bool = false,
+	join_task_group: bool = true
 ) -> StaticBody3D:
 	var item := StaticBody3D.new()
 	item.name = node_name
 	item.position = start_position
+	item.rotation_degrees = start_rotation
 	item.set_script(FurnitureScript)
 	item.set("item_label", label)
 	item.set("placement_position", target_position)
 	item.set("placement_rotation_degrees", target_rotation)
 	item.set("highlight_size", highlight_size)
 	item.set("carry_scale", carry_scale)
+	item.set("starts_placed", starts_placed)
 	item.add_to_group("interactable")
-	item.add_to_group("furniture_item")
+	if join_task_group:
+		item.add_to_group("furniture_item")
 	add_child(item)
 	return item
 
@@ -651,9 +679,33 @@ func _build_refrigerator(world_position: Vector3) -> void:
 	_box(fridge, "FridgeDoor", Vector3(1.95, 1.95, 0.06), Vector3(0, 1.2, -0.7), door)
 	_box(fridge, "FreezerHandle", Vector3(0.08, 0.62, 0.08), Vector3(0.78, 2.72, -0.78), handle)
 	_box(fridge, "FridgeHandle", Vector3(0.08, 1.2, 0.08), Vector3(0.78, 1.2, -0.78), handle)
-	_box(fridge, "StatusLight", Vector3(0.12, 0.12, 0.06), Vector3(-0.72, 3.0, -0.78), _material(Color(0.95, 0.2, 0.12, 1), Color(0.8, 0.04, 0.02, 1), 2.5))
+	fridge_status_light = _box(fridge, "StatusLight", Vector3(0.12, 0.12, 0.06), Vector3(-0.72, 3.0, -0.78), _material(Color(0.35, 0.08, 0.06, 1), Color(0.35, 0.08, 0.06, 1), 1.0))
 	_add_body_collision(fridge, Vector3(2.15, 3.35, 1.35), Vector3(0, 1.68, 0))
 	add_child(fridge)
+
+	fridge_interior_light = OmniLight3D.new()
+	fridge_interior_light.name = "FridgeInteriorGlow"
+	fridge_interior_light.position = world_position + Vector3(0, 1.5, -0.9)
+	fridge_interior_light.omni_range = 2.2
+	fridge_interior_light.light_energy = 0.0
+	fridge_interior_light.light_color = Color(0.75, 0.9, 1.0, 1)
+	add_child(fridge_interior_light)
+
+	# The switch that actually powers the fridge, mounted on the wall
+	# right beside it.
+	var switch := StaticBody3D.new()
+	switch.name = "FridgeSwitch"
+	switch.position = world_position + Vector3(1.55, 1.3, -0.7)
+	switch.set_script(PowerSwitchScript)
+	switch.set("label_text", "FRIDGE")
+	switch.add_to_group("interactable")
+	var plate := _material(Color(0.85, 0.85, 0.82, 1))
+	_box(switch, "Plate", Vector3(0.22, 0.32, 0.04), Vector3.ZERO, plate)
+	var lever := _box(switch, "Lever", Vector3(0.08, 0.14, 0.05), Vector3(0, 0.04, -0.03), _material(Color(0.1, 0.1, 0.12, 1)))
+	lever.rotation_degrees.x = 30.0
+	_sphere(switch, "Indicator", 0.03, Vector3(0, -0.11, -0.03), _material(Color(0.5, 0.08, 0.06, 1), Color(0.5, 0.08, 0.06, 1), 1.0))
+	switch.connect("toggled", _on_fridge_switch_toggled)
+	add_child(switch)
 
 
 func _build_rewire_panel(world_position: Vector3) -> void:
@@ -803,6 +855,18 @@ func _on_web_cleared() -> void:
 	score += 5
 	hud.set_task_counts(dust_cleaned, webs_cleared, furniture_placed, bathroom_mirrors_cleaned + bathroom_door_cleaned + bathroom_pipe_cleaned, panel_repaired, fridge_cleaned)
 	hud.set_score(score)
+
+
+func _on_fridge_switch_toggled(is_on: bool) -> void:
+	fridge_is_powered = is_on
+	fridge_interior_light.light_energy = 1.1 if is_on else 0.0
+	var status_material := fridge_status_light.material_override as StandardMaterial3D
+	if status_material != null:
+		var lit_color := Color(0.2, 1.0, 0.4, 1)
+		var dead_color := Color(0.35, 0.08, 0.06, 1)
+		status_material.albedo_color = lit_color if is_on else dead_color
+		status_material.emission = lit_color if is_on else dead_color
+		status_material.emission_energy_multiplier = 2.4 if is_on else 1.0
 
 
 func _on_furniture_placed() -> void:

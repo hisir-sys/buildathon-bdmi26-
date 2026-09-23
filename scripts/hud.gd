@@ -14,6 +14,12 @@ const COLOR_TEXT := "#e4edf7"
 @onready var score_label: Label = $ScorePanel/ScoreLabel
 @onready var sound_button: Button = $SoundButton
 @onready var pause_button: Button = $PauseButton
+@onready var hotbar_slots: Array[Panel] = [$Hotbar/Slot0, $Hotbar/Slot1, $Hotbar/Slot2, $Hotbar/Slot3]
+
+const HOTBAR_ACTIVE_BORDER := Color(1, 0.8, 0.3, 1)
+const HOTBAR_NORMAL_BORDER := Color(0.14, 0.45, 0.62, 0.55)
+const HOTBAR_ACTIVE_BG := Color(0.07, 0.1, 0.16, 0.97)
+const HOTBAR_NORMAL_BG := Color(0.03, 0.05, 0.1, 0.85)
 
 var sound_enabled: bool = true
 var is_paused: bool = false
@@ -87,6 +93,22 @@ func set_timer(seconds_left: int) -> void:
 
 func set_time_expired() -> void:
 	$TimerPanel/TimerLabel.text = "00:00"
+
+
+func set_active_tool(tool_index: int) -> void:
+	for index in range(hotbar_slots.size()):
+		var style := hotbar_slots[index].get_theme_stylebox("panel").duplicate() as StyleBoxFlat
+		if style == null:
+			continue
+		var is_active := index == tool_index
+		style.border_color = HOTBAR_ACTIVE_BORDER if is_active else HOTBAR_NORMAL_BORDER
+		var border_width := 3 if is_active else 1
+		style.border_width_left = border_width
+		style.border_width_top = border_width
+		style.border_width_right = border_width
+		style.border_width_bottom = border_width
+		style.bg_color = HOTBAR_ACTIVE_BG if is_active else HOTBAR_NORMAL_BG
+		hotbar_slots[index].add_theme_stylebox_override("panel", style)
 
 
 func _toggle_sound() -> void:

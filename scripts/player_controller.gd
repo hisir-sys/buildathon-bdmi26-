@@ -1,6 +1,8 @@
 extends CharacterBody3D
 class_name PlayerController
 
+signal tool_selected(tool_index: int)
+
 @export var move_speed: float = 4.5
 @export var mouse_sensitivity: float = 0.0025
 @export var gravity: float = 18.0
@@ -9,11 +11,20 @@ class_name PlayerController
 @onready var camera: Camera3D = $Head/Camera3D
 
 var camera_pitch: float = 0.0
+var current_tool: int = 0
+var tool_nodes: Array[Node3D] = []
 
 
 func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	camera.current = true
+	tool_nodes = [
+		camera.get_node("Mop"),
+		camera.get_node("Scrubber"),
+		camera.get_node("Cloth"),
+		camera.get_node("ElectricalKit"),
+	]
+	_select_tool(0)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -38,6 +49,24 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+
+	elif event is InputEventKey and event.pressed and not event.echo:
+		match event.keycode:
+			KEY_1:
+				_select_tool(0)
+			KEY_2:
+				_select_tool(1)
+			KEY_3:
+				_select_tool(2)
+			KEY_4:
+				_select_tool(3)
+
+
+func _select_tool(index: int) -> void:
+	current_tool = index
+	for tool_index in range(tool_nodes.size()):
+		tool_nodes[tool_index].visible = (tool_index == index)
+	tool_selected.emit(index)
 
 
 func _physics_process(delta: float) -> void:

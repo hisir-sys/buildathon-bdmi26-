@@ -24,18 +24,18 @@ corner_radius_bottom_right = 22
 corner_radius_bottom_left = 22
 
 [sub_resource type="StyleBoxFlat" id="StyleBox_herotimer"]
-bg_color = Color(0.024, 0.045, 0.095, 0.92)
+bg_color = Color(0.022, 0.04, 0.088, 0.95)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
-border_color = Color(0.14, 0.45, 0.62, 0.55)
+border_color = Color(0.35, 0.72, 0.95, 0.75)
 corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
-shadow_color = Color(0, 0, 0, 0.35)
-shadow_size = 10
+shadow_color = Color(0.12, 0.45, 0.85, 0.4)
+shadow_size = 18
 
 [sub_resource type="StyleBoxFlat" id="StyleBox_skip"]
 bg_color = Color(0.06, 0.08, 0.12, 0.75)
@@ -275,16 +275,97 @@ pivot_offset = Vector2(135, 34)
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBox_herotimer")
 
+[node name="TopSheen" type="ColorRect" parent="HeroTimerPanel"]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 1.0
+offset_right = 260.0
+offset_bottom = 3.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.08)
+
+[node name="CornerTL_H" type="ColorRect" parent="HeroTimerPanel"]
+layout_mode = 0
+offset_left = -3.0
+offset_top = -3.0
+offset_right = 11.0
+offset_bottom = -1.0
+mouse_filter = 2
+color = Color(1, 0.8, 0.35, 0.9)
+
+[node name="CornerTL_V" type="ColorRect" parent="HeroTimerPanel"]
+layout_mode = 0
+offset_left = -3.0
+offset_top = -3.0
+offset_right = -1.0
+offset_bottom = 11.0
+mouse_filter = 2
+color = Color(1, 0.8, 0.35, 0.9)
+
+[node name="CornerTR_H" type="ColorRect" parent="HeroTimerPanel"]
+layout_mode = 0
+offset_left = 259.0
+offset_top = -3.0
+offset_right = 273.0
+offset_bottom = -1.0
+mouse_filter = 2
+color = Color(1, 0.8, 0.35, 0.9)
+
+[node name="CornerTR_V" type="ColorRect" parent="HeroTimerPanel"]
+layout_mode = 0
+offset_left = 271.0
+offset_top = -3.0
+offset_right = 273.0
+offset_bottom = 11.0
+mouse_filter = 2
+color = Color(1, 0.8, 0.35, 0.9)
+
+[node name="CornerBL_H" type="ColorRect" parent="HeroTimerPanel"]
+layout_mode = 0
+offset_left = -3.0
+offset_top = 69.0
+offset_right = 11.0
+offset_bottom = 71.0
+mouse_filter = 2
+color = Color(1, 0.8, 0.35, 0.9)
+
+[node name="CornerBL_V" type="ColorRect" parent="HeroTimerPanel"]
+layout_mode = 0
+offset_left = -3.0
+offset_top = 57.0
+offset_right = -1.0
+offset_bottom = 71.0
+mouse_filter = 2
+color = Color(1, 0.8, 0.35, 0.9)
+
+[node name="CornerBR_H" type="ColorRect" parent="HeroTimerPanel"]
+layout_mode = 0
+offset_left = 259.0
+offset_top = 69.0
+offset_right = 273.0
+offset_bottom = 71.0
+mouse_filter = 2
+color = Color(1, 0.8, 0.35, 0.9)
+
+[node name="CornerBR_V" type="ColorRect" parent="HeroTimerPanel"]
+layout_mode = 0
+offset_left = 271.0
+offset_top = 57.0
+offset_right = 273.0
+offset_bottom = 71.0
+mouse_filter = 2
+color = Color(1, 0.8, 0.35, 0.9)
+
 [node name="HeroTimerCaption" type="Label" parent="HeroTimerPanel"]
 layout_mode = 0
 offset_left = 28.0
-offset_top = 6.0
-offset_right = 242.0
-offset_bottom = 24.0
+offset_top = 7.0
+offset_right = 250.0
+offset_bottom = 25.0
 mouse_filter = 2
-theme_override_colors/font_color = Color(0.38, 0.52, 0.7, 1)
+theme_override_colors/font_color = Color(0.5, 0.68, 0.88, 1)
 theme_override_font_sizes/font_size = 10
-text = "OWNER ARRIVES IN"
+text = "O W N E R   A R R I V E S   I N"
 
 [node name="HeroTimerLabel" type="Label" parent="HeroTimerPanel"]
 layout_mode = 0
@@ -293,8 +374,13 @@ offset_top = 22.0
 offset_right = 240.0
 offset_bottom = 68.0
 mouse_filter = 2
-theme_override_colors/font_color = Color(1, 0.78, 0.2, 1)
-theme_override_font_sizes/font_size = 25
+theme_override_colors/font_color = Color(1, 0.82, 0.25, 1)
+theme_override_colors/font_shadow_color = Color(1, 0.55, 0.1, 0.4)
+theme_override_colors/font_outline_color = Color(0.04, 0.07, 0.13, 0.9)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 27
 text = "10:00"
 
 [node name="SkipButton" type="Button" parent="."]

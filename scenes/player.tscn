@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=17 format=3]
 
 [ext_resource type="Script" path="res://scripts/player_controller.gd" id="1_player_controller"]
 [ext_resource type="Script" path="res://scripts/interaction_raycast.gd" id="2_interaction_raycast"]
@@ -22,6 +22,51 @@ rings = 6
 [sub_resource type="StandardMaterial3D" id="Material_mop"]
 albedo_color = Color(0.48, 0.19, 0.055, 1)
 roughness = 0.7
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_scrub_handle"]
+top_radius = 0.03
+bottom_radius = 0.03
+height = 0.55
+radial_segments = 8
+
+[sub_resource type="BoxMesh" id="BoxMesh_scrub_pad"]
+size = Vector3(0.26, 0.16, 0.06)
+
+[sub_resource type="StandardMaterial3D" id="Material_scrub_handle"]
+albedo_color = Color(0.15, 0.16, 0.18, 1)
+roughness = 0.6
+
+[sub_resource type="StandardMaterial3D" id="Material_scrub_pad"]
+albedo_color = Color(0.85, 0.55, 0.1, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="BoxMesh_cloth"]
+size = Vector3(0.32, 0.03, 0.3)
+
+[sub_resource type="StandardMaterial3D" id="Material_cloth"]
+albedo_color = Color(0.35, 0.65, 0.8, 1)
+roughness = 0.95
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_kit_handle"]
+top_radius = 0.028
+bottom_radius = 0.028
+height = 0.5
+radial_segments = 8
+
+[sub_resource type="StandardMaterial3D" id="Material_kit_handle"]
+albedo_color = Color(0.85, 0.15, 0.1, 1)
+roughness = 0.6
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_kit_tip"]
+top_radius = 0.012
+bottom_radius = 0.012
+height = 0.22
+radial_segments = 6
+
+[sub_resource type="StandardMaterial3D" id="Material_kit_tip"]
+albedo_color = Color(0.75, 0.76, 0.8, 1)
+metallic = 0.6
+roughness = 0.3
 
 [node name="Player" type="CharacterBody3D"]
 script = ExtResource("1_player_controller")
@@ -55,6 +100,44 @@ material_override = SubResource("Material_mop")
 position = Vector3(0, 1.76, 0)
 mesh = SubResource("SphereMesh_mop_grip")
 material_override = SubResource("Material_mop")
+
+[node name="Scrubber" type="Node3D" parent="Head/Camera3D"]
+position = Vector3(0.7, -0.22, -1.05)
+rotation_degrees = Vector3(0, 0, -8)
+visible = false
+
+[node name="ScrubHandle" type="MeshInstance3D" parent="Head/Camera3D/Scrubber"]
+mesh = SubResource("CylinderMesh_scrub_handle")
+material_override = SubResource("Material_scrub_handle")
+
+[node name="ScrubPad" type="MeshInstance3D" parent="Head/Camera3D/Scrubber"]
+position = Vector3(0, 0.32, 0.04)
+rotation_degrees = Vector3(88, 0, 0)
+mesh = SubResource("BoxMesh_scrub_pad")
+material_override = SubResource("Material_scrub_pad")
+
+[node name="Cloth" type="Node3D" parent="Head/Camera3D"]
+position = Vector3(0.6, -0.32, -0.9)
+rotation_degrees = Vector3(18, 12, -18)
+visible = false
+
+[node name="ClothMesh" type="MeshInstance3D" parent="Head/Camera3D/Cloth"]
+mesh = SubResource("BoxMesh_cloth")
+material_override = SubResource("Material_cloth")
+
+[node name="ElectricalKit" type="Node3D" parent="Head/Camera3D"]
+position = Vector3(0.68, -0.2, -1.1)
+rotation_degrees = Vector3(0, 0, -18)
+visible = false
+
+[node name="KitHandle" type="MeshInstance3D" parent="Head/Camera3D/ElectricalKit"]
+mesh = SubResource("CylinderMesh_kit_handle")
+material_override = SubResource("Material_kit_handle")
+
+[node name="KitTip" type="MeshInstance3D" parent="Head/Camera3D/ElectricalKit"]
+position = Vector3(0, 0.36, 0)
+mesh = SubResource("CylinderMesh_kit_tip")
+material_override = SubResource("Material_kit_tip")
 
 [node name="HoldPoint" type="Node3D" parent="Head/Camera3D" groups=["hold_point"]]
 position = Vector3(0, -0.65, -2.5)

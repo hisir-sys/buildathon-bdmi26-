@@ -7,24 +7,28 @@ signal placed
 @export var placement_rotation_degrees: Vector3 = Vector3(0.0, 180.0, 0.0)
 @export var highlight_size: Vector3 = Vector3(3.8, 0.04, 1.65)
 @export var carry_scale: float = 0.65
+# Props that are already standing in the room (like the cabinet) start with
+# this on - no corner pile, no pink target, just pick up and drop anywhere.
+@export var starts_placed: bool = false
 
 var is_carried: bool = false
-var is_placed: bool = false
+var has_been_placed: bool = false
 var placement_highlight: MeshInstance3D
 var details_built: bool = false
 
 
 func _ready() -> void:
+	has_been_placed = starts_placed
 	if item_label == "SOFA":
 		_build_sofa_details()
 
 
 func get_interaction_prompt() -> String:
-	if is_placed:
-		return ""
-
 	if not is_carried:
-		return "E  PICK UP THE %s" % item_label
+		return "E  MOVE THE %s" % item_label if has_been_placed else "E  PICK UP THE %s" % item_label
+
+	if has_been_placed:
+		return "E  PUT DOWN THE %s" % item_label
 
 	if global_position.distance_to(placement_position) <= 1.8:
 		return "E  PLACE THE %s" % item_label
@@ -33,13 +37,14 @@ func get_interaction_prompt() -> String:
 
 
 func interact() -> void:
-	if is_placed:
-		return
-
 	if not is_carried:
 		_pick_up()
+		return
+
+	if has_been_placed:
+		_drop_here()
 	elif global_position.distance_to(placement_position) <= 1.8:
-		_place()
+		_place_at_zone()
 
 
 func _pick_up() -> void:
@@ -56,12 +61,14 @@ func _pick_up() -> void:
 	position = Vector3.ZERO
 	rotation = Vector3.ZERO
 	scale = Vector3.ONE * carry_scale
-	_show_placement_highlight()
+
+	if not has_been_placed:
+		_show_placement_highlight()
 
 
-func _place() -> void:
+func _place_at_zone() -> void:
 	is_carried = false
-	is_placed = true
+	has_been_placed = true
 	remove_from_group("carried_interactable")
 
 	reparent(get_tree().current_scene, true)
@@ -77,6 +84,24 @@ func _place() -> void:
 	_hide_placement_highlight()
 
 	placed.emit()
+
+
+func _drop_here() -> void:
+	# Free placement for anything that's already done its one-time task
+	# placement (or started pre-placed, like the cabinet) - drop it wherever
+	# the player is currently standing and facing.
+	var drop_position := global_position
+	var drop_yaw := global_rotation.y
+
+	is_carried = false
+	remove_from_group("carried_interactable")
+
+	reparent(get_tree().current_scene, true)
+	global_position = Vector3(drop_position.x, 0.0, drop_position.z)
+	global_rotation = Vector3(0.0, drop_yaw, 0.0)
+	scale = Vector3.ONE
+	collision_layer = 1
+	collision_mask = 1
 
 
 func _show_placement_highlight() -> void:
