@@ -48,12 +48,12 @@ func set_task_counts(
 		_task_row("DUSTING", dust_cleaned, 6, COLOR_CLEAN),
 		_task_row("REWIRE PANEL", panel_repaired, 1, COLOR_MECH),
 		_task_row("FRIDGE", fridge_cleaned, 1, COLOR_MECH),
-		_task_row("FURNITURE", furniture_placed, 1, COLOR_CLEAN),
+		_task_row("FURNITURE", furniture_placed, 4, COLOR_CLEAN),
 		_task_row("WASHROOM", bathroom_mirrors_cleaned, 3, COLOR_WASH),
 	]
 	task_label.text = "\n".join(rows)
 
-	var done := int(dust_cleaned >= 6) + panel_repaired + fridge_cleaned + furniture_placed + int(bathroom_mirrors_cleaned >= 3)
+	var done := int(dust_cleaned >= 6) + panel_repaired + fridge_cleaned + int(furniture_placed >= 4) + int(bathroom_mirrors_cleaned >= 3)
 	task_fraction_label.text = "%d/5" % done
 
 
@@ -72,8 +72,11 @@ func set_score(score: int) -> void:
 	score_label.text = str(score)
 
 
-func mark_sofa_complete() -> void:
-	set_interaction_prompt("FURNITURE TASK COMPLETE")
+func mark_furniture_complete(furniture_count: int) -> void:
+	if furniture_count >= 4:
+		set_interaction_prompt("FURNITURE TASK COMPLETE")
+	else:
+		set_interaction_prompt("FURNITURE %d/4 PLACED" % furniture_count)
 
 
 func set_timer(seconds_left: int) -> void:

@@ -1,4 +1,4 @@
-[gd_scene load_steps=36 format=3]
+[gd_scene load_steps=34 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
 [ext_resource type="Script" path="res://scripts/main_room.gd" id="2_main_room"]
@@ -75,18 +75,6 @@ size = Vector3(3.7, 1.6, 1.6)
 [sub_resource type="StandardMaterial3D" id="Material_sofa"]
 albedo_color = Color(0.66, 0.25, 0.1, 1)
 roughness = 0.72
-
-[sub_resource type="CylinderMesh" id="CylinderMesh_zone"]
-top_radius = 1.9
-bottom_radius = 1.9
-height = 0.04
-radial_segments = 48
-
-[sub_resource type="StandardMaterial3D" id="Material_zone"]
-albedo_color = Color(0.04, 0.85, 0.9, 1)
-emission_enabled = true
-emission = Color(0.02, 0.45, 0.5, 1)
-emission_energy_multiplier = 2.0
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_dust"]
 top_radius = 0.58
@@ -320,15 +308,14 @@ material_override = SubResource("Material_ceiling")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Ceiling"]
 shape = SubResource("BoxShape3D_ceiling")
 
-[node name="SofaPlacementZone" type="MeshInstance3D" parent="."]
-position = Vector3(7, 0.18, 0.8)
-mesh = SubResource("CylinderMesh_zone")
-material_override = SubResource("Material_zone")
-
-[node name="Sofa" type="StaticBody3D" parent="." groups=["interactable"]]
-position = Vector3(0, 0, 0)
+[node name="Sofa" type="StaticBody3D" parent="." groups=["interactable", "furniture_item"]]
+position = Vector3(6.6, 0, 2.4)
 script = ExtResource("3_sofa_interactable")
-placement_zone_path = NodePath("../SofaPlacementZone")
+item_label = "SOFA"
+placement_position = Vector3(-5.5, 0, 1.8)
+placement_rotation_degrees = Vector3(0, 180, 0)
+highlight_size = Vector3(3.8, 0.04, 1.65)
+carry_scale = 0.65
 
 [node name="Seat" type="MeshInstance3D" parent="Sofa"]
 position = Vector3(0, 0.45, 0)

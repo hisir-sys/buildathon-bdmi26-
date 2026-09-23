@@ -5,11 +5,14 @@ const DirtyDoorScript = preload("res://scripts/dirty_door.gd")
 const RepairTaskScript = preload("res://scripts/repair_task.gd")
 const RewireTaskScript = preload("res://scripts/rewire_task.gd")
 const PipelineTaskScript = preload("res://scripts/pipeline_task.gd")
+const FurnitureScript = preload("res://scripts/sofa_interactable.gd")
 
 @onready var hud: CanvasLayer = $HUD
 @onready var interaction_ray: RayCast3D = $Player/Head/Camera3D/InteractionRay
 @onready var sofa: StaticBody3D = $Sofa
 @onready var game_manager: Node = $GameManager
+@onready var world_environment: WorldEnvironment = $WorldEnvironment
+@onready var directional_light: DirectionalLight3D = $DirectionalLight3D
 
 var dust_cleaned: int = 0
 var webs_cleared: int = 0
@@ -23,16 +26,16 @@ var score: int = 50
 var ambience_time: float = 0.0
 var ceiling_lights: Array[OmniLight3D] = []
 var light_bulbs: Array[MeshInstance3D] = []
-var light_base_energy: Array[float] = [0.22, 0.2, 0.17, 0.2, 0.2, 0.17]
+var light_base_energy: Array[float] = [0.52, 0.48, 0.42, 0.46, 0.46, 0.42]
 var lights_fixed: bool = false
 var light_is_on: Array[bool] = []
 var light_next_change: Array[float] = []
+var repair_spotlights: Array[SpotLight3D] = []
+var repair_bulbs: Array[MeshInstance3D] = []
 
 
 func _ready() -> void:
 	interaction_ray.target_changed.connect(hud.set_interaction_prompt)
-	sofa.placed.connect(hud.mark_sofa_complete)
-	sofa.placed.connect(_on_sofa_placed)
 
 	game_manager.time_changed.connect(hud.set_timer)
 	game_manager.time_expired.connect(_on_time_expired)
@@ -53,6 +56,9 @@ func _ready() -> void:
 	for repair_task in get_tree().get_nodes_in_group("repair_task"):
 		repair_task.completed.connect(_on_repair_task_completed)
 
+	for furniture_item in get_tree().get_nodes_in_group("furniture_item"):
+		furniture_item.placed.connect(_on_furniture_placed)
+
 	ceiling_lights = [$CeilingLightLeft, $CeilingLightRight, $CeilingLightBack, $CeilingLightFrontLeft, $CeilingLightFrontRight, $CeilingLightCenter]
 	light_bulbs = [$BlueBulb, $AmberBulb, $GreenBulb, $FrontLeftBulb, $FrontRightBulb, $CenterBulb]
 	light_is_on.resize(ceiling_lights.size())
@@ -71,8 +77,11 @@ func _build_floor_plan_props() -> void:
 	_build_mop_station(Vector3(-6.7, 0.0, -9.55))
 	_build_rug(Vector3(0.0, 0.18, -6.6))
 	_build_cabinet(Vector3(7.0, 0.0, 6.4))
-	_build_tv(Vector3(0.0, 0.0, 9.78))
+	# Center the television on the sofa's placement position so it faces the
+	# seating area instead of sitting off to the side.
+	_build_tv(Vector3(-5.5, 0.0, 9.78))
 	_build_broken_floor(Vector3(-5.8, 0.0, 6.7))
+	_build_furniture_items()
 	_build_bathroom()
 	_build_reference_game_props()
 
@@ -193,7 +202,10 @@ func _build_rug(world_position: Vector3) -> void:
 
 
 func _build_cabinet(world_position: Vector3) -> void:
-	var root := _new_prop_root("Cabinet", world_position)
+	var root := StaticBody3D.new()
+	root.name = "Cabinet"
+	root.position = world_position
+	add_child(root)
 	var wood := _material(Color(0.28, 0.12, 0.055, 1))
 	var trim := _material(Color(0.56, 0.27, 0.09, 1))
 	_box(root, "CabinetBody", Vector3(2.5, 2.2, 1.25), Vector3(0, 1.1, 0), wood)
@@ -203,6 +215,7 @@ func _build_cabinet(world_position: Vector3) -> void:
 			var drawer := _box(root, "Drawer%d%d" % [row, column], Vector3(1.0, 0.72, 0.05), Vector3(-0.55 + column * 1.1, 1.55 - row * 0.82, -0.65), trim)
 			drawer.rotation_degrees.x = -2.0
 			_cylinder(root, "Handle%d%d" % [row, column], 0.05, 0.28, Vector3(-0.55 + column * 1.1, 1.55 - row * 0.82, -0.74), wood).rotation_degrees = Vector3(90, 0, 0)
+	_add_body_collision(root, Vector3(2.5, 2.2, 1.25), Vector3(0, 1.1, 0))
 
 
 func _build_tv(world_position: Vector3) -> void:
@@ -226,6 +239,95 @@ func _build_broken_floor(world_position: Vector3) -> void:
 		var plank := _box(root, "BrokenPlank%d" % index, Vector3(0.75, 0.07, 0.22), Vector3(-1.25 + (index % 4) * 0.8, 0.07, -0.95 + (index / 4) * 1.8), broken_wood)
 		plank.rotation_degrees.y = -18.0 + index * 11.0
 		plank.rotation_degrees.z = -7.0 + index * 4.0
+
+
+func _build_furniture_items() -> void:
+	# The furniture starts compactly stacked in the front-right corner. Each
+	# item gets its own pink footprint only after the player picks it up.
+	var table := _new_furniture_item(
+		"DiningTable",
+		"DINING TABLE",
+		Vector3(6.0, 0.0, 4.8),
+		Vector3(-5.8, 0.0, -6.2),
+		Vector3(2.9, 0.04, 1.65),
+		Vector3(0.0, 0.0, 0.0),
+		0.72
+	)
+	var table_wood := _material(Color(0.36, 0.16, 0.065, 1))
+	var table_trim := _material(Color(0.58, 0.28, 0.1, 1))
+	_box(table, "TableTop", Vector3(2.9, 0.18, 1.55), Vector3(0, 1.48, 0), table_wood)
+	_box(table, "TableEdge", Vector3(2.75, 0.12, 1.42), Vector3(0, 1.36, 0), table_trim)
+	for index in range(4):
+		_box(
+			table,
+			"TableLeg%d" % index,
+			Vector3(0.16, 1.35, 0.16),
+			Vector3(-1.15 if index % 2 == 0 else 1.15, 0.68, -0.58 if index < 2 else 0.58),
+			table_wood
+		)
+	_add_body_collision(table, Vector3(2.85, 1.55, 1.5), Vector3(0, 0.78, 0))
+
+	var chair_a := _new_furniture_item(
+		"DiningChairA",
+		"CHAIR 1",
+		Vector3(7.9, 0.0, 4.65),
+		Vector3(-5.8, 0.0, -4.55),
+		Vector3(0.95, 0.04, 0.95),
+		Vector3(0.0, 0.0, 0.0),
+		0.82
+	)
+	_build_dining_chair_meshes(chair_a)
+
+	var chair_b := _new_furniture_item(
+		"DiningChairB",
+		"CHAIR 2",
+		Vector3(7.9, 0.0, 3.25),
+		Vector3(-5.8, 0.0, -7.85),
+		Vector3(0.95, 0.04, 0.95),
+		Vector3(0.0, 180.0, 0.0),
+		0.82
+	)
+	_build_dining_chair_meshes(chair_b)
+
+
+func _new_furniture_item(
+	node_name: String,
+	label: String,
+	start_position: Vector3,
+	target_position: Vector3,
+	highlight_size: Vector3,
+	target_rotation: Vector3,
+	carry_scale: float
+) -> StaticBody3D:
+	var item := StaticBody3D.new()
+	item.name = node_name
+	item.position = start_position
+	item.set_script(FurnitureScript)
+	item.set("item_label", label)
+	item.set("placement_position", target_position)
+	item.set("placement_rotation_degrees", target_rotation)
+	item.set("highlight_size", highlight_size)
+	item.set("carry_scale", carry_scale)
+	item.add_to_group("interactable")
+	item.add_to_group("furniture_item")
+	add_child(item)
+	return item
+
+
+func _build_dining_chair_meshes(chair: StaticBody3D) -> void:
+	var wood := _material(Color(0.38, 0.17, 0.07, 1))
+	var seat_material := _material(Color(0.55, 0.22, 0.1, 1))
+	_box(chair, "Seat", Vector3(0.85, 0.14, 0.85), Vector3(0, 0.9, 0), seat_material)
+	_box(chair, "Back", Vector3(0.85, 1.1, 0.14), Vector3(0, 1.42, 0.36), wood)
+	for index in range(4):
+		_box(
+			chair,
+			"Leg%d" % index,
+			Vector3(0.1, 0.85, 0.1),
+			Vector3(-0.3 if index % 2 == 0 else 0.3, 0.42, -0.3 if index < 2 else 0.3),
+			wood
+		)
+	_add_body_collision(chair, Vector3(0.9, 1.65, 0.9), Vector3(0, 0.82, 0))
 
 
 func _build_bathroom() -> void:
@@ -476,6 +578,39 @@ func _build_reference_game_props() -> void:
 	_build_hanging_lamp(Vector3(0.0, 0.0, 0.0))
 	_build_refrigerator(Vector3(-7.15, 0.0, -1.0))
 	_build_rewire_panel(Vector3(-9.78, 2.2, -4.5))
+	_build_wall_spotlights()
+
+
+func _build_wall_spotlights() -> void:
+	# These fixtures are visibly mounted from the start, but their bulbs and
+	# spotlights stay dead until the electrical panel is repaired.
+	_build_wall_spotlight("BackSpotlightLeft", Vector3(-7.2, 2.65, -9.72), Vector3(0, 180, 0))
+	_build_wall_spotlight("BackSpotlightCenter", Vector3(-1.8, 2.65, -9.72), Vector3(0, 180, 0))
+	_build_wall_spotlight("FrontSpotlightLeft", Vector3(-7.2, 2.65, 9.72), Vector3.ZERO)
+	_build_wall_spotlight("FrontSpotlightRight", Vector3(7.2, 2.65, 9.72), Vector3.ZERO)
+
+
+func _build_wall_spotlight(node_name: String, world_position: Vector3, world_rotation: Vector3) -> void:
+	var root := _new_prop_root(node_name, world_position)
+	root.rotation_degrees = world_rotation
+	var bracket_material := _material(Color(0.1, 0.11, 0.14, 1))
+	var dead_bulb_material := _material(Color(0.06, 0.065, 0.08, 1))
+	_box(root, "WallMount", Vector3(0.52, 0.18, 0.16), Vector3(0, 0, 0.04), bracket_material)
+	_box(root, "LampShade", Vector3(0.34, 0.24, 0.3), Vector3(0, -0.13, -0.12), bracket_material)
+	var bulb := _sphere(root, "DeadBulb", 0.09, Vector3(0, -0.22, -0.25), dead_bulb_material)
+	repair_bulbs.append(bulb)
+
+	var spotlight := SpotLight3D.new()
+	spotlight.name = "RepairSpotlight"
+	spotlight.position = Vector3(0, -0.22, -0.28)
+	spotlight.light_energy = 0.0
+	spotlight.light_color = Color(1.0, 0.92, 0.78, 1)
+	spotlight.spot_range = 8.0
+	spotlight.spot_angle = 48.0
+	spotlight.spot_attenuation = 1.35
+	spotlight.shadow_enabled = true
+	root.add_child(spotlight)
+	repair_spotlights.append(spotlight)
 
 
 func _build_hanging_lamp(world_position: Vector3) -> void:
@@ -615,11 +750,24 @@ func _process(delta: float) -> void:
 		# Wiring is repaired: lights stop flickering and hold a steady,
 		# properly-lit glow instead.
 		for index in range(ceiling_lights.size()):
-			ceiling_lights[index].light_energy = light_base_energy[index] * 3.0
+			ceiling_lights[index].light_energy = light_base_energy[index] * 3.4
 			var fixed_bulb_material := light_bulbs[index].material_override as StandardMaterial3D
 			if fixed_bulb_material != null:
-				fixed_bulb_material.emission_energy_multiplier = 1.8
+				fixed_bulb_material.emission_energy_multiplier = 2.6
 			light_bulbs[index].visible = true
+		for spotlight in repair_spotlights:
+			spotlight.light_energy = 3.2
+		for bulb in repair_bulbs:
+			bulb.visible = true
+			var repaired_bulb_material := bulb.material_override as StandardMaterial3D
+			if repaired_bulb_material != null:
+				repaired_bulb_material.albedo_color = Color(1.0, 0.86, 0.55, 1)
+				repaired_bulb_material.emission_enabled = true
+				repaired_bulb_material.emission = Color(1.0, 0.62, 0.2, 1)
+				repaired_bulb_material.emission_energy_multiplier = 3.0
+		if world_environment.environment != null:
+			world_environment.environment.ambient_light_energy = 0.24
+		directional_light.light_energy = 0.18
 		return
 
 	# Haunted-house flicker: each light stays on for a short stretch, then
@@ -657,9 +805,10 @@ func _on_web_cleared() -> void:
 	hud.set_score(score)
 
 
-func _on_sofa_placed() -> void:
-	furniture_placed = 1
+func _on_furniture_placed() -> void:
+	furniture_placed = mini(furniture_placed + 1, 4)
 	score += 10
+	hud.mark_furniture_complete(furniture_placed)
 	hud.set_task_counts(dust_cleaned, webs_cleared, furniture_placed, bathroom_mirrors_cleaned + bathroom_door_cleaned + bathroom_pipe_cleaned, panel_repaired, fridge_cleaned)
 	hud.set_score(score)
 
