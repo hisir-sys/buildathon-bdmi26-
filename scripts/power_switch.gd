@@ -3,15 +3,31 @@ extends StaticBody3D
 signal toggled(is_on: bool)
 
 @export var label_text: String = "FRIDGE"
+# When true the switch does nothing until set_unlocked(true) is called
+# (the fridge has to be placed first).
+@export var requires_unlock: bool = false
 
 var is_on: bool = false
+var is_unlocked: bool = true
+
+
+func _ready() -> void:
+	is_unlocked = not requires_unlock
+
+
+func set_unlocked(value: bool) -> void:
+	is_unlocked = value
 
 
 func get_interaction_prompt() -> String:
+	if not is_unlocked:
+		return "PLACE THE %s FIRST" % label_text
 	return "E  TURN %s %s" % [label_text, "OFF" if is_on else "ON"]
 
 
 func interact() -> void:
+	if not is_unlocked:
+		return
 	is_on = not is_on
 	_update_visual()
 	toggled.emit(is_on)

@@ -2,11 +2,15 @@ extends Node3D
 
 const DirtyMirrorScript = preload("res://scripts/dirty_mirror.gd")
 const DirtyDoorScript = preload("res://scripts/dirty_door.gd")
-const RepairTaskScript = preload("res://scripts/repair_task.gd")
 const RewireTaskScript = preload("res://scripts/rewire_task.gd")
 const PipelineTaskScript = preload("res://scripts/pipeline_task.gd")
 const FurnitureScript = preload("res://scripts/sofa_interactable.gd")
 const PowerSwitchScript = preload("res://scripts/power_switch.gd")
+const TreasureChestScript = preload("res://scripts/treasure_chest.gd")
+const KeyPickupScript = preload("res://scripts/key_pickup.gd")
+
+# Sofa, dining table, 2 chairs and the cabinet.
+const FURNITURE_TOTAL := 5
 
 @onready var hud: CanvasLayer = $HUD
 @onready var interaction_ray: RayCast3D = $Player/Head/Camera3D/InteractionRay
@@ -23,8 +27,11 @@ var bathroom_mirrors_cleaned: int = 0
 var bathroom_door_cleaned: int = 0
 var bathroom_pipe_cleaned: int = 0
 var panel_repaired: int = 0
-var fridge_cleaned: int = 0
-var score: int = 50
+var fridge_done: int = 0
+var fridge_switch: StaticBody3D
+var saved_ambient_energy: float = 0.0
+var saved_sun_energy: float = 0.0
+var dim_tween: Tween
 var ambience_time: float = 0.0
 var ceiling_lights: Array[OmniLight3D] = []
 var light_bulbs: Array[MeshInstance3D] = []
@@ -46,6 +53,7 @@ func _ready() -> void:
 
 	game_manager.time_changed.connect(hud.set_timer)
 	game_manager.time_expired.connect(_on_time_expired)
+	game_manager.key_changed.connect(hud.set_key_owned)
 	_build_floor_plan_props()
 
 	for dust_spot in get_tree().get_nodes_in_group("dust_spot"):
@@ -73,8 +81,7 @@ func _ready() -> void:
 	light_next_change.resize(ceiling_lights.size())
 	for index in range(light_next_change.size()):
 		light_next_change[index] = randf_range(1.2, 3.2)
-	hud.set_task_counts(dust_cleaned, webs_cleared, furniture_placed, bathroom_mirrors_cleaned + bathroom_door_cleaned + bathroom_pipe_cleaned, panel_repaired, fridge_cleaned)
-	hud.set_score(score)
+	_refresh_hud()
 
 
 func _build_floor_plan_props() -> void:
@@ -82,8 +89,10 @@ func _build_floor_plan_props() -> void:
 	# no external asset dependencies and remains easy to edit in Godot.
 	_add_front_wall()
 	_build_mop_station(Vector3(-6.7, 0.0, -9.55))
-	_build_rug(Vector3(0.0, 0.18, -6.6))
-	_build_cabinet(Vector3(7.0, 0.0, 6.4))
+	_build_rug(Vector3(0.0, 0.18, -5.4))
+	_build_cabinet()
+	_build_chest()
+	_build_key()
 	# Center the television on the sofa's placement position so it faces the
 	# seating area instead of sitting off to the side.
 	_build_tv(Vector3(-5.5, 0.0, 9.78))
@@ -208,21 +217,19 @@ func _build_rug(world_position: Vector3) -> void:
 		_box(root, "RugStripe%d" % x, Vector3(0.08, 0.02, 1.9), Vector3(x * 0.75, 0.09, 0), border)
 
 
-func _build_cabinet(world_position: Vector3) -> void:
-	# The cabinet is already standing in place at game start (no corner pile,
-	# no pink target) but stays pick-up-and-move-able like the rest of the
-	# furniture.
+func _build_cabinet() -> void:
+	# Starts one step in front of the desk + chest on the back wall, hiding
+	# them from the room. Pick it up and carry it to the pink footprint on the
+	# right wall. It counts toward the FURNITURE task like the sofa/table/chairs.
 	var root := _new_furniture_item(
 		"Cabinet",
 		"CABINET",
-		world_position,
-		world_position,
-		Vector3(2.6, 0.04, 1.35),
-		Vector3.ZERO,
+		Vector3(0.0, 0.0, -7.9),
+		Vector3(9.15, 0.0, -1.2),
+		Vector3(2.9, 0.04, 1.5),
+		Vector3(0.0, 90.0, 0.0),
 		0.55,
-		Vector3.ZERO,
-		true,
-		false
+		Vector3(0.0, 180.0, 0.0)
 	)
 	var wood := _material(Color(0.28, 0.12, 0.055, 1))
 	var trim := _material(Color(0.56, 0.27, 0.09, 1))
@@ -234,6 +241,59 @@ func _build_cabinet(world_position: Vector3) -> void:
 			drawer.rotation_degrees.x = -2.0
 			_cylinder(root, "Handle%d%d" % [row, column], 0.05, 0.28, Vector3(-0.55 + column * 1.1, 1.55 - row * 0.82, -0.74), wood).rotation_degrees = Vector3(90, 0, 0)
 	_add_body_collision(root, Vector3(2.5, 2.2, 1.25), Vector3(0, 1.1, 0))
+
+
+func _build_chest() -> void:
+	# Desk + chest against the back wall, directly behind the cabinet's
+	# starting spot. Not movable. Needs the key (see _build_key).
+	var chest := StaticBody3D.new()
+	chest.name = "TreasureChest"
+	chest.position = Vector3(0.0, 0.0, -9.4)
+	chest.set_script(TreasureChestScript)
+	add_child(chest)
+	chest.call("setup", player, hud, game_manager)
+	chest.connect("choice_started", _on_chest_choice_started)
+	chest.connect("choice_finished", _on_chest_choice_finished)
+
+
+func _build_key() -> void:
+	# Hidden on the middle shelf of the bathroom storage rack (rack is at
+	# x 3.42, z -5.15; the middle shelf top is at y 1.195).
+	var key := StaticBody3D.new()
+	key.name = "ChestKey"
+	key.position = Vector3(3.62, 1.2, -4.75)
+	key.rotation_degrees.y = 100.0
+	key.set_script(KeyPickupScript)
+	add_child(key)
+
+
+func _on_chest_choice_started() -> void:
+	# The game is paused at this point; dim the room with a tween that keeps
+	# running while paused. Ceiling lights and spotlights are re-driven every
+	# frame by _process once play resumes, so only the environment and sun
+	# need explicit restoring.
+	if world_environment.environment != null:
+		saved_ambient_energy = world_environment.environment.ambient_light_energy
+	saved_sun_energy = directional_light.light_energy
+
+	dim_tween = create_tween()
+	dim_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	dim_tween.set_parallel(true)
+	for light in ceiling_lights:
+		dim_tween.tween_property(light, "light_energy", light.light_energy * 0.15, 0.8)
+	for spotlight in repair_spotlights:
+		dim_tween.tween_property(spotlight, "light_energy", spotlight.light_energy * 0.15, 0.8)
+	if world_environment.environment != null:
+		dim_tween.tween_property(world_environment.environment, "ambient_light_energy", saved_ambient_energy * 0.2, 0.8)
+	dim_tween.tween_property(directional_light, "light_energy", saved_sun_energy * 0.2, 0.8)
+
+
+func _on_chest_choice_finished(_diamond_taken: bool) -> void:
+	if dim_tween != null and dim_tween.is_valid():
+		dim_tween.kill()
+	if world_environment.environment != null:
+		world_environment.environment.ambient_light_energy = saved_ambient_energy
+	directional_light.light_energy = saved_sun_energy
 
 
 func _build_tv(world_position: Vector3) -> void:
@@ -604,7 +664,7 @@ func _build_bathroom_pipe(parent: Node3D) -> void:
 
 func _build_reference_game_props() -> void:
 	_build_hanging_lamp(Vector3(0.0, 0.0, 0.0))
-	_build_refrigerator(Vector3(-7.15, 0.0, -1.0))
+	_build_refrigerator()
 	_build_rewire_panel(Vector3(-9.78, 2.2, -4.5))
 	_build_wall_spotlights()
 
@@ -660,17 +720,23 @@ func _build_hanging_lamp(world_position: Vector3) -> void:
 	root.add_child(lamp_light)
 
 
-func _build_refrigerator(world_position: Vector3) -> void:
-	var fridge := StaticBody3D.new()
-	fridge.name = "Fridge"
-	fridge.position = world_position
-	fridge.set_script(RepairTaskScript)
-	fridge.set("task_kind", "fridge")
-	fridge.set("task_label", "CLEAN FRIDGE")
-	fridge.set("action_label", "CLEAN FRIDGE")
-	fridge.set("duration_seconds", 7.0)
-	fridge.add_to_group("interactable")
-	fridge.add_to_group("repair_task")
+func _build_refrigerator() -> void:
+	# Starts in an empty spot near the front wall. Carry it to the pink
+	# footprint against the left wall; once it is placed the wall switch
+	# unlocks and turns it on.
+	var fridge := _new_furniture_item(
+		"Fridge",
+		"FRIDGE",
+		Vector3(0.5, 0.0, 8.5),
+		Vector3(-9.15, 0.0, -1.6),
+		Vector3(2.35, 0.04, 1.55),
+		Vector3(0.0, -90.0, 0.0),
+		0.45,
+		Vector3.ZERO,
+		false,
+		false
+	)
+	fridge.connect("placed", _on_fridge_placed)
 	var body := _material(Color(0.55, 0.6, 0.67, 1))
 	var door := _material(Color(0.68, 0.72, 0.78, 1))
 	var handle := _material(Color(0.1, 0.12, 0.16, 1))
@@ -681,31 +747,41 @@ func _build_refrigerator(world_position: Vector3) -> void:
 	_box(fridge, "FridgeHandle", Vector3(0.08, 1.2, 0.08), Vector3(0.78, 1.2, -0.78), handle)
 	fridge_status_light = _box(fridge, "StatusLight", Vector3(0.12, 0.12, 0.06), Vector3(-0.72, 3.0, -0.78), _material(Color(0.35, 0.08, 0.06, 1), Color(0.35, 0.08, 0.06, 1), 1.0))
 	_add_body_collision(fridge, Vector3(2.15, 3.35, 1.35), Vector3(0, 1.68, 0))
-	add_child(fridge)
 
+	# Child of the fridge so the glow travels with it when it is carried.
 	fridge_interior_light = OmniLight3D.new()
 	fridge_interior_light.name = "FridgeInteriorGlow"
-	fridge_interior_light.position = world_position + Vector3(0, 1.5, -0.9)
+	fridge_interior_light.position = Vector3(0, 1.5, -0.9)
 	fridge_interior_light.omni_range = 2.2
 	fridge_interior_light.light_energy = 0.0
 	fridge_interior_light.light_color = Color(0.75, 0.9, 1.0, 1)
-	add_child(fridge_interior_light)
+	fridge.add_child(fridge_interior_light)
 
-	# The switch that actually powers the fridge, mounted on the wall
-	# right beside it.
-	var switch := StaticBody3D.new()
-	switch.name = "FridgeSwitch"
-	switch.position = world_position + Vector3(1.55, 1.3, -0.7)
-	switch.set_script(PowerSwitchScript)
-	switch.set("label_text", "FRIDGE")
-	switch.add_to_group("interactable")
+	_build_fridge_wall_switch(Vector3(-9.88, 1.4, 0.0))
+
+
+func _build_fridge_wall_switch(world_position: Vector3) -> void:
+	# Flush on the left wall (inner face at x = -9.9), just beside the
+	# fridge's pink footprint, facing into the room. Locked until the fridge
+	# has been placed.
+	fridge_switch = StaticBody3D.new()
+	fridge_switch.name = "FridgeSwitch"
+	fridge_switch.position = world_position
+	fridge_switch.rotation_degrees.y = -90.0
+	fridge_switch.scale = Vector3.ONE * 1.5
+	fridge_switch.set_script(PowerSwitchScript)
+	fridge_switch.set("label_text", "FRIDGE")
+	fridge_switch.set("requires_unlock", true)
+	fridge_switch.add_to_group("interactable")
 	var plate := _material(Color(0.85, 0.85, 0.82, 1))
-	_box(switch, "Plate", Vector3(0.22, 0.32, 0.04), Vector3.ZERO, plate)
-	var lever := _box(switch, "Lever", Vector3(0.08, 0.14, 0.05), Vector3(0, 0.04, -0.03), _material(Color(0.1, 0.1, 0.12, 1)))
+	_box(fridge_switch, "Plate", Vector3(0.22, 0.32, 0.04), Vector3.ZERO, plate)
+	var lever := _box(fridge_switch, "Lever", Vector3(0.08, 0.14, 0.05), Vector3(0, 0.04, -0.03), _material(Color(0.1, 0.1, 0.12, 1)))
 	lever.rotation_degrees.x = 30.0
-	_sphere(switch, "Indicator", 0.03, Vector3(0, -0.11, -0.03), _material(Color(0.5, 0.08, 0.06, 1), Color(0.5, 0.08, 0.06, 1), 1.0))
-	switch.connect("toggled", _on_fridge_switch_toggled)
-	add_child(switch)
+	_sphere(fridge_switch, "Indicator", 0.03, Vector3(0, -0.11, -0.03), _material(Color(0.5, 0.08, 0.06, 1), Color(0.5, 0.08, 0.06, 1), 1.0))
+	# Without a collision shape the interaction ray could never hit it.
+	_add_body_collision(fridge_switch, Vector3(0.26, 0.36, 0.14), Vector3(0, 0, -0.03))
+	fridge_switch.connect("toggled", _on_fridge_switch_toggled)
+	add_child(fridge_switch)
 
 
 func _build_rewire_panel(world_position: Vector3) -> void:
@@ -843,22 +919,36 @@ func _process(delta: float) -> void:
 		light_bulbs[index].visible = light_is_on[index]
 
 
+func _refresh_hud() -> void:
+	hud.set_task_counts(
+		dust_cleaned,
+		webs_cleared,
+		furniture_placed,
+		bathroom_mirrors_cleaned + bathroom_door_cleaned + bathroom_pipe_cleaned,
+		panel_repaired,
+		fridge_done
+	)
+
+
 func _on_dust_cleaned() -> void:
 	dust_cleaned += 1
-	score += 5
-	hud.set_task_counts(dust_cleaned, webs_cleared, furniture_placed, bathroom_mirrors_cleaned + bathroom_door_cleaned + bathroom_pipe_cleaned, panel_repaired, fridge_cleaned)
-	hud.set_score(score)
+	_refresh_hud()
 
 
 func _on_web_cleared() -> void:
 	webs_cleared += 1
-	score += 5
-	hud.set_task_counts(dust_cleaned, webs_cleared, furniture_placed, bathroom_mirrors_cleaned + bathroom_door_cleaned + bathroom_pipe_cleaned, panel_repaired, fridge_cleaned)
-	hud.set_score(score)
+	_refresh_hud()
+
+
+func _on_fridge_placed() -> void:
+	if fridge_switch != null:
+		fridge_switch.call("set_unlocked", true)
 
 
 func _on_fridge_switch_toggled(is_on: bool) -> void:
 	fridge_is_powered = is_on
+	fridge_done = 1 if is_on else 0
+	_refresh_hud()
 	fridge_interior_light.light_energy = 1.1 if is_on else 0.0
 	var status_material := fridge_status_light.material_override as StandardMaterial3D
 	if status_material != null:
@@ -870,25 +960,19 @@ func _on_fridge_switch_toggled(is_on: bool) -> void:
 
 
 func _on_furniture_placed() -> void:
-	furniture_placed = mini(furniture_placed + 1, 4)
-	score += 10
-	hud.mark_furniture_complete(furniture_placed)
-	hud.set_task_counts(dust_cleaned, webs_cleared, furniture_placed, bathroom_mirrors_cleaned + bathroom_door_cleaned + bathroom_pipe_cleaned, panel_repaired, fridge_cleaned)
-	hud.set_score(score)
+	furniture_placed = mini(furniture_placed + 1, FURNITURE_TOTAL)
+	hud.mark_furniture_complete(furniture_placed, FURNITURE_TOTAL)
+	_refresh_hud()
 
 
 func _on_bathroom_mirror_cleaned() -> void:
 	bathroom_mirrors_cleaned = 1
-	score += 10
-	hud.set_task_counts(dust_cleaned, webs_cleared, furniture_placed, bathroom_mirrors_cleaned + bathroom_door_cleaned + bathroom_pipe_cleaned, panel_repaired, fridge_cleaned)
-	hud.set_score(score)
+	_refresh_hud()
 
 
 func _on_bathroom_door_cleaned() -> void:
 	bathroom_door_cleaned = 1
-	score += 10
-	hud.set_task_counts(dust_cleaned, webs_cleared, furniture_placed, bathroom_mirrors_cleaned + bathroom_door_cleaned + bathroom_pipe_cleaned, panel_repaired, fridge_cleaned)
-	hud.set_score(score)
+	_refresh_hud()
 
 
 func _on_repair_task_completed(task_kind: String) -> void:
@@ -896,13 +980,9 @@ func _on_repair_task_completed(task_kind: String) -> void:
 		"panel":
 			panel_repaired = 1
 			lights_fixed = true
-		"fridge":
-			fridge_cleaned = 1
 		"bathroom_pipe":
 			bathroom_pipe_cleaned = 1
-	score += 10
-	hud.set_task_counts(dust_cleaned, webs_cleared, furniture_placed, bathroom_mirrors_cleaned + bathroom_door_cleaned + bathroom_pipe_cleaned, panel_repaired, fridge_cleaned)
-	hud.set_score(score)
+	_refresh_hud()
 
 
 func _on_time_expired() -> void:
