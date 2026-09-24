@@ -8,6 +8,8 @@ const FurnitureScript = preload("res://scripts/sofa_interactable.gd")
 const PowerSwitchScript = preload("res://scripts/power_switch.gd")
 const TreasureChestScript = preload("res://scripts/treasure_chest.gd")
 const KeyPickupScript = preload("res://scripts/key_pickup.gd")
+const GameFlow = preload("res://scripts/game_flow.gd")
+const ENDING_SCENE_PATH := "res://scenes/ending_screen.tscn"
 
 # Sofa, dining table, 2 chairs and the cabinet.
 const FURNITURE_TOTAL := 5
@@ -32,6 +34,7 @@ var fridge_switch: StaticBody3D
 var saved_ambient_energy: float = 0.0
 var saved_sun_energy: float = 0.0
 var dim_tween: Tween
+var game_over: bool = false
 var ambience_time: float = 0.0
 var ceiling_lights: Array[OmniLight3D] = []
 var light_bulbs: Array[MeshInstance3D] = []
@@ -871,6 +874,30 @@ func _add_body_collision(body: StaticBody3D, size: Vector3, local_position: Vect
 	collision.position = local_position
 	collision.shape = shape
 	body.add_child(collision)
+func _unhandled_input(event: InputEvent) -> void:
+	# Debug shortcuts for testing the endings without playing 10 minutes.
+	# Only active when run from the editor (never in an exported build).
+	#   F1 = Ending 1 (timer out, diamond left)   F2 = Ending 2 (timer out, diamond taken)
+	#   F3 = Ending 3 (tasks done, diamond left)  F4 = Ending 4 (tasks done, diamond taken)
+	if not OS.is_debug_build() or game_over:
+		return
+	if event is InputEventKey and event.pressed and not event.echo:
+		match event.keycode:
+			KEY_F1:
+				_debug_end(false, false)
+			KEY_F2:
+				_debug_end(false, true)
+			KEY_F3:
+				_debug_end(true, false)
+			KEY_F4:
+				_debug_end(true, true)
+
+
+func _debug_end(tasks_finished: bool, diamond_taken: bool) -> void:
+	game_manager.set("diamond_taken", diamond_taken)
+	_finish_game(tasks_finished)
+
+
 func _process(delta: float) -> void:
 	ambience_time += delta
 
@@ -928,6 +955,63 @@ func _refresh_hud() -> void:
 		panel_repaired,
 		fridge_done
 	)
+	if _all_tasks_done():
+		_finish_game(true)
+
+
+func _washroom_total() -> int:
+	return bathroom_mirrors_cleaned + bathroom_door_cleaned + bathroom_pipe_cleaned
+
+
+func _all_tasks_done() -> bool:
+	return _tasks_done_count() >= 5
+
+
+func _tasks_done_count() -> int:
+	return (
+		int(dust_cleaned >= 6)
+		+ panel_repaired
+		+ fridge_done
+		+ int(furniture_placed >= FURNITURE_TOTAL)
+		+ int(_washroom_total() >= 3)
+	)
+
+
+func _finish_game(tasks_finished: bool) -> void:
+	# Four endings: (timer out | all tasks done) x (diamond left | taken).
+	if game_over:
+		return
+	game_over = true
+	game_manager.set("is_running", false)
+
+	var taken: bool = bool(game_manager.get("diamond_taken"))
+	var ending := 1
+	if tasks_finished:
+		ending = 4 if taken else 3
+	else:
+		ending = 2 if taken else 1
+	GameFlow.ending_id = ending
+	GameFlow.tasks_done = _tasks_done_count()
+	GameFlow.seconds_left = int(ceil(float(game_manager.get("seconds_left"))))
+	GameFlow.diamond_taken = taken
+
+	if tasks_finished:
+		hud.set_interaction_prompt("ALL TASKS COMPLETE")
+		await get_tree().create_timer(1.6).timeout
+
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	var fade_layer := CanvasLayer.new()
+	fade_layer.layer = 100
+	var fade := ColorRect.new()
+	fade.set_anchors_preset(Control.PRESET_FULL_RECT)
+	fade.color = Color(0, 0, 0, 0)
+	fade.mouse_filter = Control.MOUSE_FILTER_STOP
+	fade_layer.add_child(fade)
+	add_child(fade_layer)
+	var tween := create_tween()
+	tween.tween_property(fade, "color:a", 1.0, 1.0)
+	await tween.finished
+	get_tree().change_scene_to_file(ENDING_SCENE_PATH)
 
 
 func _on_dust_cleaned() -> void:
@@ -987,4 +1071,5 @@ func _on_repair_task_completed(task_kind: String) -> void:
 
 func _on_time_expired() -> void:
 	hud.set_time_expired()
+	_finish_game(false)
 	hud.set_interaction_prompt("TIME IS UP")

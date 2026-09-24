@@ -11,8 +11,15 @@ config_version=5
 [application]
 
 config/name="The Cleaner"
-run/main_scene="res://scenes/cutscene_intro.tscn"
+run/main_scene="res://scenes/start_menu.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
+
+[autoload]
+
+SuspicionManager="*uid://bb5eeqqpmjk3k"
+EndingStateMachine="*uid://dh1k1wdta5nw1"
+RunGenerator="*uid://d0k7jokmp0alw"
+InnerVoiceManager="*uid://d3nwm2pk8wi3g"
 
 [display]
 

@@ -37,11 +37,22 @@ var cinematic_camera: Camera3D
 var overlay: CanvasLayer
 var note_visible: bool = false
 
+# Grouped so the start/ending backdrops can hide or rearrange the chest.
+var chest_group: Node3D
+var scroll_node: Node3D
+var lamp_pool: SpotLight3D
+var lamp_glow: OmniLight3D
+var lamp_bulb_material: StandardMaterial3D
+var lamp_shade_material: StandardMaterial3D
+
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	add_to_group("interactable")
 	_build_desk()
+	chest_group = Node3D.new()
+	chest_group.name = "ChestGroup"
+	add_child(chest_group)
 	_build_chest_body()
 	_build_lid()
 	_build_padlock()
@@ -191,6 +202,32 @@ func _wait(seconds: float) -> void:
 	await get_tree().create_timer(seconds, true).timeout
 
 
+# --- Display helpers (used by the start / ending backdrops) ----------------
+
+func set_lamp(power: float, spot_angle: float = 38.0) -> void:
+	# power: 0 = lamp off, 1 = normal glow, higher = brighter.
+	lamp_pool.light_energy = 9.0 * power
+	lamp_pool.spot_angle = spot_angle
+	lamp_glow.light_energy = 0.5 * power
+	lamp_bulb_material.emission_energy_multiplier = 3.0 * power
+	lamp_shade_material.emission_energy_multiplier = 1.2 * power
+	lamp_bulb_material.albedo_color = Color(1.0, 0.9, 0.6, 1) if power > 0.0 else Color(0.22, 0.2, 0.17, 1)
+
+
+func set_chest_visible(value: bool) -> void:
+	chest_group.visible = value
+
+
+func show_treasure_on_desk() -> void:
+	# Chest gone; the diamond and contract rest on the bare desk.
+	diamond.reparent(self, false)
+	diamond.position = Vector3(0.0, 1.08, 0.15)
+	scroll_node.reparent(self, false)
+	scroll_node.position = Vector3(0.5, 0.95, 0.2)
+	diamond_light.light_energy = 1.6
+	chest_group.visible = false
+
+
 # --- Construction ----------------------------------------------------------
 # Local origin is on the floor at the centre of the desk. Desk top is y=0.9;
 # the chest front faces +z (into the room).
@@ -253,24 +290,24 @@ func _build_chest_body() -> void:
 	var velvet := _mat(Color(0.32, 0.03, 0.07, 1), Color(0, 0, 0, 1), 0.0, 0.0, 1.0)
 
 	# Hollow box so the inside can be seen once the lid is open.
-	_box(self, "ChestFloor", Vector3(1.1, 0.06, 0.72), Vector3(0, 0.93, 0), wood)
-	_box(self, "ChestFront", Vector3(1.1, 0.5, 0.06), Vector3(0, 1.15, 0.33), wood)
-	_box(self, "ChestBack", Vector3(1.1, 0.5, 0.06), Vector3(0, 1.15, -0.33), wood)
-	_box(self, "ChestLeft", Vector3(0.06, 0.5, 0.72), Vector3(-0.52, 1.15, 0), wood)
-	_box(self, "ChestRight", Vector3(0.06, 0.5, 0.72), Vector3(0.52, 1.15, 0), wood)
-	_box(self, "ChestLining", Vector3(1.0, 0.02, 0.6), Vector3(0, 0.97, 0), velvet)
+	_box(chest_group, "ChestFloor", Vector3(1.1, 0.06, 0.72), Vector3(0, 0.93, 0), wood)
+	_box(chest_group, "ChestFront", Vector3(1.1, 0.5, 0.06), Vector3(0, 1.15, 0.33), wood)
+	_box(chest_group, "ChestBack", Vector3(1.1, 0.5, 0.06), Vector3(0, 1.15, -0.33), wood)
+	_box(chest_group, "ChestLeft", Vector3(0.06, 0.5, 0.72), Vector3(-0.52, 1.15, 0), wood)
+	_box(chest_group, "ChestRight", Vector3(0.06, 0.5, 0.72), Vector3(0.52, 1.15, 0), wood)
+	_box(chest_group, "ChestLining", Vector3(1.0, 0.02, 0.6), Vector3(0, 0.97, 0), velvet)
 
 	# Iron banding: corner posts plus two straps front and back.
 	for x_sign in [-1.0, 1.0]:
 		for z_sign in [-1.0, 1.0]:
-			_box(self, "CornerIron", Vector3(0.09, 0.52, 0.09), Vector3(0.53 * x_sign, 1.15, 0.33 * z_sign), iron)
+			_box(chest_group, "CornerIron", Vector3(0.09, 0.52, 0.09), Vector3(0.53 * x_sign, 1.15, 0.33 * z_sign), iron)
 	for x_pos in [-0.25, 0.25]:
-		_box(self, "StrapFront", Vector3(0.08, 0.52, 0.075), Vector3(x_pos, 1.15, 0.345), iron)
-		_box(self, "StrapBack", Vector3(0.08, 0.52, 0.075), Vector3(x_pos, 1.15, -0.345), iron)
-	_box(self, "RimIron", Vector3(1.14, 0.05, 0.08), Vector3(0, 0.95, 0.34), iron)
+		_box(chest_group, "StrapFront", Vector3(0.08, 0.52, 0.075), Vector3(x_pos, 1.15, 0.345), iron)
+		_box(chest_group, "StrapBack", Vector3(0.08, 0.52, 0.075), Vector3(x_pos, 1.15, -0.345), iron)
+	_box(chest_group, "RimIron", Vector3(1.14, 0.05, 0.08), Vector3(0, 0.95, 0.34), iron)
 
 	# Lock keep on the body front.
-	_box(self, "LockKeep", Vector3(0.14, 0.12, 0.03), Vector3(0, 1.3, 0.37), iron)
+	_box(chest_group, "LockKeep", Vector3(0.14, 0.12, 0.03), Vector3(0, 1.3, 0.37), iron)
 
 
 func _build_lid() -> void:
@@ -281,7 +318,7 @@ func _build_lid() -> void:
 	lid_pivot = Node3D.new()
 	lid_pivot.name = "LidPivot"
 	lid_pivot.position = Vector3(0, 1.4, -0.36)
-	add_child(lid_pivot)
+	chest_group.add_child(lid_pivot)
 
 	_box(lid_pivot, "LidBoard", Vector3(1.14, 0.14, 0.78), Vector3(0, 0.07, 0.39), wood)
 	_box(lid_pivot, "LidCrown", Vector3(1.06, 0.06, 0.66), Vector3(0, 0.17, 0.39), wood)
@@ -295,7 +332,7 @@ func _build_padlock() -> void:
 	padlock = Node3D.new()
 	padlock.name = "Padlock"
 	padlock.position = Vector3(0, 1.24, 0.46)
-	add_child(padlock)
+	chest_group.add_child(padlock)
 	_box(padlock, "LockBody", Vector3(0.14, 0.16, 0.07), Vector3.ZERO, brass)
 	var shackle := MeshInstance3D.new()
 	shackle.name = "Shackle"
@@ -316,11 +353,11 @@ func _build_contents() -> void:
 	var crystal := _mat(Color(0.75, 0.95, 1.0, 0.78), Color(0.5, 0.85, 1.0, 1), 1.8, 0.3, 0.05)
 
 	# Velvet cushion with the diamond on top.
-	_box(self, "Cushion", Vector3(0.56, 0.1, 0.4), Vector3(-0.2, 1.05, 0), velvet)
+	_box(chest_group, "Cushion", Vector3(0.56, 0.1, 0.4), Vector3(-0.2, 1.05, 0), velvet)
 	diamond = Node3D.new()
 	diamond.name = "Diamond"
 	diamond.position = Vector3(-0.2, 1.28, 0)
-	add_child(diamond)
+	chest_group.add_child(diamond)
 	_cyl(diamond, "Crown", 0.07, 0.14, 0.08, Vector3(0, 0.04, 0), crystal, 8)
 	_cyl(diamond, "Pavilion", 0.14, 0.0, 0.16, Vector3(0, -0.08, 0), crystal, 8)
 	diamond_light = OmniLight3D.new()
@@ -334,9 +371,10 @@ func _build_contents() -> void:
 	# The rolled-up 'Contract' scroll next to it.
 	var scroll := Node3D.new()
 	scroll.name = "ContractScroll"
+	scroll_node = scroll
 	scroll.position = Vector3(0.25, 1.05, 0.02)
 	scroll.rotation_degrees.y = 18.0
-	add_child(scroll)
+	chest_group.add_child(scroll)
 	_cyl(scroll, "Roll", 0.045, 0.045, 0.42, Vector3.ZERO, parchment, 14).rotation_degrees.z = 90.0
 	_cyl(scroll, "RibbonBand", 0.05, 0.05, 0.04, Vector3.ZERO, ribbon, 14).rotation_degrees.z = 90.0
 
@@ -383,6 +421,10 @@ func _build_lamp() -> void:
 	pool.light_color = Color(1.0, 0.82, 0.5, 1)
 	pool.shadow_enabled = true
 	add_child(pool)
+	lamp_pool = pool
+	lamp_glow = warm_glow
+	lamp_bulb_material = bulb
+	lamp_shade_material = shade
 	pool.look_at(to_global(Vector3(0.0, 1.1, 0.0)), Vector3.UP)
 
 
