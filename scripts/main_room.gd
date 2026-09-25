@@ -919,13 +919,13 @@ func _build_hanging_lamp(world_position: Vector3) -> void:
 
 
 func _build_refrigerator() -> void:
-	# Starts in an empty spot near the front wall. Carry it to the pink
-	# footprint against the left wall; once it is placed the wall switch
-	# unlocks and turns it on.
+	# Spawns at the centre of the room. Carry it to the pink footprint
+	# against the left wall; once it is placed the wall switch unlocks and
+	# turns it on.
 	var fridge := _new_furniture_item(
 		"Fridge",
 		"FRIDGE",
-		Vector3(0.5, 0.0, 8.5),
+		Vector3(0.0, 0.0, 0.0),
 		Vector3(-9.15, 0.0, -1.6),
 		Vector3(2.35, 0.04, 1.55),
 		Vector3(0.0, -90.0, 0.0),
