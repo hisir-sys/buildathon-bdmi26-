@@ -153,6 +153,20 @@ corner_radius_top_right = 7
 corner_radius_bottom_right = 7
 corner_radius_bottom_left = 7
 
+[sub_resource type="StyleBoxFlat" id="StyleBox_timer_simple"]
+bg_color = Color(0.025, 0.03, 0.04, 0.94)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.42, 0.46, 0.52, 0.34)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(0, 0, 0, 0.24)
+shadow_size = 5
+
 [sub_resource type="StyleBoxFlat" id="StyleBox_card"]
 bg_color = Color(0.024, 0.045, 0.095, 0.92)
 border_width_left = 1
@@ -484,31 +498,59 @@ theme_override_font_sizes/font_size = 10
 text = "RED CLEAN · BLUE MECH · GREEN WASH"
 
 [node name="TimerPanel" type="Panel" parent="HUD"]
-offset_left = 505.0
-offset_top = 24.0
-offset_right = 775.0
-offset_bottom = 92.0
-theme_override_styles/panel = SubResource("StyleBox_card")
+offset_left = 562.0
+offset_top = 38.0
+offset_right = 718.0
+offset_bottom = 82.0
+theme_override_styles/panel = SubResource("StyleBox_timer_simple")
 
 [node name="TimerCaption" type="Label" parent="HUD/TimerPanel"]
-offset_left = 28.0
-offset_top = 6.0
-offset_right = 242.0
-offset_bottom = 24.0
-theme_override_colors/font_color = Color(0.38, 0.52, 0.7, 1)
-theme_override_font_sizes/font_size = 10
-text = "OWNER ARRIVES IN"
-horizontal_alignment = 1
+offset_left = 10.0
+offset_top = 5.0
+offset_right = 74.0
+offset_bottom = 39.0
+theme_override_colors/font_color = Color(0.60, 0.63, 0.68, 0.9)
+theme_override_font_sizes/font_size = 8
+text = "TIME LEFT"
+vertical_alignment = 1
 
 [node name="TimerLabel" type="Label" parent="HUD/TimerPanel"]
-offset_left = 28.0
-offset_top = 22.0
-offset_right = 240.0
-offset_bottom = 68.0
-theme_override_colors/font_color = Color(1, 0.78, 0.2, 1)
-theme_override_font_sizes/font_size = 25
+offset_left = 78.0
+offset_top = 5.0
+offset_right = 146.0
+offset_bottom = 39.0
+theme_override_colors/font_color = Color(0.96, 0.97, 0.98, 1)
+theme_override_font_sizes/font_size = 24
 text = "10:00"
-horizontal_alignment = 1
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="TimerTopLine" type="ColorRect" parent="HUD/TimerPanel"]
+visible = false
+offset_left = 18.0
+offset_top = 1.0
+offset_right = 282.0
+offset_bottom = 3.0
+mouse_filter = 2
+color = Color(0.35, 0.85, 1, 0.72)
+
+[node name="TimerStatusDot" type="ColorRect" parent="HUD/TimerPanel"]
+visible = false
+offset_left = 18.0
+offset_top = 14.0
+offset_right = 22.0
+offset_bottom = 18.0
+mouse_filter = 2
+color = Color(0.4, 0.95, 1, 1)
+
+[node name="TimerAccentLine" type="ColorRect" parent="HUD/TimerPanel"]
+visible = false
+offset_left = 30.0
+offset_top = 64.0
+offset_right = 270.0
+offset_bottom = 66.0
+mouse_filter = 2
+color = Color(0.35, 0.72, 0.95, 0.35)
 
 [node name="SoundButton" type="Button" parent="HUD"]
 offset_left = 1222.0

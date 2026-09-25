@@ -1,5 +1,6 @@
 extends Node3D
 # Title screen: dark vintage study behind a glass-style menu.
+# The mission briefing is delivered as an FBI secure-channel sequence before the intro starts.
 
 const UiKit = preload("res://scripts/ui_kit.gd")
 const StudyBackdropScript = preload("res://scripts/study_backdrop.gd")
@@ -7,11 +8,15 @@ const INTRO_SCENE_PATH := "res://scenes/cutscene_intro.tscn"
 
 const BLUE := Color(0.3, 0.7, 1.0, 1)
 const GOLD := Color(0.93, 0.76, 0.32, 1)
+const FBI_BLUE := Color(0.38, 0.72, 1.0, 1)
 
 var fade: ColorRect
 var toast: Label
 var toast_tween: Tween
 var starting: bool = false
+var start_button: Button
+var load_button: Button
+var quit_button: Button
 
 
 func _ready() -> void:
@@ -97,9 +102,9 @@ func _build_ui() -> void:
 	buttons.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	column.add_child(buttons)
 
-	var start_button := UiKit.glass_button("START", BLUE)
-	var load_button := UiKit.glass_button("LOAD", BLUE)
-	var quit_button := UiKit.glass_button("QUIT", BLUE)
+	start_button = UiKit.glass_button("START", BLUE)
+	load_button = UiKit.glass_button("LOAD", BLUE)
+	quit_button = UiKit.glass_button("QUIT", BLUE)
 	buttons.add_child(start_button)
 	buttons.add_child(load_button)
 	buttons.add_child(quit_button)
@@ -110,6 +115,7 @@ func _build_ui() -> void:
 	toast = UiKit.label("", 15, Color(1.0, 0.8, 0.5, 1), HORIZONTAL_ALIGNMENT_CENTER)
 	toast.modulate.a = 0.0
 	column.add_child(toast)
+
 
 	# Fade layer sits on top of everything.
 	var fade_layer := CanvasLayer.new()
@@ -126,6 +132,9 @@ func _on_start() -> void:
 	if starting:
 		return
 	starting = true
+	start_button.disabled = true
+	load_button.disabled = true
+	quit_button.disabled = true
 	var tween := create_tween()
 	tween.tween_property(fade, "color:a", 1.0, 0.7)
 	await tween.finished

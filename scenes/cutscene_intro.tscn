@@ -24,18 +24,18 @@ corner_radius_bottom_right = 22
 corner_radius_bottom_left = 22
 
 [sub_resource type="StyleBoxFlat" id="StyleBox_herotimer"]
-bg_color = Color(0.022, 0.04, 0.088, 0.95)
+bg_color = Color(0.025, 0.03, 0.04, 0.96)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
-border_color = Color(0.35, 0.72, 0.95, 0.75)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
-shadow_color = Color(0.12, 0.45, 0.85, 0.4)
-shadow_size = 18
+border_color = Color(0.42, 0.46, 0.52, 0.34)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(0, 0, 0, 0.24)
+shadow_size = 5
 
 [sub_resource type="StyleBoxFlat" id="StyleBox_skip"]
 bg_color = Color(0.06, 0.08, 0.12, 0.75)
@@ -192,9 +192,9 @@ color = Color(1, 0.82, 0.4, 0.5)
 layout_mode = 1
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -190.0
+offset_left = -210.0
 offset_top = 24.0
-offset_right = 190.0
+offset_right = 210.0
 offset_bottom = 110.0
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBox_notification")
@@ -225,7 +225,7 @@ text = "O"
 layout_mode = 0
 offset_left = 70.0
 offset_top = 12.0
-offset_right = 290.0
+offset_right = 326.0
 offset_bottom = 32.0
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.96, 0.97, 1, 1)
@@ -234,9 +234,9 @@ text = "Owner"
 
 [node name="TimestampLabel" type="Label" parent="PhoneNotification"]
 layout_mode = 0
-offset_left = 290.0
+offset_left = 326.0
 offset_top = 12.0
-offset_right = 366.0
+offset_right = 406.0
 offset_bottom = 32.0
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.55, 0.6, 0.68, 0.85)
@@ -248,7 +248,7 @@ text = "now"
 layout_mode = 0
 offset_left = 70.0
 offset_top = 34.0
-offset_right = 366.0
+offset_right = 406.0
 offset_bottom = 76.0
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.82, 0.86, 0.92, 0.95)
@@ -260,128 +260,75 @@ text = "Notification message"
 layout_mode = 0
 offset_left = 12.0
 offset_top = 78.0
-offset_right = 368.0
+offset_right = 408.0
 offset_bottom = 81.0
 mouse_filter = 2
 color = Color(0.35, 0.7, 1, 0.85)
 
 [node name="HeroTimerPanel" type="Panel" parent="."]
 layout_mode = 0
-offset_left = 505.0
-offset_top = 24.0
-offset_right = 775.0
-offset_bottom = 92.0
-pivot_offset = Vector2(135, 34)
+offset_left = 562.0
+offset_top = 38.0
+offset_right = 718.0
+offset_bottom = 82.0
+pivot_offset = Vector2(105, 33)
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBox_herotimer")
 
-[node name="TopSheen" type="ColorRect" parent="HeroTimerPanel"]
+[node name="TopLine" type="ColorRect" parent="HeroTimerPanel"]
+visible = false
 layout_mode = 0
-offset_left = 10.0
+offset_left = 16.0
 offset_top = 1.0
-offset_right = 260.0
-offset_bottom = 3.0
+offset_right = 194.0
+offset_bottom = 2.0
 mouse_filter = 2
-color = Color(1, 1, 1, 0.08)
+color = Color(0.35, 0.85, 1, 0.72)
 
-[node name="CornerTL_H" type="ColorRect" parent="HeroTimerPanel"]
+[node name="StatusDot" type="ColorRect" parent="HeroTimerPanel"]
+visible = false
 layout_mode = 0
-offset_left = -3.0
-offset_top = -3.0
-offset_right = 11.0
-offset_bottom = -1.0
+offset_left = 16.0
+offset_top = 14.0
+offset_right = 20.0
+offset_bottom = 18.0
 mouse_filter = 2
-color = Color(1, 0.8, 0.35, 0.9)
-
-[node name="CornerTL_V" type="ColorRect" parent="HeroTimerPanel"]
-layout_mode = 0
-offset_left = -3.0
-offset_top = -3.0
-offset_right = -1.0
-offset_bottom = 11.0
-mouse_filter = 2
-color = Color(1, 0.8, 0.35, 0.9)
-
-[node name="CornerTR_H" type="ColorRect" parent="HeroTimerPanel"]
-layout_mode = 0
-offset_left = 259.0
-offset_top = -3.0
-offset_right = 273.0
-offset_bottom = -1.0
-mouse_filter = 2
-color = Color(1, 0.8, 0.35, 0.9)
-
-[node name="CornerTR_V" type="ColorRect" parent="HeroTimerPanel"]
-layout_mode = 0
-offset_left = 271.0
-offset_top = -3.0
-offset_right = 273.0
-offset_bottom = 11.0
-mouse_filter = 2
-color = Color(1, 0.8, 0.35, 0.9)
-
-[node name="CornerBL_H" type="ColorRect" parent="HeroTimerPanel"]
-layout_mode = 0
-offset_left = -3.0
-offset_top = 69.0
-offset_right = 11.0
-offset_bottom = 71.0
-mouse_filter = 2
-color = Color(1, 0.8, 0.35, 0.9)
-
-[node name="CornerBL_V" type="ColorRect" parent="HeroTimerPanel"]
-layout_mode = 0
-offset_left = -3.0
-offset_top = 57.0
-offset_right = -1.0
-offset_bottom = 71.0
-mouse_filter = 2
-color = Color(1, 0.8, 0.35, 0.9)
-
-[node name="CornerBR_H" type="ColorRect" parent="HeroTimerPanel"]
-layout_mode = 0
-offset_left = 259.0
-offset_top = 69.0
-offset_right = 273.0
-offset_bottom = 71.0
-mouse_filter = 2
-color = Color(1, 0.8, 0.35, 0.9)
-
-[node name="CornerBR_V" type="ColorRect" parent="HeroTimerPanel"]
-layout_mode = 0
-offset_left = 271.0
-offset_top = 57.0
-offset_right = 273.0
-offset_bottom = 71.0
-mouse_filter = 2
-color = Color(1, 0.8, 0.35, 0.9)
+color = Color(0.4, 0.95, 1, 1)
 
 [node name="HeroTimerCaption" type="Label" parent="HeroTimerPanel"]
 layout_mode = 0
-offset_left = 28.0
-offset_top = 7.0
-offset_right = 250.0
-offset_bottom = 25.0
+offset_left = 10.0
+offset_top = 5.0
+offset_right = 74.0
+offset_bottom = 39.0
 mouse_filter = 2
-theme_override_colors/font_color = Color(0.5, 0.68, 0.88, 1)
-theme_override_font_sizes/font_size = 10
-text = "O W N E R   A R R I V E S   I N"
+theme_override_colors/font_color = Color(0.60, 0.63, 0.68, 0.9)
+theme_override_font_sizes/font_size = 8
+text = "TIME LEFT"
+vertical_alignment = 1
 
 [node name="HeroTimerLabel" type="Label" parent="HeroTimerPanel"]
 layout_mode = 0
-offset_left = 28.0
-offset_top = 22.0
-offset_right = 240.0
-offset_bottom = 68.0
+offset_left = 78.0
+offset_top = 5.0
+offset_right = 146.0
+offset_bottom = 39.0
 mouse_filter = 2
-theme_override_colors/font_color = Color(1, 0.82, 0.25, 1)
-theme_override_colors/font_shadow_color = Color(1, 0.55, 0.1, 0.4)
-theme_override_colors/font_outline_color = Color(0.04, 0.07, 0.13, 0.9)
-theme_override_constants/shadow_offset_x = 0
-theme_override_constants/shadow_offset_y = 2
-theme_override_constants/outline_size = 3
-theme_override_font_sizes/font_size = 27
+theme_override_colors/font_color = Color(0.96, 0.97, 0.98, 1)
+theme_override_font_sizes/font_size = 24
 text = "10:00"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="AccentLine" type="ColorRect" parent="HeroTimerPanel"]
+visible = false
+layout_mode = 0
+offset_left = 30.0
+offset_top = 64.0
+offset_right = 270.0
+offset_bottom = 66.0
+mouse_filter = 2
+color = Color(0.35, 0.72, 0.95, 0.35)
 
 [node name="SkipButton" type="Button" parent="."]
 layout_mode = 1

@@ -21,6 +21,10 @@ const HOTBAR_NORMAL_BORDER := Color(0.14, 0.45, 0.62, 0.55)
 const HOTBAR_ACTIVE_BG := Color(0.07, 0.1, 0.16, 0.97)
 const HOTBAR_NORMAL_BG := Color(0.03, 0.05, 0.1, 0.85)
 
+const TIMER_CARD_BG := Color(0.058, 0.066, 0.082, 1)
+const TIMER_DIGIT_COLOR := Color(0.93, 0.96, 0.99, 1)
+const TIMER_DIGIT_URGENT := Color(1.0, 0.37, 0.34, 1)
+
 var sound_enabled: bool = true
 var is_paused: bool = false
 var key_badge: PanelContainer
@@ -42,6 +46,10 @@ var interaction_progress_track: ColorRect
 var interaction_progress_fill: ColorRect
 var interaction_progress_value: float = 0.0
 var status_label: Label
+var flip_cards: Array = []
+var flip_colons: Array = []
+var _timer_urgent: bool = false
+var _colon_blink_on: bool = true
 
 
 func _ready() -> void:
@@ -54,6 +62,8 @@ func _ready() -> void:
 	_build_collected_items()
 	_build_toast()
 	_build_premium_hud()
+	_apply_timer_typography()
+	_build_flip_timer()
 	_build_pause_menu()
 	if has_node("/root/SuspicionManager"):
 		get_node("/root/SuspicionManager").connect("suspicion_changed", set_suspicion)
@@ -129,14 +139,327 @@ func mark_furniture_complete(furniture_count: int, total: int = FURNITURE_TOTAL)
 		set_interaction_prompt("FURNITURE %d/%d PLACED" % [furniture_count, total])
 
 
+const TIMER_CARD_W := 34.0
+const TIMER_CARD_H := 46.0
+const TIMER_ROW_WIDTH := 241.0
+const TIMER_HOUSING_SIZE := Vector2(266.0, 78.0)
+const TIMER_HOUSING_POS := Vector2(507.0, 26.0)
+
 func set_timer(seconds_left: int) -> void:
-	var minutes := seconds_left / 60
-	var seconds := seconds_left % 60
-	$TimerPanel/TimerLabel.text = "%02d:%02d" % [minutes, seconds]
+	var total := maxi(seconds_left, 0)
+	var hours := total / 3600
+	var minutes := (total / 60) % 60
+	var seconds := total % 60
+	_update_flip_timer("%02d%02d%02d" % [hours, minutes, seconds])
+	_set_timer_urgent(total <= 60 and total > 0)
+	_blink_colons()
 
 
 func set_time_expired() -> void:
-	$TimerPanel/TimerLabel.text = "00:00"
+	_update_flip_timer("000000")
+	_set_timer_urgent(true)
+
+
+# --- Split-flap countdown unit ----------------------------------------------
+# A real split-flap digit is two static halves that always show the current
+# value, plus a hinged "flap" that covers the top half and rotates down to
+# reveal it. We fake the 3D rotation in 2D by scaling the flap toward zero
+# on its Y axis (pivoted at the hinge line), swapping its text once it is
+# edge-on, then scaling back out - so it only ever animates a digit that
+# actually changed, exactly like the real hardware.
+
+func _build_flip_timer() -> void:
+	var timer_panel := get_node_or_null("TimerPanel") as Panel
+	if timer_panel == null:
+		return
+	var old_label := timer_panel.get_node_or_null("TimerLabel") as Label
+	var old_caption := timer_panel.get_node_or_null("TimerCaption") as Label
+	if old_label != null:
+		old_label.visible = false
+	if old_caption != null:
+		old_caption.visible = false
+	for child_name in ["TimerTopLine", "TimerStatusDot", "TimerAccentLine"]:
+		var legacy := timer_panel.get_node_or_null(child_name)
+		if legacy != null:
+			legacy.queue_free()
+
+	timer_panel.position = TIMER_HOUSING_POS
+	timer_panel.size = TIMER_HOUSING_SIZE
+	timer_panel.add_theme_stylebox_override("panel", _make_timer_bezel(false))
+
+	for corner in [Vector2(8, 7), Vector2(TIMER_HOUSING_SIZE.x - 12, 7), Vector2(8, TIMER_HOUSING_SIZE.y - 11), Vector2(TIMER_HOUSING_SIZE.x - 12, TIMER_HOUSING_SIZE.y - 11)]:
+		var rivet := Panel.new()
+		rivet.position = corner
+		rivet.size = Vector2(4, 4)
+		rivet.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		var rivet_style := StyleBoxFlat.new()
+		rivet_style.bg_color = Color(0.16, 0.19, 0.24, 0.9)
+		rivet_style.border_color = Color(0.35, 0.4, 0.48, 0.4)
+		rivet_style.set_border_width_all(1)
+		rivet_style.set_corner_radius_all(2)
+		rivet.add_theme_stylebox_override("panel", rivet_style)
+		timer_panel.add_child(rivet)
+
+	var caption := Label.new()
+	caption.text = "T I M E   R E M A I N I N G"
+	caption.position = Vector2(0, 6)
+	caption.size = Vector2(TIMER_HOUSING_SIZE.x, 13)
+	caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	caption.add_theme_font_size_override("font_size", 9)
+	caption.add_theme_color_override("font_color", Color(0.50, 0.55, 0.62, 0.8))
+	caption.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	timer_panel.add_child(caption)
+
+	var row := HBoxContainer.new()
+	row.name = "FlipTimer"
+	row.position = Vector2((TIMER_HOUSING_SIZE.x - TIMER_ROW_WIDTH) / 2.0, 24)
+	row.size = Vector2(TIMER_ROW_WIDTH, TIMER_CARD_H)
+	row.add_theme_constant_override("separation", 3)
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	timer_panel.add_child(row)
+
+	flip_cards.clear()
+	flip_colons.clear()
+	for g in range(3):
+		for d in range(2):
+			var card := _make_flip_digit_card()
+			row.add_child(card.card)
+			flip_cards.append(card)
+		if g < 2:
+			var colon := _make_colon_dots()
+			row.add_child(colon)
+			flip_colons.append(colon)
+
+
+func _digit_font() -> Font:
+	var f := SystemFont.new()
+	f.font_names = PackedStringArray(["Bahnschrift", "Segoe UI Semibold", "Arial Bold", "DejaVu Sans Bold"])
+	f.font_weight = 700
+	return f
+
+
+func _make_timer_bezel(urgent: bool) -> StyleBoxFlat:
+	var bezel := StyleBoxFlat.new()
+	bezel.bg_color = Color(0.018, 0.022, 0.030, 0.96)
+	bezel.border_color = Color(0.55, 0.20, 0.18, 0.5) if urgent else Color(0.16, 0.19, 0.24, 0.55)
+	bezel.set_border_width_all(1)
+	bezel.set_corner_radius_all(12)
+	bezel.shadow_color = Color(0, 0, 0, 0.4)
+	bezel.shadow_size = 6
+	return bezel
+
+
+func _make_flip_digit_card() -> Dictionary:
+	var w := TIMER_CARD_W
+	var h := TIMER_CARD_H
+	var card := Panel.new()
+	card.custom_minimum_size = Vector2(w, h)
+	card.size = Vector2(w, h)
+	var card_style := StyleBoxFlat.new()
+	card_style.bg_color = TIMER_CARD_BG
+	card_style.border_color = Color(0, 0, 0, 0.55)
+	card_style.set_border_width_all(1)
+	card_style.set_corner_radius_all(5)
+	card_style.shadow_color = Color(0, 0, 0, 0.3)
+	card_style.shadow_size = 2
+	card.add_theme_stylebox_override("panel", card_style)
+
+	var font := _digit_font()
+
+	# Static top half - always shows the current (post-flip) digit.
+	var top_clip := Control.new()
+	top_clip.position = Vector2(0, 0)
+	top_clip.size = Vector2(w, h / 2.0)
+	top_clip.clip_contents = true
+	top_clip.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card.add_child(top_clip)
+
+	var top_label := Label.new()
+	top_label.text = "0"
+	top_label.position = Vector2(0, 0)
+	top_label.size = Vector2(w, h)
+	top_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	top_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	top_label.add_theme_font_override("font", font)
+	top_label.add_theme_font_size_override("font_size", 30)
+	top_label.add_theme_color_override("font_color", TIMER_DIGIT_COLOR)
+	top_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	top_clip.add_child(top_label)
+
+	# Static bottom half - very slightly darker, as if lit from above.
+	var bottom_clip := Control.new()
+	bottom_clip.position = Vector2(0, h / 2.0)
+	bottom_clip.size = Vector2(w, h / 2.0)
+	bottom_clip.clip_contents = true
+	bottom_clip.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card.add_child(bottom_clip)
+
+	var bottom_label := Label.new()
+	bottom_label.text = "0"
+	bottom_label.position = Vector2(0, -h / 2.0)
+	bottom_label.size = Vector2(w, h)
+	bottom_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	bottom_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	bottom_label.add_theme_font_override("font", font)
+	bottom_label.add_theme_font_size_override("font_size", 30)
+	bottom_label.add_theme_color_override("font_color", TIMER_DIGIT_COLOR.darkened(0.15))
+	bottom_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	bottom_clip.add_child(bottom_label)
+
+	# Hinge crease - a dark seam with a faint highlight just beneath it,
+	# like light catching the fold of a real card.
+	var hinge_shadow := ColorRect.new()
+	hinge_shadow.position = Vector2(0, h / 2.0 - 1)
+	hinge_shadow.size = Vector2(w, 2)
+	hinge_shadow.color = Color(0, 0, 0, 0.55)
+	hinge_shadow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card.add_child(hinge_shadow)
+
+	var hinge_gloss := ColorRect.new()
+	hinge_gloss.position = Vector2(0, h / 2.0 + 1)
+	hinge_gloss.size = Vector2(w, 1)
+	hinge_gloss.color = Color(1, 1, 1, 0.05)
+	hinge_gloss.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card.add_child(hinge_gloss)
+
+	var top_gloss := ColorRect.new()
+	top_gloss.position = Vector2(0, 0)
+	top_gloss.size = Vector2(w, 1)
+	top_gloss.color = Color(1, 1, 1, 0.08)
+	top_gloss.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card.add_child(top_gloss)
+
+	# The flap: the only piece that actually moves. Sits over the top half
+	# and pivots at the hinge so scaling it on Y reads as a fold.
+	var flap := Control.new()
+	flap.position = Vector2(0, 0)
+	flap.size = Vector2(w, h / 2.0)
+	flap.pivot_offset = Vector2(w / 2.0, h / 2.0)
+	flap.clip_contents = true
+	flap.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card.add_child(flap)
+
+	var flap_bg := Panel.new()
+	flap_bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	flap_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var flap_style := StyleBoxFlat.new()
+	flap_style.bg_color = TIMER_CARD_BG.lightened(0.03)
+	flap_style.corner_radius_top_left = 5
+	flap_style.corner_radius_top_right = 5
+	flap_bg.add_theme_stylebox_override("panel", flap_style)
+	flap.add_child(flap_bg)
+
+	var flap_label := Label.new()
+	flap_label.text = "0"
+	flap_label.position = Vector2(0, 0)
+	flap_label.size = Vector2(w, h)
+	flap_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	flap_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	flap_label.add_theme_font_override("font", font)
+	flap_label.add_theme_font_size_override("font_size", 30)
+	flap_label.add_theme_color_override("font_color", TIMER_DIGIT_COLOR)
+	flap_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	flap.add_child(flap_label)
+
+	return {
+		"card": card,
+		"top": top_label,
+		"bottom": bottom_label,
+		"flap": flap,
+		"flap_label": flap_label,
+		"value": "0",
+		"tween": null,
+	}
+
+
+func _make_colon_dots() -> VBoxContainer:
+	var box := VBoxContainer.new()
+	box.custom_minimum_size = Vector2(8, 0)
+	box.alignment = BoxContainer.ALIGNMENT_CENTER
+	box.add_theme_constant_override("separation", 7)
+	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	for i in range(2):
+		var dot := Panel.new()
+		dot.custom_minimum_size = Vector2(5, 5)
+		dot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		var dot_style := StyleBoxFlat.new()
+		dot_style.bg_color = Color(0.55, 0.60, 0.66, 1)
+		dot_style.set_corner_radius_all(2)
+		dot.add_theme_stylebox_override("panel", dot_style)
+		box.add_child(dot)
+	return box
+
+
+func _blink_colons() -> void:
+	_colon_blink_on = not _colon_blink_on
+	var target_alpha := 1.0 if _colon_blink_on else 0.25
+	for colon_box in flip_colons:
+		for dot in (colon_box as VBoxContainer).get_children():
+			var tw := create_tween()
+			tw.tween_property(dot, "modulate:a", target_alpha, 0.18)
+
+
+func _set_timer_urgent(active: bool) -> void:
+	if active == _timer_urgent:
+		return
+	_timer_urgent = active
+	var text_color := TIMER_DIGIT_URGENT if active else TIMER_DIGIT_COLOR
+	var dot_color := TIMER_DIGIT_URGENT if active else Color(0.55, 0.60, 0.66, 1)
+	for card in flip_cards:
+		(card.top as Label).add_theme_color_override("font_color", text_color)
+		(card.bottom as Label).add_theme_color_override("font_color", text_color.darkened(0.15))
+		(card.flap_label as Label).add_theme_color_override("font_color", text_color)
+	for colon_box in flip_colons:
+		for dot in (colon_box as VBoxContainer).get_children():
+			var dot_style := (dot as Panel).get_theme_stylebox("panel").duplicate() as StyleBoxFlat
+			if dot_style != null:
+				dot_style.bg_color = dot_color
+				dot.add_theme_stylebox_override("panel", dot_style)
+
+	var timer_panel := get_node_or_null("TimerPanel") as Panel
+	if timer_panel != null:
+		timer_panel.add_theme_stylebox_override("panel", _make_timer_bezel(active))
+
+
+func _flip_card(card: Dictionary, new_value: String) -> void:
+	if card.value == new_value:
+		return
+	card.value = new_value
+
+	var flap: Control = card.flap
+	var flap_label: Label = card.flap_label
+	var top_label: Label = card.top
+	var bottom_label: Label = card.bottom
+
+	# The flap starts by showing whatever the top half currently shows,
+	# so the fold begins seamlessly, then swaps to the new digit once it
+	# is edge-on (fully foreshortened) and no longer readable anyway.
+	flap_label.text = top_label.text
+	flap.scale = Vector2(1, 1)
+	flap.modulate = Color(1, 1, 1, 1)
+
+	var existing_tween: Tween = card.get("tween")
+	if existing_tween != null and is_instance_valid(existing_tween):
+		existing_tween.kill()
+
+	var tw := create_tween()
+	card.tween = tw
+	tw.tween_property(flap, "scale:y", 0.05, 0.085).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	tw.parallel().tween_property(flap, "modulate", Color(0.55, 0.55, 0.58, 1), 0.085)
+	tw.tween_callback(func() -> void:
+		flap_label.text = new_value
+		top_label.text = new_value
+		bottom_label.text = new_value
+		flap.modulate = Color(1, 1, 1, 1)
+	)
+	tw.tween_property(flap, "scale:y", 1.0, 0.13).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+
+func _update_flip_timer(value: String) -> void:
+	if flip_cards.size() != 6:
+		return
+	for i in range(6):
+		_flip_card(flip_cards[i], value.substr(i, 1))
 
 
 func set_active_tool(tool_index: int) -> void:
@@ -396,6 +719,28 @@ func show_toast(message: String, seconds: float = 2.5) -> void:
 	)
 
 
+
+
+func _apply_timer_typography() -> void:
+	var timer_panel := get_node_or_null("TimerPanel") as Panel
+	if timer_panel == null:
+		return
+
+	var timer_font := SystemFont.new()
+	timer_font.font_names = PackedStringArray(["Bahnschrift", "Segoe UI", "Arial", "DejaVu Sans"])
+	timer_font.font_weight = 600
+	var timer_label := timer_panel.get_node_or_null("TimerLabel") as Label
+	if timer_label != null:
+		timer_label.add_theme_font_override("font", timer_font)
+
+	var caption_font := SystemFont.new()
+	caption_font.font_names = PackedStringArray(["Segoe UI", "Arial", "DejaVu Sans"])
+	caption_font.font_weight = 500
+	var caption := timer_panel.get_node_or_null("TimerCaption") as Label
+	if caption != null:
+		caption.add_theme_font_override("font", caption_font)
+
+
 func _build_premium_hud() -> void:
 	# Refine existing HUD cards without changing the gameplay layout.
 	var task_board := get_node_or_null("TaskBoard") as Panel
@@ -425,14 +770,9 @@ func _build_premium_hud() -> void:
 
 	var timer_panel := get_node_or_null("TimerPanel") as Panel
 	if timer_panel != null:
-		var timer_style := StyleBoxFlat.new()
-		timer_style.bg_color = Color(0.018, 0.028, 0.055, 0.92)
-		timer_style.border_color = Color(0.20, 0.72, 0.92, 0.45)
-		timer_style.set_border_width_all(1)
-		timer_style.set_corner_radius_all(12)
-		timer_style.shadow_color = Color(0, 0, 0, 0.55)
-		timer_style.shadow_size = 16
-		timer_panel.add_theme_stylebox_override("panel", timer_style)
+		# The flip cards are the timer; no surrounding box, glow, or caption.
+		timer_panel.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
+
 
 	# Small mission tag.
 	var mission := Label.new()
