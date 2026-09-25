@@ -41,10 +41,15 @@ func _unhandled_input(event: InputEvent) -> void:
 			head.rotation.x = camera_pitch
 
 	elif event.is_action_pressed("ui_cancel"):
-		if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
-			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		var hud := get_node_or_null("../HUD")
+		if hud != null and hud.has_method("toggle_pause"):
+			hud.toggle_pause()
+			get_viewport().set_input_as_handled()
 		else:
-			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+			if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+				Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+			else:
+				Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 	elif event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:

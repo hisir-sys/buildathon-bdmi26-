@@ -47,6 +47,12 @@ func interact() -> void:
 	is_cleaning = true
 
 
+func stop_interaction() -> void:
+	if is_cleaned:
+		return
+	is_cleaning = false
+
+
 func _create_scattered_dust() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = abs(hash(str(global_position)))

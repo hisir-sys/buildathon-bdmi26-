@@ -60,6 +60,10 @@ func interact() -> void:
 	_is_scrubbing = true
 
 
+func stop_interaction() -> void:
+	_is_scrubbing = false
+
+
 func _fire_clue() -> void:
 	var inner_voice := get_node_or_null("/root/InnerVoiceManager")
 	if inner_voice != null:

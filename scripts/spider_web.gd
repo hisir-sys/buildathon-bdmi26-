@@ -50,6 +50,12 @@ func interact() -> void:
 	is_cleaning = true
 
 
+func stop_interaction() -> void:
+	if is_cleared:
+		return
+	is_cleaning = false
+
+
 func _create_corner_web() -> void:
 	var web_material := StandardMaterial3D.new()
 	web_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA

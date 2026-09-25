@@ -5,6 +5,7 @@ signal interacted(target: Node)
 
 var current_target: Node = null
 var last_prompt: String = ""
+var held_target: Node = null
 
 
 func _ready() -> void:
@@ -30,6 +31,11 @@ func _process(_delta: float) -> void:
 	var next_prompt := ""
 	if next_target != null:
 		next_prompt = next_target.get_interaction_prompt()
+
+	if next_target != current_target and held_target != null:
+		if held_target.has_method("stop_interaction"):
+			held_target.stop_interaction()
+		held_target = null
 
 	if next_target == current_target and next_prompt == last_prompt:
 		return
@@ -68,8 +74,17 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("interact"):
 		if current_target != null and current_target.has_method("interact"):
 			current_target.interact()
+			if current_target.has_method("stop_interaction"):
+				held_target = current_target
 			interacted.emit(current_target)
 			get_viewport().set_input_as_handled()
+		return
+
+	if event.is_action_released("interact"):
+		if held_target != null and held_target.has_method("stop_interaction"):
+			held_target.stop_interaction()
+		held_target = null
+		get_viewport().set_input_as_handled()
 		return
 
 	if event.is_action_pressed("toggle_door"):

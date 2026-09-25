@@ -58,6 +58,12 @@ func interact() -> void:
 	_is_cleaning = true
 
 
+func stop_interaction() -> void:
+	if _is_cleaned:
+		return
+	_is_cleaning = false
+
+
 func _finish_clean() -> void:
 	_is_cleaning = false
 	_is_cleaned = true

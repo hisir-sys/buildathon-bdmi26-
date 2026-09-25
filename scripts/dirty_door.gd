@@ -58,5 +58,11 @@ func interact() -> void:
 	is_cleaning = true
 
 
+func stop_interaction() -> void:
+	if is_cleaned:
+		return
+	is_cleaning = false
+
+
 func toggle_open() -> void:
 	is_open = not is_open
