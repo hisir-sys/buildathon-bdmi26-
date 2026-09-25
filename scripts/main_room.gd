@@ -1076,7 +1076,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not OS.is_debug_build() or game_over:
 		return
 	if event is InputEventKey and event.pressed and not event.echo:
-		var key := event.keycode if event.keycode != KEY_NONE else event.physical_keycode
+		var key: int = int(event.keycode if event.keycode != KEY_NONE else event.physical_keycode)
 		match key:
 			KEY_F1:
 				_debug_force_ending(1)
