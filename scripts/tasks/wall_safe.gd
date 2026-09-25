@@ -17,6 +17,16 @@ var _is_known: bool = false
 var _is_open: bool = false
 var _is_busy: bool = false
 
+# The digits typed so far in the currently-open keypad. This MUST live on
+# the script (not as a local inside _open_keypad()) because GDScript lambdas
+# capture local variables BY VALUE at the moment each closure is created -
+# every button's `pressed` callback would otherwise get its own frozen,
+# independent copy of a local "entered" string, so digit presses would never
+# actually accumulate anywhere the ENTER button could see. Reading/writing
+# `self._code_entry` from inside a lambda works because `self` itself is
+# what closures capture correctly, and all callbacks then share one value.
+var _code_entry: String = ""
+
 var _door: Node3D
 var _dial_lights: Array = []
 var _keypad: CanvasLayer
@@ -97,21 +107,21 @@ func _open_keypad() -> void:
 	grid.add_theme_constant_override("v_separation", 8)
 	column.add_child(grid)
 
-	var entered := ""
+	_code_entry = ""
 	var digit_buttons: Array = []
 
 	var refresh_display := func() -> void:
 		var display := ""
 		for i in range(4):
-			display += (entered[i] if i < entered.length() else "-") + " "
+			display += (_code_entry[i] if i < _code_entry.length() else "-") + " "
 		entry_label.text = display.strip_edges()
 
 	var make_digit_button := func(digit: int) -> Button:
 		var button := UiKit.glass_button(str(digit), Color(0.6, 0.5, 0.3, 1), Vector2(70, 54))
 		button.pressed.connect(func() -> void:
-			if entered.length() >= 4:
+			if _code_entry.length() >= 4:
 				return
-			entered += str(digit)
+			_code_entry += str(digit)
 			refresh_display.call()
 		)
 		return button
@@ -142,7 +152,7 @@ func _open_keypad() -> void:
 	buttons_row.add_child(cancel_button)
 
 	clear_button.pressed.connect(func() -> void:
-		entered = ""
+		_code_entry = ""
 		status_label.text = " "
 		refresh_display.call()
 	)
@@ -150,16 +160,16 @@ func _open_keypad() -> void:
 		_close_keypad()
 	)
 	enter_button.pressed.connect(func() -> void:
-		if entered.length() != 4:
+		if _code_entry.length() != 4:
 			status_label.text = "ENTER ALL 4 DIGITS"
 			return
-		if entered == _required_code:
+		if _code_entry == _required_code:
 			status_label.text = "ACCEPTED"
 			_close_keypad()
 			_on_correct_code()
 		else:
 			status_label.text = "INCORRECT - TRY AGAIN"
-			entered = ""
+			_code_entry = ""
 			refresh_display.call()
 			var suspicion_manager := get_node_or_null("/root/SuspicionManager")
 			if suspicion_manager != null:

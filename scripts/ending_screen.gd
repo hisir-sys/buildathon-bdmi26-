@@ -236,8 +236,9 @@ func _build_ui(data: Dictionary) -> void:
 
 func _stats_text() -> String:
 	var seconds := maxi(0, GameFlow.seconds_left)
-	return "TASKS  %d / 5      TIME LEFT  %02d:%02d      DIAMOND  %s" % [
+	return "TASKS  %d / %d      TIME LEFT  %02d:%02d      DIAMOND  %s" % [
 		GameFlow.tasks_done,
+		GameFlow.tasks_total,
 		seconds / 60,
 		seconds % 60,
 		"TAKEN" if GameFlow.diamond_taken else "LEFT BEHIND",

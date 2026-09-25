@@ -328,23 +328,28 @@ func _build_lock_pick_drawer() -> void:
 
 
 func _build_crooked_picture() -> void:
-	# Main back wall (z -10), left of the chest/desk and right of the mop
-	# station - open wall between x -6.7 and x 0.
+	# Main back wall (z -10), between the mop station (x -6.7) and the
+	# chest/desk (x 0) - moved further from the chest than before, and given
+	# more breathing room now that the frame itself is bigger.
 	var picture := StaticBody3D.new()
 	picture.name = "CrookedPicture"
-	picture.position = Vector3(-3.0, 1.8, -9.8)
+	picture.position = Vector3(-4.5, 1.85, -9.8)
 	picture.set_script(CrookedPictureScript)
 	add_child(picture)
 	crooked_picture_node = picture
 	picture.connect("straightened", _on_picture_straightened)
 
-	# The safe code the picture reveals needs somewhere to go - a small wall
-	# safe between the picture and the desk/chest, flush against the same
-	# back wall. Entirely optional: it isn't in RunGenerator's task pool and
-	# doesn't affect _task_complete()/winning either way.
+	# The safe code the picture reveals needs somewhere to go, but a real
+	# hidden safe reads better on a DIFFERENT wall than the picture that
+	# gives away its code - not sitting right next to it. Left wall, between
+	# the back corner (z -9.8) and the rewire panel (z -4.5), well clear of
+	# both and of the lock-pick drawer further up at z 4.0. Entirely
+	# optional: it isn't in RunGenerator's task pool and doesn't affect
+	# _task_complete()/winning either way.
 	var safe := StaticBody3D.new()
 	safe.name = "WallSafe"
-	safe.position = Vector3(-1.6, 1.0, -9.85)
+	safe.position = Vector3(-9.85, 1.0, -7.5)
+	safe.rotation_degrees.y = 90.0
 	safe.set_script(WallSafeScript)
 	add_child(safe)
 	wall_safe_node = safe
@@ -1209,6 +1214,7 @@ func _finish_game(tasks_finished: bool) -> void:
 		ending = 2 if taken else 1
 	GameFlow.ending_id = ending
 	GameFlow.tasks_done = _tasks_done_count()
+	GameFlow.tasks_total = _active_task_ids().size()
 	GameFlow.seconds_left = int(ceil(float(game_manager.get("seconds_left"))))
 	GameFlow.diamond_taken = taken
 

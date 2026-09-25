@@ -39,14 +39,18 @@ const MODIFIER_NAMES := {
 }
 
 # The full 9-task pool from the spec: the project's 5 pre-existing tasks
-# plus the 4 new ones added by this update. Exactly ACTIVE_TASK_COUNT (5)
-# stay active each run; the rest are handed back as `deactivated_task_ids`
-# for main_room.gd to switch off.
+# plus the 4 new ones added by this update. 7 or 8 of the 9 (see
+# ACTIVE_TASK_COUNT_MIN/MAX below) stay active each run; the rest are handed
+# back as `deactivated_task_ids` for main_room.gd to switch off.
 const TASK_IDS: Array[String] = [
 	"dust", "panel_repair", "fridge", "furniture", "washroom",
 	"lockpick", "picture", "spill", "stain",
 ]
-const ACTIVE_TASK_COUNT := 5
+# 10 minutes is tight, so most/all of the pool should be live each run rather
+# than the original 5-of-9 split: each run now randomly leaves 7 OR 8 of the
+# 9 tasks active (i.e. deactivates only 1 or 2), decided fresh every run.
+const ACTIVE_TASK_COUNT_MIN := 7
+const ACTIVE_TASK_COUNT_MAX := 8
 const TASK_POOL_SIZE := 9
 
 # Cross-script modifier state (see header). Reset every run by _ready().
@@ -99,10 +103,11 @@ func _spawn_key() -> String:
 
 # --- Task pool selection -----------------------------------------------------
 
-## Returns the IDs of the 4 tasks to deactivate this run (out of TASK_IDS'
-## 9), leaving exactly ACTIVE_TASK_COUNT (5) active. Pure selection - no
-## scene access here, see main_room.gd's _on_run_generated() for how each ID
-## maps to an actual system getting switched off.
+## Returns the IDs of the tasks to deactivate this run (out of TASK_IDS' 9),
+## leaving a randomly-chosen 7 OR 8 active (see ACTIVE_TASK_COUNT_MIN/MAX).
+## Pure selection - no scene access here, see main_room.gd's
+## _on_run_generated() for how each ID maps to an actual system getting
+## switched off.
 func _select_deactivated_tasks() -> Array[String]:
 	var ids := TASK_IDS.duplicate()
 	# Manual Fisher-Yates using this RunGenerator's own RNG (not the engine's
@@ -113,7 +118,8 @@ func _select_deactivated_tasks() -> Array[String]:
 		ids[i] = ids[j]
 		ids[j] = tmp
 
-	var deactivate_count: int = maxi(0, TASK_POOL_SIZE - ACTIVE_TASK_COUNT)
+	var active_count: int = _rng.randi_range(ACTIVE_TASK_COUNT_MIN, ACTIVE_TASK_COUNT_MAX)
+	var deactivate_count: int = maxi(0, TASK_POOL_SIZE - active_count)
 	var deactivated: Array[String] = []
 	for i in range(deactivate_count):
 		deactivated.append(ids[i])
