@@ -37,11 +37,11 @@ func get_interaction_prompt() -> String:
 		return ""
 	if is_cleaning:
 		return "CLEANING DUST  %02d%%" % int((cleaning_elapsed / CLEAN_TIME_SECONDS) * 100.0)
-	return "E  DUST THE FLOOR  (10 SEC)"
+	return "E  DUST THE FLOOR  (10 SEC)" if _has_required_tool() else "REQUIRES MOP"
 
 
 func interact() -> void:
-	if is_cleaned or is_cleaning:
+	if is_cleaned or is_cleaning or not _has_required_tool():
 		return
 
 	is_cleaning = true
@@ -108,3 +108,7 @@ func _create_scattered_dust() -> void:
 		)
 		add_child(piece)
 		dust_pieces.append(piece)
+
+func _has_required_tool() -> bool:
+	var player := get_tree().get_first_node_in_group("player")
+	return player != null and int(player.get("current_tool")) == 1

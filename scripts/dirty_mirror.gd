@@ -40,10 +40,14 @@ func get_interaction_prompt() -> String:
 		return "BATHROOM MIRROR CLEAN"
 	if is_cleaning:
 		return "CLEANING BATHROOM MIRROR  %02d%%" % int((cleaning_elapsed / CLEAN_TIME_SECONDS) * 100.0)
-	return "E  CLEAN DIRTY BATHROOM MIRROR  (8 SEC)"
+	return "E  CLEAN DIRTY BATHROOM MIRROR  (8 SEC)" if _has_required_tool() else "REQUIRES BATHROOM SCRUBBER"
 
 
 func interact() -> void:
-	if is_cleaned or is_cleaning:
+	if is_cleaned or is_cleaning or not _has_required_tool():
 		return
 	is_cleaning = true
+
+func _has_required_tool() -> bool:
+	var player := get_tree().get_first_node_in_group("player")
+	return player != null and int(player.get("current_tool")) == 2

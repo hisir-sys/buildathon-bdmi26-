@@ -36,10 +36,20 @@ func get_interaction_prompt() -> String:
 		return "%s COMPLETE" % task_label
 	if is_working:
 		return "%s  %02d%%" % [task_label, int((elapsed / duration_seconds) * 100.0)]
-	return "E  %s  (%d SEC)" % [action_label, int(duration_seconds)]
+	return "E  %s  (%d SEC)" % [action_label, int(duration_seconds)] if _has_required_tool() else "REQUIRES " + _required_tool_name()
 
 
 func interact() -> void:
-	if is_complete or is_working:
+	if is_complete or is_working or not _has_required_tool():
 		return
 	is_working = true
+
+func _has_required_tool() -> bool:
+	var player := get_tree().get_first_node_in_group("player")
+	if player == null:
+		return false
+	var required := 0 if task_kind == "panel" else 2
+	return int(player.get("current_tool")) == required
+
+func _required_tool_name() -> String:
+	return "ELECTRICAL KIT" if task_kind == "panel" else "BATHROOM SCRUBBER"

@@ -41,7 +41,7 @@ func _ready() -> void:
 
 
 func interact() -> void:
-	if is_complete or puzzle_open:
+	if is_complete or puzzle_open or not _has_required_tool():
 		return
 	_open_puzzle()
 
@@ -51,7 +51,7 @@ func get_interaction_prompt() -> String:
 		return "WIRING FIXED"
 	if puzzle_open:
 		return ""
-	return "E  FIX THE WIRING"
+	return "E  FIX THE WIRING" if _has_required_tool() else "REQUIRES ELECTRICAL KIT"
 
 
 func _open_puzzle() -> void:
@@ -236,3 +236,8 @@ func _panel_style(background: Color, border: Color, border_width: int) -> StyleB
 	style.set_border_width_all(border_width)
 	style.set_corner_radius_all(6)
 	return style
+
+
+func _has_required_tool() -> bool:
+	var player := get_tree().get_first_node_in_group("player")
+	return player != null and int(player.get("current_tool")) == 0

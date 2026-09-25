@@ -40,11 +40,11 @@ func get_interaction_prompt() -> String:
 		return ""
 	if is_cleaning:
 		return "CLEARING WEB  %02d%%" % int((cleaning_elapsed / CLEAN_TIME_SECONDS) * 100.0)
-	return "E  CLEAR SPIDER WEB  (10 SEC)"
+	return "E  CLEAR SPIDER WEB  (10 SEC)" if _has_required_tool() else "REQUIRES MOP"
 
 
 func interact() -> void:
-	if is_cleared or is_cleaning:
+	if is_cleared or is_cleaning or not _has_required_tool():
 		return
 
 	is_cleaning = true
@@ -114,3 +114,7 @@ func _add_line(mesh: ImmediateMesh, start: Vector3, end: Vector3) -> void:
 	thread.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(thread)
 	web_threads.append(thread)
+
+func _has_required_tool() -> bool:
+	var player := get_tree().get_first_node_in_group("player")
+	return player != null and int(player.get("current_tool")) == 1

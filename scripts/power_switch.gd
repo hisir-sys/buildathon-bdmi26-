@@ -22,11 +22,11 @@ func set_unlocked(value: bool) -> void:
 func get_interaction_prompt() -> String:
 	if not is_unlocked:
 		return "PLACE THE %s FIRST" % label_text
-	return "E  TURN %s %s" % [label_text, "OFF" if is_on else "ON"]
+	return "E  TURN %s %s" % [label_text, "OFF" if is_on else "ON"] if _has_required_tool() else "REQUIRES ELECTRICAL KIT"
 
 
 func interact() -> void:
-	if not is_unlocked:
+	if not is_unlocked or not _has_required_tool():
 		return
 	is_on = not is_on
 	_update_visual()
@@ -49,3 +49,8 @@ func _update_visual() -> void:
 	material.albedo_color = lit_color if is_on else dead_color
 	material.emission = lit_color if is_on else dead_color
 	material.emission_energy_multiplier = 2.4 if is_on else 1.0
+
+
+func _has_required_tool() -> bool:
+	var player := get_tree().get_first_node_in_group("player")
+	return player != null and int(player.get("current_tool")) == 0

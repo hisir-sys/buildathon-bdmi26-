@@ -52,7 +52,7 @@ const TASK_POOL_SIZE := 9
 
 static var current_modifier: int = Modifier.SQUEAKY_SHOES
 static var suspicion_build_multiplier: float = 1.0   # Squeaky Shoes: x1.2
-static var cleaning_speed_multiplier: float = 1.0     # Ergonomic Mop: x1.3
+static var cleaning_speed_multiplier: float = 1.0     # Mop: x1.3
 static var lockpick_cursor_multiplier: float = 1.0    # Heavy Lock: cursor speed up
 
 @export var key_node: Node3D

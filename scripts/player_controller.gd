@@ -11,20 +11,24 @@ signal tool_selected(tool_index: int)
 @onready var camera: Camera3D = $Head/Camera3D
 
 var camera_pitch: float = 0.0
+# Tool IDs: 0 = electrical kit, 1 = mop, 2 = bathroom scrubber.
 var current_tool: int = 0
 var tool_nodes: Array[Node3D] = []
+const TOOL_ELECTRICAL := 0
+const TOOL_MOP := 1
+const TOOL_SCRUBBER := 2
 
 
 func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	camera.current = true
+	add_to_group("player")
 	tool_nodes = [
+		camera.get_node("ElectricalKit"),
 		camera.get_node("Mop"),
 		camera.get_node("Scrubber"),
-		camera.get_node("Cloth"),
-		camera.get_node("ElectricalKit"),
 	]
-	_select_tool(0)
+	_select_tool(TOOL_ELECTRICAL)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -58,22 +62,23 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event is InputEventKey and event.pressed and not event.echo:
 		match event.keycode:
 			KEY_1:
-				_select_tool(0)
+				_select_tool(TOOL_ELECTRICAL)
 			KEY_2:
-				_select_tool(1)
+				_select_tool(TOOL_MOP)
 			KEY_3:
-				_select_tool(2)
-			KEY_4:
-				_select_tool(3)
+				_select_tool(TOOL_SCRUBBER)
 
 
 func _select_tool(index: int) -> void:
+	var interaction_ray := camera.get_node_or_null("InteractionRay")
+	if interaction_ray != null and interaction_ray.has_method("cancel_current_interaction"):
+		interaction_ray.cancel_current_interaction()
 	current_tool = index
 	for tool_index in range(tool_nodes.size()):
 		tool_nodes[tool_index].visible = (tool_index == index)
 	tool_selected.emit(index)
 	if has_node("/root/SuspicionManager"):
-		get_node("/root/SuspicionManager").call("set_cover_state", index == 0) # Mop
+		get_node("/root/SuspicionManager").call("set_cover_state", index == TOOL_MOP) # Mop
 
 
 func _physics_process(delta: float) -> void:

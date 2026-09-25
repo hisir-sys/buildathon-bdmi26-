@@ -14,7 +14,7 @@ const FURNITURE_TOTAL := 5
 @onready var task_fraction_label: Label = $TaskBoard/Fraction
 @onready var sound_button: Button = $SoundButton
 @onready var pause_button: Button = $PauseButton
-@onready var hotbar_slots: Array[Panel] = [$Hotbar/Slot0, $Hotbar/Slot1, $Hotbar/Slot2, $Hotbar/Slot3]
+@onready var hotbar_slots: Array[Panel] = [$Hotbar/Slot0, $Hotbar/Slot1, $Hotbar/Slot2]
 
 const HOTBAR_ACTIVE_BORDER := Color(1, 0.8, 0.3, 1)
 const HOTBAR_NORMAL_BORDER := Color(0.14, 0.45, 0.62, 0.55)
@@ -453,7 +453,7 @@ func _build_premium_hud() -> void:
 	status_label.offset_right = -270
 	status_label.offset_top = -46
 	status_label.offset_bottom = -26
-	status_label.text = "ESC  PAUSE   •   E  INTERACT"
+	status_label.text = "1  ELECTRICAL   2  MOP   3  SCRUBBER   •   ESC  PAUSE   •   E  INTERACT"
 	status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	status_label.add_theme_font_size_override("font_size", 10)
 	status_label.add_theme_color_override("font_color", Color(0.54, 0.66, 0.80, 0.72))
@@ -629,7 +629,7 @@ func _build_pause_menu() -> void:
 	util_label.add_theme_font_size_override("font_size", 10)
 	util_label.add_theme_color_override("font_color", Color(0.70, 0.76, 0.86, 1))
 	utility_row.add_child(util_label)
-	utility_row.add_child(_make_key_chip("1-4"))
+	utility_row.add_child(_make_key_chip("1-3"))
 	var tools_label := Label.new()
 	tools_label.text = "  TOOLS"
 	tools_label.add_theme_font_size_override("font_size", 10)

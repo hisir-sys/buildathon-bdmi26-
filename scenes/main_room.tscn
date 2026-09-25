@@ -533,9 +533,9 @@ theme_override_font_sizes/font_size = 18
 text = "Ⅱ"
 
 [node name="Hotbar" type="Control" parent="HUD"]
-offset_left = 508.0
+offset_left = 542.0
 offset_top = 624.0
-offset_right = 772.0
+offset_right = 738.0
 offset_bottom = 692.0
 
 [node name="Slot0" type="Panel" parent="HUD/Hotbar"]
@@ -561,7 +561,7 @@ offset_right = 60.0
 offset_bottom = 46.0
 theme_override_font_sizes/font_size = 24
 horizontal_alignment = 1
-text = "🧹"
+text = "🔌"
 
 [node name="Slot1" type="Panel" parent="HUD/Hotbar"]
 offset_left = 68.0
@@ -586,7 +586,7 @@ offset_right = 60.0
 offset_bottom = 46.0
 theme_override_font_sizes/font_size = 24
 horizontal_alignment = 1
-text = "🧽"
+text = "🧹"
 
 [node name="Slot2" type="Panel" parent="HUD/Hotbar"]
 offset_left = 136.0
@@ -611,32 +611,7 @@ offset_right = 60.0
 offset_bottom = 46.0
 theme_override_font_sizes/font_size = 24
 horizontal_alignment = 1
-text = "🪣"
-
-[node name="Slot3" type="Panel" parent="HUD/Hotbar"]
-offset_left = 204.0
-offset_top = 0.0
-offset_right = 264.0
-offset_bottom = 60.0
-theme_override_styles/panel = SubResource("StyleBox_iconbtn")
-
-[node name="Number" type="Label" parent="HUD/Hotbar/Slot3"]
-offset_left = 4.0
-offset_top = 2.0
-offset_right = 20.0
-offset_bottom = 18.0
-theme_override_colors/font_color = Color(0.6, 0.7, 0.85, 1)
-theme_override_font_sizes/font_size = 11
-text = "4"
-
-[node name="Icon" type="Label" parent="HUD/Hotbar/Slot3"]
-offset_left = 0.0
-offset_top = 10.0
-offset_right = 60.0
-offset_bottom = 46.0
-theme_override_font_sizes/font_size = 24
-horizontal_alignment = 1
-text = "🔌"
+text = "🧽"
 
 [node name="InteractionPrompt" type="Panel" parent="HUD"]
 offset_left = 400.0

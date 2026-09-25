@@ -90,3 +90,9 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("toggle_door"):
 		if current_target != null and current_target.has_method("toggle_open"):
 			current_target.toggle_open()
+
+
+func cancel_current_interaction() -> void:
+	if held_target != null and held_target.has_method("stop_interaction"):
+		held_target.stop_interaction()
+	held_target = null

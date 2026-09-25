@@ -116,15 +116,6 @@ rotation_degrees = Vector3(88, 0, 0)
 mesh = SubResource("BoxMesh_scrub_pad")
 material_override = SubResource("Material_scrub_pad")
 
-[node name="Cloth" type="Node3D" parent="Head/Camera3D"]
-position = Vector3(0.6, -0.32, -0.9)
-rotation_degrees = Vector3(18, 12, -18)
-visible = false
-
-[node name="ClothMesh" type="MeshInstance3D" parent="Head/Camera3D/Cloth"]
-mesh = SubResource("BoxMesh_cloth")
-material_override = SubResource("Material_cloth")
-
 [node name="ElectricalKit" type="Node3D" parent="Head/Camera3D"]
 position = Vector3(0.68, -0.2, -1.1)
 rotation_degrees = Vector3(0, 0, -18)

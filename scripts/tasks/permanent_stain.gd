@@ -51,11 +51,11 @@ func get_interaction_prompt() -> String:
 		return "SCRUBBING  %02d%%  (THIS ONE WON'T COME OUT)" % int(scrub_progress * 100.0)
 	if not _mop_equipped():
 		return "EQUIP THE MOP (1) TO CLEAN THIS"
-	return "E  SCRUB THE STAIN"
+	return "E  SCRUB THE STAIN" if _has_required_tool() else "REQUIRES MOP"
 
 
 func interact() -> void:
-	if _is_scrubbing or not _mop_equipped():
+	if _is_scrubbing or not _has_required_tool():
 		return
 	_is_scrubbing = true
 
@@ -74,7 +74,7 @@ func _mop_equipped() -> bool:
 	var player := get_tree().current_scene.get_node_or_null("Player")
 	if player == null:
 		return true
-	return int(player.get("current_tool")) == 0
+	return int(player.get("current_tool")) == 1
 
 
 func _build_visuals() -> void:

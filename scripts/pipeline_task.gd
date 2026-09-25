@@ -66,11 +66,11 @@ func get_interaction_prompt() -> String:
 		return "PIPELINE CONNECTED"
 	if puzzle_open:
 		return ""
-	return "E  RECONNECT THE PIPE"
+	return "E  RECONNECT THE PIPE" if _has_required_tool() else "REQUIRES BATHROOM SCRUBBER"
 
 
 func interact() -> void:
-	if is_complete or puzzle_open:
+	if is_complete or puzzle_open or not _has_required_tool():
 		return
 	_open_puzzle()
 
@@ -375,3 +375,7 @@ func _hide_leak() -> void:
 		droplet.visible = false
 	if water_puddle != null:
 		water_puddle.visible = false
+
+func _has_required_tool() -> bool:
+	var player := get_tree().get_first_node_in_group("player")
+	return player != null and int(player.get("current_tool")) == 2
