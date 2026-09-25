@@ -1224,23 +1224,30 @@ func _tasks_done_count() -> int:
 
 
 func _finish_game(tasks_finished: bool) -> void:
-	# Four endings: (timer out | all tasks done) x (diamond left | taken).
+	# Three endings only:
+	# 1) Cleaning incomplete + spy assets not secured.
+	# 2) Cleaning complete, but spy objective failed or the operation was compromised.
+	# 3) Cleaning complete + required spy assets secured + player was never caught.
 	if game_over:
 		return
-	# EndingStateMachine may already be mid-transition to the caught-ending
-	# screen (suspicion capped this same frame) - if so, let it own the
-	# transition rather than racing it with our own scene change below.
 	if has_node("/root/EndingStateMachine") and bool(get_node("/root/EndingStateMachine").call("is_transitioning")):
 		return
+
 	game_over = true
 	game_manager.set("is_running", false)
 
 	var taken: bool = bool(game_manager.get("diamond_taken"))
+	var assets_secured: bool = taken and lockpick_done >= 1
+	var caught: bool = false
+	if suspicion_manager != null:
+		caught = float(suspicion_manager.get("current_suspicion")) >= 100.0
+
 	var ending := 1
 	if tasks_finished:
-		ending = 4 if taken else 3
+		ending = 3 if assets_secured and not caught else 2
 	else:
-		ending = 2 if taken else 1
+		ending = 1
+
 	GameFlow.ending_id = ending
 	GameFlow.tasks_done = _tasks_done_count()
 	GameFlow.tasks_total = _active_task_ids().size()

@@ -74,6 +74,11 @@ func _finish_clean() -> void:
 	queue_free()
 
 
+func _has_required_tool() -> bool:
+	var player := get_tree().get_first_node_in_group("player")
+	return player != null and int(player.get("current_tool")) == 1
+
+
 func _mop_equipped() -> bool:
 	var player := get_tree().current_scene.get_node_or_null("Player")
 	if player == null:

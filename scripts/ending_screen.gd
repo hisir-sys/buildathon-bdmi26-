@@ -51,39 +51,22 @@ func _ending_data(ending_id: int) -> Dictionary:
 	var cam_pos := Vector3(0, 1.5, 2.6)
 	var cam_target := Vector3(0, 0.75, -2.0)
 	match ending_id:
-		5:
-			return {
-				"title": "ENDING 5: CAUGHT RED-HANDED",
-				"title_color": Color(1.0, 0.35, 0.32, 1),
-				"accent": Color(0.85, 0.15, 0.12, 1),
-				"body": "The door opens too fast to be the owner checking on the cleaning. Cover blown, contract unretrieved - whatever happens next isn't up to us anymore.",
-				"scene": {
-					"lamp_on": false,
-					"ambient_color": Color(0.6, 0.15, 0.12, 1),
-					"ambient_energy": 0.4,
-					"fog_color": Color(0.12, 0.02, 0.02, 1),
-					"fog_density": 0.05,
-					"window_color": Color(0.9, 0.2, 0.15, 1),
-					"moon_energy": 3.0,
-					"desk": [],
-					"cam_pos": cam_pos,
-					"cam_target": cam_target,
-				},
-			}
 		2:
 			return {
-				"title": "ENDING 2: THE GREED TRAP",
-				"title_color": Color(1.0, 0.55, 0.55, 1),
-				"accent": Color(0.75, 0.12, 0.14, 1),
-				"body": "The greed for the artifact consumed everything. The contract was secondary. We have gained the treasure, but lost the mission... and perhaps ourselves.",
+				"title": "ENDING 2: CLEANER SUCCESS — SPY MISSION FAILED",
+				"title_color": Color(1.0, 0.78, 0.35, 1),
+				"accent": Color(0.9, 0.58, 0.12, 1),
+				"body": "You cleaned the room exactly as required, but the spy operation failed. The required files and assets were not secured, or the operation was compromised before you could complete the covert objective. You succeeded as the cleaner, but not as the operative.",
 				"scene": {
-					"lamp_on": false,
-					"ambient_color": Color(0.5, 0.35, 0.42, 1),
-					"ambient_energy": 0.3,
-					"fog_color": Color(0.1, 0.05, 0.07, 1),
-					"fog_density": 0.035,
-					"window_color": Color(0.7, 0.4, 0.5, 1),
-					"moon_energy": 2.0,
+					"lamp_on": true,
+					"spot_energy": 10.0,
+					"fill_energy": 0.8,
+					"ambient_color": Color(0.45, 0.38, 0.28, 1),
+					"ambient_energy": 0.45,
+					"fog_color": Color(0.12, 0.08, 0.04, 1),
+					"fog_density": 0.025,
+					"window_color": Color(0.75, 0.58, 0.3, 1),
+					"moon_energy": 1.8,
 					"desk": [],
 					"cam_pos": cam_pos,
 					"cam_target": cam_target,
@@ -91,10 +74,10 @@ func _ending_data(ending_id: int) -> Dictionary:
 			}
 		3:
 			return {
-				"title": "ENDING 3: MISSION ACCOMPLISHED",
+				"title": "ENDING 3: MISSION SUCCESSFUL",
 				"title_color": Color(0.6, 0.95, 0.7, 1),
 				"accent": Color(0.3, 0.8, 0.45, 1),
-				"body": "The tasks are complete. The contract is secure. This success validates our process. Report for extraction.",
+				"body": "Mission successful. You completed every cleaning task, secured the required files and assets, and completed the operation without being detected. The room is clean, the intelligence is secured, and the operation is complete.",
 				"scene": {
 					"lamp_on": true,
 					"spot_energy": 14.0,
@@ -111,36 +94,12 @@ func _ending_data(ending_id: int) -> Dictionary:
 					"cam_target": cam_target,
 				},
 			}
-		4:
-			return {
-				"title": "ENDING 4: THE SHADOW VICTORY",
-				"title_color": Color(0.95, 0.78, 0.32, 1),
-				"accent": Color(0.6, 0.35, 0.95, 1),
-				"body": "The operation is complete, and a quiet fortune secured. You delivered both the terms and the treasure. Discretion is now paramount.",
-				"scene": {
-					"lamp_on": true,
-					"spot_energy": 16.0,
-					"spot_angle": 24.0,
-					"fill_energy": 0.15,
-					"ambient_color": Color(0.15, 0.1, 0.25, 1),
-					"ambient_energy": 0.15,
-					"fog_color": Color(0.05, 0.03, 0.09, 1),
-					"fog_density": 0.04,
-					"window_color": Color(0.4, 0.2, 0.7, 1),
-					"moon_energy": 0.8,
-					"accent_color": Color(0.6, 0.35, 0.95, 1),
-					"accent_energy": 0.9,
-					"desk": ["diamond", "scroll"],
-					"cam_pos": cam_pos,
-					"cam_target": cam_target,
-				},
-			}
 		_:
 			return {
-				"title": "ENDING 1: TOTAL FAILURE",
-				"title_color": Color(1.0, 0.55, 0.55, 1),
+				"title": "ENDING 1: MISSION FAILED",
+				"title_color": Color(1.0, 0.45, 0.42, 1),
 				"accent": Color(0.75, 0.12, 0.14, 1),
-				"body": "The time has expired. The mission is critical, yet the contract remains unfulfilled. We are compromised.",
+				"body": "You failed the mission. The room was not cleaned, and none of the files or assets you were sent to retrieve were secured. The operation is over before the real objective could be completed.",
 				"scene": {
 					"lamp_on": false,
 					"ambient_color": Color(0.35, 0.45, 0.7, 1),

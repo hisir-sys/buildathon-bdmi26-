@@ -70,6 +70,11 @@ func _fire_clue() -> void:
 		inner_voice.call("queue_thought", "LOGIC", CLUE_TEXT, 5.0, Color(0.35, 0.85, 0.95, 1))
 
 
+func _has_required_tool() -> bool:
+	var player := get_tree().get_first_node_in_group("player")
+	return player != null and int(player.get("current_tool")) == 1
+
+
 func _mop_equipped() -> bool:
 	var player := get_tree().current_scene.get_node_or_null("Player")
 	if player == null:
