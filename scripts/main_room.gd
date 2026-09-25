@@ -11,6 +11,14 @@ const KeyPickupScript = preload("res://scripts/key_pickup.gd")
 const GameFlow = preload("res://scripts/game_flow.gd")
 const ENDING_SCENE_PATH := "res://scenes/ending_screen.tscn"
 
+# Spy-mechanics update: the 4 new tasks + the scene-local run randomizer.
+const LockPickDrawerScript = preload("res://scripts/tasks/lock_pick_drawer.gd")
+const CrookedPictureScript = preload("res://scripts/tasks/crooked_picture.gd")
+const WallSafeScript = preload("res://scripts/tasks/wall_safe.gd")
+const SpillCleanerScript = preload("res://scripts/tasks/spill_cleaner.gd")
+const PermanentStainScript = preload("res://scripts/tasks/permanent_stain.gd")
+const RunGeneratorScript = preload("res://scripts/autoload/run_generator.gd")
+
 # Sofa, dining table, 2 chairs and the cabinet.
 const FURNITURE_TOTAL := 5
 
@@ -47,6 +55,26 @@ var repair_bulbs: Array[MeshInstance3D] = []
 var fridge_status_light: MeshInstance3D
 var fridge_interior_light: OmniLight3D
 var fridge_is_powered: bool = false
+
+# --- Spy mechanics update: 9-task pool state --------------------------------
+# task_active starts with everything on so the game is fully playable even
+# if RunGenerator never runs (e.g. it was removed from the scene). Once
+# RunGenerator's _ready() fires, _on_run_generated() flips 4 of these to
+# false for the run.
+var task_active: Dictionary = {
+	"dust": true, "panel_repair": true, "fridge": true,
+	"furniture": true, "washroom": true,
+	"lockpick": true, "picture": true, "spill": true, "stain": true,
+}
+var lockpick_done: int = 0
+var picture_done: int = 0
+var spill_done: int = 0
+var stain_done: int = 0
+var lock_pick_drawer_node: StaticBody3D
+var crooked_picture_node: StaticBody3D
+var spill_cleaner_node: StaticBody3D
+var permanent_stain_node: StaticBody3D
+var wall_safe_node: StaticBody3D
 
 
 func _ready() -> void:
@@ -103,6 +131,7 @@ func _build_floor_plan_props() -> void:
 	_build_furniture_items()
 	_build_bathroom()
 	_build_reference_game_props()
+	_build_spy_mechanics_update()
 
 
 func _material(color: Color, emission: Color = Color(0, 0, 0, 1), emission_energy: float = 0.0) -> StandardMaterial3D:
@@ -267,7 +296,142 @@ func _build_key() -> void:
 	key.position = Vector3(3.62, 1.2, -4.75)
 	key.rotation_degrees.y = 100.0
 	key.set_script(KeyPickupScript)
+	key.add_to_group("chest_key")
 	add_child(key)
+
+
+# --- Spy mechanics update: 4 new tasks + run randomizer --------------------
+# Placed by hand against this room's actual layout (see INTEGRATION_GUIDE.md
+# for the coordinates reasoning). All 4 build their own meshes/collision in
+# their own scripts' _ready(), same as every other prop in this file - this
+# just instantiates them at a world position, matching _build_chest()'s
+# pattern above.
+
+func _build_spy_mechanics_update() -> void:
+	_build_lock_pick_drawer()
+	_build_crooked_picture()
+	_build_spill_tasks()
+	_build_run_generator()
+
+
+func _build_lock_pick_drawer() -> void:
+	# A secret drawer built into the left-wall paneling, between the fridge
+	# switch (z 0) and the TV corner (z ~9.8) - open wall real estate.
+	var drawer := StaticBody3D.new()
+	drawer.name = "LockPickDrawer"
+	drawer.position = Vector3(-9.85, 0.9, 4.0)
+	drawer.rotation_degrees.y = 90.0
+	drawer.set_script(LockPickDrawerScript)
+	add_child(drawer)
+	lock_pick_drawer_node = drawer
+	drawer.connect("unlocked", _on_lockpick_unlocked)
+
+
+func _build_crooked_picture() -> void:
+	# Main back wall (z -10), left of the chest/desk and right of the mop
+	# station - open wall between x -6.7 and x 0.
+	var picture := StaticBody3D.new()
+	picture.name = "CrookedPicture"
+	picture.position = Vector3(-3.0, 1.8, -9.8)
+	picture.set_script(CrookedPictureScript)
+	add_child(picture)
+	crooked_picture_node = picture
+	picture.connect("straightened", _on_picture_straightened)
+
+	# The safe code the picture reveals needs somewhere to go - a small wall
+	# safe between the picture and the desk/chest, flush against the same
+	# back wall. Entirely optional: it isn't in RunGenerator's task pool and
+	# doesn't affect _task_complete()/winning either way.
+	var safe := StaticBody3D.new()
+	safe.name = "WallSafe"
+	safe.position = Vector3(-1.6, 1.0, -9.85)
+	safe.set_script(WallSafeScript)
+	add_child(safe)
+	wall_safe_node = safe
+
+
+func _build_spill_tasks() -> void:
+	# Open floor, away from the rug (roughly x -2.4..2.4, z -6.7..-4.1),
+	# the dust spots, and the rewire-panel/fridge wall furniture.
+	var spill := StaticBody3D.new()
+	spill.name = "SpillCleaner"
+	spill.position = Vector3(-3.5, 0.0, -2.0)
+	spill.set_script(SpillCleanerScript)
+	add_child(spill)
+	spill_cleaner_node = spill
+	spill.connect("cleaned", _on_spill_cleaned)
+
+	# Just outside the bathroom doorway (door is at x 6.4, z -3.65) - reads
+	# as "something was dragged out of the bathroom and scrubbed here".
+	var stain := StaticBody3D.new()
+	stain.name = "PermanentStain"
+	stain.position = Vector3(6.4, 0.0, -3.0)
+	stain.set_script(PermanentStainScript)
+	add_child(stain)
+	permanent_stain_node = stain
+	stain.connect("capped", _on_stain_capped)
+
+
+func _build_run_generator() -> void:
+	# 3 candidate key-spawn points: the original bathroom shelf spot, the
+	# rack's top shelf, and the mop station shelf out in the main room, so
+	# a run can occasionally NOT hide the key in the bathroom at all.
+	var spawn_a := Marker3D.new()
+	spawn_a.name = "KeySpawn_A"
+	spawn_a.position = Vector3(3.62, 1.2, -4.75)
+	spawn_a.rotation_degrees.y = 100.0
+	spawn_a.add_to_group("key_spawn_point")
+	add_child(spawn_a)
+
+	var spawn_b := Marker3D.new()
+	spawn_b.name = "KeySpawn_B"
+	spawn_b.position = Vector3(3.62, 1.7, -4.75)
+	spawn_b.rotation_degrees.y = 100.0
+	spawn_b.add_to_group("key_spawn_point")
+	add_child(spawn_b)
+
+	var spawn_c := Marker3D.new()
+	spawn_c.name = "KeySpawn_C"
+	spawn_c.position = Vector3(-6.7, 0.5, -9.2)
+	spawn_c.rotation_degrees.y = 30.0
+	spawn_c.add_to_group("key_spawn_point")
+	add_child(spawn_c)
+
+	# All 9 tasks (the project's original 5 + the 4 new ones) are in the
+	# randomizable pool now - RunGenerator picks 5 of them active per run.
+	# Connect BEFORE add_child: adding a node whose parent is already in the
+	# tree runs its _ready() immediately, and run_generated fires from
+	# inside _ready() - connecting after add_child would miss the signal.
+	var run_generator := Node.new()
+	run_generator.name = "RunGenerator"
+	run_generator.set_script(RunGeneratorScript)
+	run_generator.connect("run_generated", _on_run_generated)
+	add_child(run_generator)
+
+
+func _on_run_generated(_modifier_id: String, _key_spawn_name: String, deactivated_task_ids: Array) -> void:
+	for id in deactivated_task_ids:
+		task_active[id] = false
+		match id:
+			"lockpick":
+				RunGeneratorScript.apply_node_active(lock_pick_drawer_node, false)
+			"picture":
+				RunGeneratorScript.apply_node_active(crooked_picture_node, false)
+				# The safe's code only ever comes from the picture, so hide
+				# it too rather than leaving an un-codeable prop in the room.
+				RunGeneratorScript.apply_node_active(wall_safe_node, false)
+			"spill":
+				RunGeneratorScript.apply_node_active(spill_cleaner_node, false)
+			"stain":
+				RunGeneratorScript.apply_node_active(permanent_stain_node, false)
+			_:
+				# The 5 pre-existing systems (dust/panel_repair/fridge/
+				# furniture/washroom) are multi-node/aggregate and aren't
+				# physically hidden - they're just excluded from the win
+				# requirement and the HUD checklist for this run. See
+				# INTEGRATION_GUIDE.md for why that's the safer trade-off.
+				pass
+	_refresh_hud()
 
 
 func _on_chest_choice_started() -> void:
@@ -947,14 +1111,27 @@ func _process(delta: float) -> void:
 
 
 func _refresh_hud() -> void:
-	hud.set_task_counts(
-		dust_cleaned,
-		webs_cleared,
-		furniture_placed,
-		bathroom_mirrors_cleaned + bathroom_door_cleaned + bathroom_pipe_cleaned,
-		panel_repaired,
-		fridge_done
-	)
+	var rows: Array = []
+	if task_active.get("dust", true):
+		rows.append({"label": "DUSTING", "current": dust_cleaned, "total": 6, "color": "#ff5c4d"})
+	if task_active.get("panel_repair", true):
+		rows.append({"label": "REWIRE PANEL", "current": panel_repaired, "total": 1, "color": "#4da8ff"})
+	if task_active.get("fridge", true):
+		rows.append({"label": "FRIDGE", "current": fridge_done, "total": 1, "color": "#4da8ff"})
+	if task_active.get("furniture", true):
+		rows.append({"label": "FURNITURE", "current": furniture_placed, "total": FURNITURE_TOTAL, "color": "#ff5c4d"})
+	if task_active.get("washroom", true):
+		rows.append({"label": "WASHROOM", "current": _washroom_total(), "total": 3, "color": "#5cf0a0"})
+	if task_active.get("lockpick", true):
+		rows.append({"label": "LOCK-PICK DRAWER", "current": lockpick_done, "total": 1, "color": "#4da8ff"})
+	if task_active.get("picture", true):
+		rows.append({"label": "STRAIGHTEN PICTURE", "current": picture_done, "total": 1, "color": "#ff5c4d"})
+	if task_active.get("spill", true):
+		rows.append({"label": "SCRUB SPILL", "current": spill_done, "total": 1, "color": "#5cf0a0"})
+	if task_active.get("stain", true):
+		rows.append({"label": "OLD STAIN", "current": stain_done, "total": 1, "color": "#5cf0a0"})
+	hud.set_task_counts(rows)
+
 	if _all_tasks_done():
 		_finish_game(true)
 
@@ -963,23 +1140,63 @@ func _washroom_total() -> int:
 	return bathroom_mirrors_cleaned + bathroom_door_cleaned + bathroom_pipe_cleaned
 
 
+func _task_complete(id: String) -> bool:
+	match id:
+		"dust":
+			return dust_cleaned >= 6
+		"panel_repair":
+			return panel_repaired >= 1
+		"fridge":
+			return fridge_done >= 1
+		"furniture":
+			return furniture_placed >= FURNITURE_TOTAL
+		"washroom":
+			return _washroom_total() >= 3
+		"lockpick":
+			return lockpick_done >= 1
+		"picture":
+			return picture_done >= 1
+		"spill":
+			return spill_done >= 1
+		"stain":
+			return stain_done >= 1
+	return true
+
+
+func _active_task_ids() -> Array:
+	var ids: Array = []
+	for id in task_active.keys():
+		if task_active[id]:
+			ids.append(id)
+	return ids
+
+
 func _all_tasks_done() -> bool:
-	return _tasks_done_count() >= 5
+	var active_ids := _active_task_ids()
+	if active_ids.is_empty():
+		return false
+	for id in active_ids:
+		if not _task_complete(id):
+			return false
+	return true
 
 
 func _tasks_done_count() -> int:
-	return (
-		int(dust_cleaned >= 6)
-		+ panel_repaired
-		+ fridge_done
-		+ int(furniture_placed >= FURNITURE_TOTAL)
-		+ int(_washroom_total() >= 3)
-	)
+	var count := 0
+	for id in _active_task_ids():
+		if _task_complete(id):
+			count += 1
+	return count
 
 
 func _finish_game(tasks_finished: bool) -> void:
 	# Four endings: (timer out | all tasks done) x (diamond left | taken).
 	if game_over:
+		return
+	# EndingStateMachine may already be mid-transition to the caught-ending
+	# screen (suspicion capped this same frame) - if so, let it own the
+	# transition rather than racing it with our own scene change below.
+	if has_node("/root/EndingStateMachine") and bool(get_node("/root/EndingStateMachine").call("is_transitioning")):
 		return
 	game_over = true
 	game_manager.set("is_running", false)
@@ -1066,6 +1283,28 @@ func _on_repair_task_completed(task_kind: String) -> void:
 			lights_fixed = true
 		"bathroom_pipe":
 			bathroom_pipe_cleaned = 1
+	_refresh_hud()
+
+
+func _on_lockpick_unlocked(_item_name: String) -> void:
+	lockpick_done = 1
+	_refresh_hud()
+
+
+func _on_picture_straightened(safe_code: String) -> void:
+	picture_done = 1
+	if wall_safe_node != null:
+		wall_safe_node.call("set_code", safe_code)
+	_refresh_hud()
+
+
+func _on_spill_cleaned() -> void:
+	spill_done = 1
+	_refresh_hud()
+
+
+func _on_stain_capped() -> void:
+	stain_done = 1
 	_refresh_hud()
 
 

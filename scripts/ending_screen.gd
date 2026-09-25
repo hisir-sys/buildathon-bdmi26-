@@ -51,6 +51,25 @@ func _ending_data(ending_id: int) -> Dictionary:
 	var cam_pos := Vector3(0, 1.5, 2.6)
 	var cam_target := Vector3(0, 0.75, -2.0)
 	match ending_id:
+		5:
+			return {
+				"title": "ENDING 5: CAUGHT RED-HANDED",
+				"title_color": Color(1.0, 0.35, 0.32, 1),
+				"accent": Color(0.85, 0.15, 0.12, 1),
+				"body": "The door opens too fast to be the owner checking on the cleaning. Cover blown, contract unretrieved - whatever happens next isn't up to us anymore.",
+				"scene": {
+					"lamp_on": false,
+					"ambient_color": Color(0.6, 0.15, 0.12, 1),
+					"ambient_energy": 0.4,
+					"fog_color": Color(0.12, 0.02, 0.02, 1),
+					"fog_density": 0.05,
+					"window_color": Color(0.9, 0.2, 0.15, 1),
+					"moon_energy": 3.0,
+					"desk": [],
+					"cam_pos": cam_pos,
+					"cam_target": cam_target,
+				},
+			}
 		2:
 			return {
 				"title": "ENDING 2: THE GREED TRAP",

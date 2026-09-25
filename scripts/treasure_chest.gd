@@ -135,6 +135,10 @@ func _run_sequence() -> void:
 	hud.call("set_interaction_prompt", "")
 	game_manager.call("set_has_key", false)
 
+	var suspicion_manager := get_node_or_null("/root/SuspicionManager")
+	if suspicion_manager != null:
+		suspicion_manager.call("add_suspicion", 15.0)
+
 	# Freeze the game: timer, movement and the world all stop. This node and
 	# the overlay keep running (PROCESS_MODE_ALWAYS).
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE

@@ -27,6 +27,10 @@ var key_badge: PanelContainer
 var note_panel: PanelContainer
 var note_title: Label
 var note_body: Label
+var suspicion_bar_fill: ColorRect
+var suspicion_bar_track: Control
+var suspicion_percent_label: Label
+const SUSPICION_BAR_WIDTH := 220.0
 
 
 func _ready() -> void:
@@ -36,6 +40,9 @@ func _ready() -> void:
 	pause_button.pressed.connect(_toggle_pause)
 	_build_key_badge()
 	_build_note()
+	_build_suspicion_meter()
+	if has_node("/root/SuspicionManager"):
+		get_node("/root/SuspicionManager").connect("suspicion_changed", set_suspicion)
 
 
 func set_interaction_prompt(prompt_text: String) -> void:
@@ -48,25 +55,22 @@ func set_interaction_prompt(prompt_text: String) -> void:
 		interaction_label.text = prompt_text
 
 
-func set_task_counts(
-	dust_cleaned: int,
-	webs_cleared: int,
-	furniture_placed: int,
-	bathroom_mirrors_cleaned: int = 0,
-	panel_repaired: int = 0,
-	fridge_done: int = 0
-) -> void:
-	var rows := [
-		_task_row("DUSTING", dust_cleaned, 6, COLOR_CLEAN),
-		_task_row("REWIRE PANEL", panel_repaired, 1, COLOR_MECH),
-		_task_row("FRIDGE", fridge_done, 1, COLOR_MECH),
-		_task_row("FURNITURE", furniture_placed, FURNITURE_TOTAL, COLOR_CLEAN),
-		_task_row("WASHROOM", bathroom_mirrors_cleaned, 3, COLOR_WASH),
-	]
-	task_label.text = "\n".join(rows)
-
-	var done := int(dust_cleaned >= 6) + panel_repaired + fridge_done + int(furniture_placed >= FURNITURE_TOTAL) + int(bathroom_mirrors_cleaned >= 3)
-	task_fraction_label.text = "%d/5" % done
+func set_task_counts(rows: Array) -> void:
+	# rows: Array of Dictionary {label:String, current:int, total:int, color:String}
+	# Only currently-active tasks should be passed in - the fraction shown
+	# is "completed / rows.size()", not a hardcoded /5, so it stays correct
+	# whether RunGenerator left 5 tasks active (the normal case) or the
+	# generator hasn't run yet and all 9 are still active.
+	var lines: Array[String] = []
+	var completed := 0
+	for row in rows:
+		var current: int = row.get("current", 0)
+		var total: int = row.get("total", 1)
+		if current >= total:
+			completed += 1
+		lines.append(_task_row(row.get("label", ""), current, total, row.get("color", COLOR_TEXT)))
+	task_label.text = "\n".join(lines)
+	task_fraction_label.text = "%d/%d" % [completed, rows.size()]
 
 
 func _task_row(label_text: String, current: int, total: int, accent_color: String) -> String:
@@ -127,6 +131,19 @@ func _toggle_pause() -> void:
 
 func set_key_owned(has_key: bool) -> void:
 	key_badge.visible = has_key
+
+
+func set_suspicion(new_value: float, max_value: float) -> void:
+	var ratio := clampf(new_value / max_value, 0.0, 1.0) if max_value > 0.0 else 0.0
+	suspicion_bar_fill.size.x = SUSPICION_BAR_WIDTH * ratio
+	suspicion_percent_label.text = "SUSPICION  %d%%" % int(ratio * 100.0)
+	# Green -> amber -> red as suspicion climbs, so the risk reads at a glance.
+	var color: Color
+	if ratio < 0.5:
+		color = Color(0.3, 0.8, 0.45, 1).lerp(Color(0.95, 0.75, 0.2, 1), ratio / 0.5)
+	else:
+		color = Color(0.95, 0.75, 0.2, 1).lerp(Color(0.9, 0.2, 0.22, 1), (ratio - 0.5) / 0.5)
+	suspicion_bar_fill.color = color
 
 
 func show_note(title_text: String, body_text: String) -> void:
@@ -210,3 +227,53 @@ func _build_note() -> void:
 
 	note_panel.visible = false
 	add_child(note_panel)
+
+
+func _build_suspicion_meter() -> void:
+	# Top-right glass panel, sits above the interaction prompt row.
+	var panel := PanelContainer.new()
+	panel.name = "SuspicionMeter"
+	panel.anchor_left = 1.0
+	panel.anchor_right = 1.0
+	panel.offset_left = -260.0
+	panel.offset_right = -24.0
+	panel.offset_top = 24.0
+	panel.offset_bottom = 24.0
+	panel.grow_vertical = Control.GROW_DIRECTION_END
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.04, 0.06, 0.09, 0.82)
+	style.border_color = Color(0.9, 0.3, 0.25, 0.35)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(10)
+	style.shadow_color = Color(0, 0, 0, 0.5)
+	style.shadow_size = 16
+	style.content_margin_left = 16
+	style.content_margin_right = 16
+	style.content_margin_top = 10
+	style.content_margin_bottom = 12
+	panel.add_theme_stylebox_override("panel", style)
+	add_child(panel)
+
+	var column := VBoxContainer.new()
+	column.add_theme_constant_override("separation", 6)
+	panel.add_child(column)
+
+	suspicion_percent_label = Label.new()
+	suspicion_percent_label.text = "SUSPICION  0%"
+	suspicion_percent_label.add_theme_font_size_override("font_size", 13)
+	suspicion_percent_label.add_theme_color_override("font_color", Color(0.9, 0.93, 0.98, 0.9))
+	column.add_child(suspicion_percent_label)
+
+	suspicion_bar_track = Control.new()
+	suspicion_bar_track.custom_minimum_size = Vector2(SUSPICION_BAR_WIDTH, 8)
+	column.add_child(suspicion_bar_track)
+
+	var track_bg := ColorRect.new()
+	track_bg.size = Vector2(SUSPICION_BAR_WIDTH, 8)
+	track_bg.color = Color(1, 1, 1, 0.08)
+	suspicion_bar_track.add_child(track_bg)
+
+	suspicion_bar_fill = ColorRect.new()
+	suspicion_bar_fill.size = Vector2(0, 8)
+	suspicion_bar_fill.color = Color(0.3, 0.8, 0.45, 1)
+	suspicion_bar_track.add_child(suspicion_bar_fill)

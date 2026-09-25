@@ -67,6 +67,8 @@ func _select_tool(index: int) -> void:
 	for tool_index in range(tool_nodes.size()):
 		tool_nodes[tool_index].visible = (tool_index == index)
 	tool_selected.emit(index)
+	if has_node("/root/SuspicionManager"):
+		get_node("/root/SuspicionManager").call("set_cover_state", index == 0) # Mop
 
 
 func _physics_process(delta: float) -> void:
