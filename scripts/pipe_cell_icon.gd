@@ -10,7 +10,7 @@ var mask: int = 0:
 		mask = value
 		queue_redraw()
 
-var line_color: Color = Color(0.53, 0.63, 0.78, 1):
+var line_color: Color = Color(0.572, 0.624, 0.702, 1):
 	set(value):
 		line_color = value
 		queue_redraw()

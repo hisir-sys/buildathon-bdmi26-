@@ -1,308 +1,142 @@
-# THE CLEANER
+# The Cleaner
 
-## Full Human Narration of the Story
-
-### Opening Narration
-
-> "Tonight's job looks simple."
->
-> "A private room. A short cleaning shift. A few things to repair, a few things to clean, and enough time to finish before the owner returns."
->
-> "But this is not just a cleaning job."
->
-> "You're here because something inside this room matters."
->
-> "There are files and assets that cannot be left behind."
->
-> "Your cover is the uniform. Your tools are the excuse."
->
-> "Clean the room. Search carefully. Take only what you need."
->
-> "And whatever happens..."
->
-> "Do not get caught."
-
-### During the Mission
-
-> "Keep moving."
->
-> "Every unfinished task increases the chance that someone notices."
->
-> "Use the right equipment for the right job."
->
-> "The electrical kit is for electrical work."
->
-> "The mop is for ordinary cleaning."
->
-> "The bathroom scrubber is for bathroom surfaces."
->
-> "The room has to look clean when you're finished."
->
-> "But remember why you're really here."
->
-> "The assets are the real objective."
-
-### Ending 1 — Mission Failed
-
-> "The operation has failed."
->
-> "You did not complete the cleaning task, and you did not recover any of the assets you were sent to collect."
->
-> "The room is still unfinished."
->
-> "The opportunity is gone."
->
-> "You failed both parts of the mission."
->
-> "The operation is over."
-
-### Ending 2 — Cleaner Success, Spy Mission Failed
-
-> "The room is clean."
->
-> "Every assigned cleaning task has been completed."
->
-> "To anyone watching, you did exactly what you were supposed to do."
->
-> "But that was only the cover."
->
-> "You failed to recover the assets and files you came here for."
->
-> "The cleaning job was a success."
->
-> "The real mission was not."
-
-### Ending 3 — Mission Accomplished
-
-> "Everything is in place."
->
-> "The room is clean."
->
-> "Every assigned task is complete."
->
-> "The required assets have been recovered."
->
-> "No one caught you."
->
-> "The cover held."
->
-> "The evidence is secured, the room looks untouched, and the operation is complete."
->
-> "You came in as a cleaner."
->
-> "You leave as an operative."
->
-> "Mission accomplished."
+A first-person, timed cleaning-and-infiltration game built in **Godot 4.7.2** (GDScript, Forward+ renderer). Everything in the scene — walls, furniture, lights, the bookshelf, every task prop — is generated procedurally from code, so the project has **no external 3D asset dependencies** and opens/runs from a clean clone with nothing to import.
 
 ---
 
-# Complete Game Flowchart
+## Story
 
-```text
-                    +------------------+
-                    |    START MENU    |
-                    +--------+---------+
-                             |
-                           START
-                             |
-                             v
-                 +-----------------------+
-                 |   NIGHT SHIFT BEGINS  |
-                 |   Timer starts        |
-                 +-----------+-----------+
-                             |
-                             v
-                 +-----------------------+
-                 |    EXPLORE ROOM       |
-                 |  Find tasks & assets  |
-                 +-----------+-----------+
-                             |
-              +--------------+--------------+
-              |              |              |
-              v              v              v
-        +-----------+  +-----------+  +-----------+
-        |  NORMAL   |  |ELECTRICAL |  | BATHROOM  |
-        | CLEANING  |  |   TASKS   |  |   TASKS   |
-        |   MOP     |  |ELECTRICAL |  | SCRUBBER  |
-        |           |  |    KIT    |  |           |
-        +-----+-----+  +-----+-----+  +-----+-----+
-              |              |              |
-              +--------------+--------------+
-                             |
-                             v
-                  +----------------------+
-                  |   COLLECT ASSETS     |
-                  |   / REQUIRED ITEMS   |
-                  +----------+-----------+
-                             |
-                             v
-                  +----------------------+
-                  |   AVOID DETECTION    |
-                  |   Keep suspicion low |
-                  +----------+-----------+
-                             |
-                             v
-                  +----------------------+
-                  |   COMPLETE SHIFT     |
-                  +----------+-----------+
-                             |
-                             v
-                  +----------------------+
-                  |   CHECK RESULTS      |
-                  +----------+-----------+
-                             |
-          +------------------+------------------+
-          |                  |                  |
-          v                  v                  v
-   Tasks incomplete    Tasks complete     Tasks complete
-   + no assets         + no assets        + all assets
-          |                  |                  |
-          v                  v                  v
-   +--------------+   +--------------+   +----------------+
-   | MISSION      |   | CLEANER      |   | MISSION        |
-   | FAILED       |   | SUCCESS /    |   | ACCOMPLISHED   |
-   |              |   | SPY FAILED   |   |                |
-   +--------------+   +--------------+   +----------------+
+Lucas is a cleaner. A wealthy homeowner hires him for a routine job:
+
+> **Owner:** "I'll be back in six hours. Please get this place cleaned up — I'll pay you well for it."
+> **Lucas:** "Yes, don't worry. All of it will be done."
+
+Five hours pass. Lucas is most of the way through the house when his phone buzzes.
+
+> **Owner (text):** "Almost done for the day — I'll be home in 10 mins."
+
+Then a second message arrives — from someone else entirely.
+
+> **Unknown (text):** "You have less time than expected. Collect the DIAMOND, PEN DRIVE, and FILES before you leave."
+
+Lucas isn't just a cleaner. Somebody is running him. He now has **10 minutes** to look like an ordinary guy finishing an ordinary cleaning job — while quietly locating and taking the things he was actually sent in for.
+
+Along the way, scrubbing a stain out of the carpet turns up something the job description didn't mention:
+
+> *"This carpet fiber has been burnt by chemical industrial solvent. Someone was scrubbing blood out of this floor long before you arrived..."*
+
+Whatever this house is, Lucas is not the first person to have a secret reason for being in it. What he finishes, what he takes, and whether anyone notices him doing it — decides how the night ends.
+
+## The Twist: You're a Spy in a Cleaner's Uniform
+
+The house believes you're here to clean. Your actual handler wants two things out of the house:
+
+- The **diamond**, locked in a desk chest in the back corner (behind the cabinet, needs a key hidden somewhere in the bathroom).
+- The **pen drive**, hidden in a secret drawer built into the wall — behind a lock you have to pick yourself, by hand, with a timing-based minigame.
+
+Every real cleaning task you do is also **cover**. Every bit of snooping — jimmying a lock, opening the chest, lingering too long in one spot — raises your **suspicion**. Get caught, and the night ends badly even if the house is spotless.
+
+## Mission Objective
+
+You have **10 minutes**. In any order:
+
+| Task | What it is |
+|---|---|
+| **Dusting** (x6) | Wipe down 6 dust spots around the room |
+| **Rewire Panel** | Fix the electrical panel — match the colored wire pairs before it's repaired |
+| **Fridge** | Carry the fridge to its marked spot on the left wall, then flip the wall switch |
+| **Furniture** (x5) | Move the sofa, dining table, two chairs and the cabinet onto their marked footprints |
+| **Washroom** (x3) | Clean the bathroom mirror, the bathroom door, and the plumbing pipe |
+| **Lock-Pick Drawer** | Pick the hidden wall drawer's lock — grants the **Pendrive** |
+| **Straighten Picture** | Straighten a crooked picture frame — also reveals a scratched 4-digit code for a hidden wall safe |
+| **Scrub Spill** | Clean up a liquid spill on the floor |
+| **Old Stain** | Scrub the "permanent" stain — it never fully disappears, but it's the story clue above |
+
+Plus one fully optional side-puzzle: a **hidden wall safe**, opened with the code revealed by the crooked-picture task. It doesn't affect winning or losing — it's there for players who go looking.
+
+And the one real choice: find the desk key, get past the cabinet, unlock the chest, and decide — **STEAL THE DIAMOND** or **LEAVE THE DIAMOND**.
+
+## Controls
+
+| Input | Action |
+|---|---|
+| **WASD** | Move |
+| **Mouse** | Look around |
+| **Hold E** | Interact / clean (release to stop) |
+| **1 / 2 / 3** | Switch equipment: Electrical Kit / Mop / Bathroom Scrubber |
+| **Space** | Open / close the bathroom door (while looking at it) |
+| **Esc** | Pause / resume (releases the mouse cursor) |
+| **Left Click** | Re-capture the mouse cursor |
+
+### Equipment gating
+
+Some interactions require the right tool equipped first — matching a real cleaner's kit:
+
+| Equipment | Required for |
+|---|---|
+| **Electrical Kit** (1) | Rewire panel, fridge/power switches |
+| **Mop** (2) | Dust, spills, the old stain, spider webs — also gives you "cover" (reduced suspicion gain) while equipped |
+| **Bathroom Scrubber** (3) | Bathroom mirror, bathroom door, bathroom pipe |
+
+Furniture, lock-picking, the picture, the safe, and pickups don't require a specific tool.
+
+## Suspicion — the hidden second meter
+
+A meter (top-right of the HUD) tracks how "hot" your cover is, from 0–100%:
+
+- **Goes up** when you: linger too long near a watch spot without cleaning (after a 10-second grace period), open the treasure chest (+15), pick a lock successfully (+5) or miss (+25), or guess the wall safe's code wrong (+5).
+- **Goes down** when you do real cover-consistent cleaning: straighten the picture (−10), clean the spill (−15), open the safe with the right code (−10).
+- Equipping the **mop** halves all incoming suspicion while it's out — it's your cover story.
+- **Hit 100% and the run ends immediately**, regardless of how much cleaning is done.
+
+## Endings
+
+There are exactly three:
+
+| # | Condition | Outcome |
+|---|---|---|
+| **1 — Mission Failed** | Timer hits zero before the cleaning tasks are finished | Nothing secured, nothing to show for it |
+| **2 — Cleaner Success, Spy Mission Failed** | All cleaning tasks finished, but the diamond wasn't taken, the pendrive wasn't recovered, or suspicion hit 100% | The room's clean; the actual mission wasn't |
+| **3 — Mission Successful** | All cleaning tasks finished **and** both the diamond and the pendrive were secured **and** you were never caught | Full success — house clean, assets secured, cover intact |
+
+(Debug-only, in the Godot editor: **F1 / F2 / F3** force-trigger endings 1/2/3 for testing.)
+
+## Flow
+
+```mermaid
+flowchart LR
+    A[start_menu<br/>THE FINAL CONTRACT] --> B[cutscene_intro<br/>owner + handler texts]
+    B --> C[main_room<br/>10-minute live shift]
+    C -->|timer runs out| D1[Ending 1<br/>Mission Failed]
+    C -->|suspicion hits 100%| D1
+    C -->|all 9 tasks done| E{Assets secured<br/>& never caught?}
+    E -->|no| D2[Ending 2<br/>Cleaner Success /<br/>Spy Mission Failed]
+    E -->|yes| D3[Ending 3<br/>Mission Successful]
+    D1 --> F[ending_screen]
+    D2 --> F
+    D3 --> F
+    F -->|Play Again| B
+    F -->|Main Menu| A
 ```
 
----
+## Running the Game
 
-# Tasks
+1. Extract/clone this folder.
+2. Open `project.godot` in **Godot 4.7.2** (Forward+ rendering is required for full visuals — see `INTEGRATION_GUIDE.md`).
+3. Press **F5** to run.
 
-The mission contains **9 fixed tasks**:
+## Project Structure
 
-1. **Dusting** — clean the required dusty areas.
-2. **Rewire Panel** — complete the electrical repair using the electrical equipment.
-3. **Fridge** — complete the fridge-related cleaning/interaction.
-4. **Furniture** — clean/arrange the required furniture.
-5. **Washroom** — clean the bathroom using the bathroom scrubber.
-6. **Lock-Pick Drawer** — access the required drawer and recover its contents.
-7. **Straighten Picture** — return the picture to the correct position.
-8. **Scrub Spill** — clean the spill using the normal cleaning equipment.
-9. **Old Stain** — remove the old stain using the appropriate cleaning equipment.
-
----
-
-# Equipment
-
-There are **3 useful equipment types**:
-
-### 1. Electrical Kit
-Used only for electrical and wiring-related interactions.
-
-### 2. Mop / Normal Cleaning Tool
-Used for normal cleaning such as dust, spills, stains, floors, and general cleaning areas.
-
-### 3. Bathroom Scrubber
-Used specifically for bathroom and washroom cleaning interactions.
-
-```text
-ELECTRICAL TASK  ->  ELECTRICAL KIT
-NORMAL CLEANING  ->  MOP
-BATHROOM TASK    ->  BATHROOM SCRUBBER
+```
+res://
+├── scenes/                 # start_menu, cutscene_intro, main_room, ending_screen, player
+├── scripts/
+│   ├── autoload/            # SuspicionManager, EndingStateMachine, InnerVoiceManager
+│   ├── tasks/                # the 4 spy-mechanics tasks (lock-pick, picture, spill, stain)
+│   └── *.gd                 # room build-out, HUD, player, every other interactable
+├── shaders/                 # spill_stain.gdshader
+├── project.godot
+└── README.md / INTEGRATION_GUIDE.md / TOOL_SYSTEM_UPDATE.md / README_UI_UPGRADE.md / ENDING_CONTROLS.md
 ```
 
-The wrong equipment cannot complete an interaction.
-
----
-
-# Suspicion System
-
-Suspicion represents how much attention the player is attracting during the mission.
-
-The player must keep suspicion under control while:
-
-- Cleaning the room
-- Exploring
-- Searching for assets
-- Completing the mission
-
-The successful stealth condition is:
-
-```text
-LOW / NO DETECTION
-        +
-ALL TASKS COMPLETE
-        +
-ALL REQUIRED ASSETS COLLECTED
-        =
-MISSION ACCOMPLISHED
-```
-
-Getting through the mission without being caught is an important part of the final success condition.
-
----
-
-# Complete Mission Summary
-
-```text
-ENTER AS A CLEANER
-        |
-        v
-CLEAN THE ROOM
-        |
-        v
-USE THE CORRECT EQUIPMENT
-        |
-        v
-COMPLETE ALL 9 TASKS
-        |
-        v
-SEARCH FOR THE HIDDEN ASSETS
-        |
-        v
-COLLECT THE REQUIRED ITEMS
-        |
-        v
-KEEP SUSPICION LOW
-        |
-        v
-FINISH THE SHIFT
-        |
-        v
-       END
-```
-
-There are exactly **three endings**:
-
-```text
-ENDING 1
-Mission Failed
-= Tasks not completed + assets not collected
-
-ENDING 2
-Cleaner Success / Spy Mission Failed
-= Tasks completed + assets not collected
-
-ENDING 3
-Mission Accomplished
-= Tasks completed + all assets collected + not caught
-```
-
----
-
-# Final Mission Brief
-
-> **Your cover is simple.**
->
-> **Your real objective is not.**
->
-> Enter quietly.
->
-> Clean everything that needs cleaning.
->
-> Use the right tool for every job.
->
-> Find what you came for.
->
-> Recover the required assets.
->
-> Keep suspicion low.
->
-> Leave the room looking clean.
->
-> And make sure the owner never realizes what really happened here.
->
-> **You are the Cleaner.**
->
-> **Complete the job. Recover the assets. Do not get caught.**
+Everything is built procedurally at runtime (`Node3D` + `BoxMesh`/`CylinderMesh`/`SphereMesh` + `StandardMaterial3D`) directly inside the relevant `.gd` script, rather than hand-placed as imported meshes in the `.tscn` — this keeps the whole game readable, diff-able, and free of binary asset files.

@@ -153,6 +153,14 @@ func _build_floor_plan_props() -> void:
 	# seating area instead of sitting off to the side.
 	_build_tv(Vector3(-5.5, 0.0, 9.78))
 	_build_broken_floor(Vector3(-5.8, 0.0, 6.7))
+	# On the front wall, left of the desk/chest and right of the TV, filling
+	# the open gap between them (TV's right edge is ~x -3.1, the desk's left
+	# edge is ~x 0.33) - the front wall is at z 10, so this needs the 180
+	# rotation to flip the shelf's open front from its default +z to -z,
+	# i.e. into the room, same as the chest itself.
+	# Purely decorative, not part of any task, same pattern as the TV / mop
+	# station / rug.
+	_build_bookshelf(Vector3(-1.4, 0.0, 9.6), 180.0)
 	_build_furniture_items()
 	_build_bathroom()
 	_build_reference_game_props()
@@ -240,7 +248,7 @@ func _add_front_wall() -> void:
 	wall.position = Vector3(0.0, 2.0, 10.0)
 	add_child(wall)
 
-	var wall_material := _material(Color(0.78, 0.74, 0.5, 1))
+	var wall_material := _material(Color(0.702, 0.681, 0.556, 1))
 	_box(wall, "MeshInstance3D", Vector3(20.0, 4.0, 0.2), Vector3.ZERO, wall_material)
 	var collision := CollisionShape3D.new()
 	var shape := BoxShape3D.new()
@@ -252,8 +260,8 @@ func _add_front_wall() -> void:
 func _build_mop_station(world_position: Vector3) -> void:
 	var root := _new_prop_root("MopStation", world_position)
 	var dark := _material(Color(0.06, 0.08, 0.13, 1))
-	var metal := _material(Color(0.32, 0.39, 0.48, 1))
-	var yellow := _material(Color(0.92, 0.61, 0.08, 1), Color(0.35, 0.17, 0.01, 1), 0.35)
+	var metal := _material(Color(0.348, 0.385, 0.432, 1))
+	var yellow := _material(Color(0.828, 0.666, 0.39, 1), Color(0.35, 0.17, 0.01, 1), 0.35)
 	_box(root, "StationBack", Vector3(2.8, 2.3, 0.12), Vector3(0, 1.25, 0), dark)
 	_box(root, "Shelf", Vector3(2.8, 0.12, 0.7), Vector3(0, 0.45, 0.38), metal)
 	_box(root, "Rack", Vector3(2.2, 0.08, 0.08), Vector3(0, 2.05, 0.34), metal)
@@ -267,7 +275,7 @@ func _build_mop_station(world_position: Vector3) -> void:
 func _build_rug(world_position: Vector3) -> void:
 	var root := _new_prop_root("Rug", world_position)
 	var border := _material(Color(0.22, 0.045, 0.055, 1))
-	var inner := _material(Color(0.55, 0.18, 0.12, 1))
+	var inner := _material(Color(0.495, 0.302, 0.271, 1))
 	_box(root, "RugBorder", Vector3(4.8, 0.06, 2.55), Vector3.ZERO, border)
 	_box(root, "RugPattern", Vector3(4.35, 0.075, 2.1), Vector3(0, 0.035, 0), inner)
 	for x in range(-2, 3):
@@ -289,7 +297,7 @@ func _build_cabinet() -> void:
 		Vector3(0.0, 180.0, 0.0)
 	)
 	var wood := _material(Color(0.28, 0.12, 0.055, 1))
-	var trim := _material(Color(0.56, 0.27, 0.09, 1))
+	var trim := _material(Color(0.504, 0.353, 0.259, 1))
 	_box(root, "CabinetBody", Vector3(2.5, 2.2, 1.25), Vector3(0, 1.1, 0), wood)
 	_box(root, "CabinetTop", Vector3(2.75, 0.14, 1.4), Vector3(0, 2.27, 0), trim)
 	for row in range(2):
@@ -503,7 +511,7 @@ func _build_tv(world_position: Vector3) -> void:
 	_box(root, "TVFrame", Vector3(4.7, 2.5, 0.18), Vector3(0, 2.1, 0), stand)
 	_box(root, "TVScreen", Vector3(4.35, 2.15, 0.035), Vector3(0, 2.1, -0.11), screen)
 	for index in range(4):
-		_box(root, "TVGlow%d" % index, Vector3(0.05, 1.65, 0.012), Vector3(-1.5 + index * 1.0, 2.1, -0.135), _material(Color(0.1, 0.45, 0.62, 1), Color(0.02, 0.2, 0.4, 1), 1.0))
+		_box(root, "TVGlow%d" % index, Vector3(0.05, 1.65, 0.012), Vector3(-1.5 + index * 1.0, 2.1, -0.135), _material(Color(0.287, 0.469, 0.558, 1), Color(0.02, 0.2, 0.4, 1), 1.0))
 
 
 func _build_broken_floor(world_position: Vector3) -> void:
@@ -515,6 +523,87 @@ func _build_broken_floor(world_position: Vector3) -> void:
 		var plank := _box(root, "BrokenPlank%d" % index, Vector3(0.75, 0.07, 0.22), Vector3(-1.25 + (index % 4) * 0.8, 0.07, -0.95 + (index / 4) * 1.8), broken_wood)
 		plank.rotation_degrees.y = -18.0 + index * 11.0
 		plank.rotation_degrees.z = -7.0 + index * 4.0
+
+
+func _build_bookshelf(world_position: Vector3, rotation_y: float = 0.0) -> void:
+	# Decorative only (no collision, no task hookup) - same treatment as the
+	# TV and mop station. Built from primitives so it stays consistent with
+	# the rest of the room's no-external-assets art style. Faces +z by
+	# default (its open front), which is "into the room" when mounted flush
+	# against the back wall at z -10, matching the wall-mount convention
+	# used by the rewire panel / wall safe / lock-pick drawer.
+	var root := _new_prop_root("Bookshelf", world_position)
+	root.rotation_degrees.y = rotation_y
+
+	var carcass := _material(Color(0.223, 0.127, 0.065, 1))
+	var trim := _material(Color(0.32, 0.19, 0.098, 1))
+	var shelf_wood := _material(Color(0.27, 0.155, 0.078, 1))
+	var palette: Array[StandardMaterial3D] = [
+		_material(Color(0.5, 0.1, 0.09, 1)),
+		_material(Color(0.09, 0.26, 0.17, 1)),
+		_material(Color(0.13, 0.15, 0.4, 1)),
+		_material(Color(0.52, 0.36, 0.11, 1)),
+		_material(Color(0.28, 0.17, 0.09, 1)),
+		_material(Color(0.4, 0.38, 0.33, 1)),
+		_material(Color(0.47, 0.06, 0.26, 1)),
+		_material(Color(0.16, 0.32, 0.35, 1)),
+	]
+
+	var width := 2.4
+	var height := 3.15
+	var depth := 0.46
+	var half_width := width * 0.5
+
+	# Carcass: sides, top, kick base, and a recessed back panel.
+	_box(root, "SideLeft", Vector3(0.08, height, depth), Vector3(-half_width + 0.04, height * 0.5, 0.0), carcass)
+	_box(root, "SideRight", Vector3(0.08, height, depth), Vector3(half_width - 0.04, height * 0.5, 0.0), carcass)
+	_box(root, "TopCap", Vector3(width + 0.1, 0.1, depth + 0.06), Vector3(0.0, height + 0.05, 0.0), trim)
+	_box(root, "KickBase", Vector3(width, 0.14, depth), Vector3(0.0, 0.07, 0.0), trim)
+	_box(root, "BackPanel", Vector3(width - 0.14, height - 0.14, 0.03), Vector3(0.0, height * 0.5, -depth * 0.5 + 0.015), carcass)
+
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 42
+
+	var shelf_count := 5
+	var usable_height := height - 0.34
+	for row in range(shelf_count):
+		var shelf_y: float = 0.3 + (float(row) / float(shelf_count - 1)) * usable_height
+		_box(root, "ShelfBoard%d" % row, Vector3(width - 0.18, 0.05, depth - 0.05), Vector3(0.0, shelf_y, 0.01), shelf_wood)
+		if row == shelf_count - 1:
+			continue
+
+		# Fill the shelf with a row of upright books of varied width,
+		# height and colour, each with a slight random lean.
+		var x := -half_width + 0.16
+		var limit := half_width - 0.12
+		while x < limit:
+			if rng.randf() < 0.09:
+				x += rng.randf_range(0.06, 0.16)
+				continue
+			var book_width: float = rng.randf_range(0.055, 0.11)
+			if x + book_width > limit:
+				break
+			var book_height: float = rng.randf_range(0.3, 0.5)
+			var book_depth: float = depth - rng.randf_range(0.14, 0.2)
+			var lean: float = rng.randf_range(-5.0, 5.0)
+			var book := _box(
+				root,
+				"Book_%d_%d" % [row, int(x * 1000.0)],
+				Vector3(book_width, book_height, book_depth),
+				Vector3(x + book_width * 0.5, shelf_y + 0.025 + book_height * 0.5, 0.0),
+				palette[rng.randi() % palette.size()]
+			)
+			book.rotation_degrees.z = lean
+			x += book_width + 0.012
+
+	# A couple of books stacked flat on top, plus a small potted plant, so
+	# the top of the shelf doesn't read as bare.
+	_box(root, "TopBookA", Vector3(0.46, 0.06, 0.32), Vector3(-0.6, height + 0.13, 0.0), palette[3])
+	_box(root, "TopBookB", Vector3(0.38, 0.06, 0.28), Vector3(-0.58, height + 0.19, 0.02), palette[1])
+	var pot_material := _material(Color(0.34, 0.2, 0.11, 1))
+	var leaf_material := _material(Color(0.13, 0.3, 0.14, 1))
+	_cylinder(root, "PlantPot", 0.13, 0.2, Vector3(0.65, height + 0.2, 0.0), pot_material)
+	_sphere(root, "PlantLeaves", 0.17, Vector3(0.65, height + 0.4, 0.0), leaf_material)
 
 
 func _build_furniture_items() -> void:
@@ -532,7 +621,7 @@ func _build_furniture_items() -> void:
 		Vector3(0.0, 90.0, 0.0)
 	)
 	var table_wood := _material(Color(0.36, 0.16, 0.065, 1))
-	var table_trim := _material(Color(0.58, 0.28, 0.1, 1))
+	var table_trim := _material(Color(0.522, 0.365, 0.271, 1))
 	_box(table, "TableTop", Vector3(2.9, 0.18, 1.55), Vector3(0, 1.48, 0), table_wood)
 	_box(table, "TableEdge", Vector3(2.75, 0.12, 1.42), Vector3(0, 1.36, 0), table_trim)
 	for index in range(4):
@@ -602,7 +691,7 @@ func _new_furniture_item(
 
 func _build_dining_chair_meshes(chair: StaticBody3D) -> void:
 	var wood := _material(Color(0.38, 0.17, 0.07, 1))
-	var seat_material := _material(Color(0.55, 0.22, 0.1, 1))
+	var seat_material := _material(Color(0.495, 0.323, 0.26, 1))
 	_box(chair, "Seat", Vector3(0.85, 0.14, 0.85), Vector3(0, 0.9, 0), seat_material)
 	_box(chair, "Back", Vector3(0.85, 1.1, 0.14), Vector3(0, 1.42, 0.36), wood)
 	for index in range(4):
@@ -617,7 +706,7 @@ func _build_dining_chair_meshes(chair: StaticBody3D) -> void:
 
 
 func _build_bathroom() -> void:
-	var wall_material := _material(Color(0.75, 0.71, 0.48, 1))
+	var wall_material := _material(Color(0.675, 0.654, 0.534, 1))
 	var bathroom_floor := _material(Color(0.24, 0.27, 0.3, 1))
 	var bathroom_ceiling := _material(Color(0.08, 0.1, 0.15, 1))
 
@@ -772,7 +861,12 @@ func _build_storage_rack(parent: Node3D) -> void:
 	# Mounted flat on the left wall, moved away from the basin. It has no
 	# rotation applied - built directly with its open shelf side facing
 	# +x (across the room, toward the bathtub) so the wall mount is exact.
-	var rack := _new_prop_root("StorageRack", Vector3(3.42, 0.0, -5.15))
+	# Built directly (not via _new_prop_root, which parents to the room
+	# itself) since this needs to be a child of the bathroom fixtures group -
+	# calling both was a double-parent that Godot rejected at runtime.
+	var rack := Node3D.new()
+	rack.name = "StorageRack"
+	rack.position = Vector3(3.42, 0.0, -5.15)
 	parent.add_child(rack)
 	var wood := _material(Color(0.32, 0.16, 0.07, 1))
 	var metal := _material(Color(0.4, 0.46, 0.52, 1), Color(0.05, 0.06, 0.08, 1), 0.15)
@@ -782,8 +876,8 @@ func _build_storage_rack(parent: Node3D) -> void:
 		_box(rack, "Shelf%d" % index, Vector3(0.36, 0.05, 1.2), Vector3(0.2, shelf_y, 0), wood)
 		_box(rack, "BracketFront%d" % index, Vector3(0.36, 0.04, 0.04), Vector3(0.2, shelf_y - 0.02, -0.56), metal)
 		_box(rack, "BracketBack%d" % index, Vector3(0.36, 0.04, 0.04), Vector3(0.2, shelf_y - 0.02, 0.56), metal)
-	_cylinder(rack, "Bottle0", 0.07, 0.28, Vector3(0.2, 0.72, -0.35), _material(Color(0.15, 0.55, 0.55, 1)))
-	_cylinder(rack, "Bottle1", 0.06, 0.22, Vector3(0.2, 0.68, 0.1), _material(Color(0.75, 0.35, 0.15, 1)))
+	_cylinder(rack, "Bottle0", 0.07, 0.28, Vector3(0.2, 0.72, -0.35), _material(Color(0.286, 0.495, 0.495, 1)))
+	_cylinder(rack, "Bottle1", 0.06, 0.22, Vector3(0.2, 0.68, 0.1), _material(Color(0.675, 0.466, 0.362, 1)))
 	_box(rack, "FoldedTowel", Vector3(0.3, 0.12, 0.4), Vector3(0.2, 1.36, 0.3), _material(Color(0.85, 0.85, 0.9, 1)))
 
 
@@ -807,7 +901,7 @@ func _build_bathroom_door(world_position: Vector3) -> void:
 
 	var door_material := _material(Color(0.28, 0.16, 0.08, 1))
 	var panel_material := _material(Color(0.34, 0.19, 0.09, 1))
-	var handle_material := _material(Color(0.55, 0.5, 0.35, 1), Color(0.1, 0.09, 0.05, 1), 0.15)
+	var handle_material := _material(Color(0.495, 0.469, 0.391, 1), Color(0.1, 0.09, 0.05, 1), 0.15)
 	# Sized up from the previous pass, but still a touch smaller than a
 	# regular interior door - matching how bathroom doors are usually built.
 	_box(door, "DoorSlab", Vector3(1.05, 2.05, 0.05), Vector3(0, 1.025, 0), door_material)
@@ -840,7 +934,7 @@ func _build_bathroom_pipe(parent: Node3D) -> void:
 	pipe.add_to_group("interactable")
 	pipe.add_to_group("repair_task")
 	var metal := _material(Color(0.62, 0.68, 0.73, 1))
-	var rust := _material(Color(0.72, 0.2, 0.08, 1), Color(0.32, 0.03, 0.01, 1), 0.35)
+	var rust := _material(Color(0.648, 0.377, 0.314, 1), Color(0.32, 0.03, 0.01, 1), 0.35)
 	_cylinder(pipe, "Pipe", 0.11, 3.25, Vector3.ZERO, metal).rotation_degrees.x = 90.0
 	var back_joint := _torus(pipe, "PipeJointBack", 0.15, 0.035, Vector3(0, 0, -1.0), metal)
 	back_joint.rotation_degrees.x = 90.0
@@ -849,7 +943,7 @@ func _build_bathroom_pipe(parent: Node3D) -> void:
 	_cylinder(pipe, "Valve", 0.28, 0.12, Vector3(0, 0, 0.18), rust).rotation_degrees.x = 90.0
 	_cylinder(pipe, "ValveStem", 0.05, 0.38, Vector3(0, 0.25, 0.18), rust)
 	_torus(pipe, "ValveHandle", 0.2, 0.045, Vector3(0, 0.45, 0.18), rust)
-	_box(pipe, "StatusLight", Vector3(0.12, 0.12, 0.12), Vector3(0, 0.18, 0), _material(Color(0.95, 0.25, 0.1, 1), Color(0.7, 0.04, 0.01, 1), 2.0))
+	_box(pipe, "StatusLight", Vector3(0.12, 0.12, 0.12), Vector3(0, 0.18, 0), _material(Color(0.855, 0.49, 0.411, 1), Color(0.63, 0.285, 0.27, 1), 2.0))
 	_add_body_collision(pipe, Vector3(0.3, 0.3, 3.1), Vector3.ZERO)
 	var leak_collision := CollisionShape3D.new()
 	var leak_shape := BoxShape3D.new()
@@ -903,7 +997,7 @@ func _build_hanging_lamp(world_position: Vector3) -> void:
 	var root := _new_prop_root("HangingLamp", world_position)
 	var cable := _material(Color(0.02, 0.025, 0.04, 1))
 	var shade := _material(Color(0.34, 0.38, 0.48, 1))
-	var bulb_material := _material(Color(1.0, 0.25, 0.18, 1), Color(1.0, 0.06, 0.02, 1), 3.0)
+	var bulb_material := _material(Color(0.9, 0.508, 0.472, 1), Color(0.9, 0.409, 0.388, 1), 3.0)
 	_cylinder(root, "Cable", 0.035, 1.1, Vector3(0, 3.5, 0), cable)
 	var shade_mesh := _cylinder(root, "Shade", 0.42, 0.24, Vector3(0, 2.92, 0), shade)
 	# A shallow cone-like shade reads correctly from below without external assets.
@@ -975,7 +1069,7 @@ func _build_fridge_wall_switch(world_position: Vector3) -> void:
 	_box(fridge_switch, "Plate", Vector3(0.22, 0.32, 0.04), Vector3.ZERO, plate)
 	var lever := _box(fridge_switch, "Lever", Vector3(0.08, 0.14, 0.05), Vector3(0, 0.04, -0.03), _material(Color(0.1, 0.1, 0.12, 1)))
 	lever.rotation_degrees.x = 30.0
-	_sphere(fridge_switch, "Indicator", 0.03, Vector3(0, -0.11, -0.03), _material(Color(0.5, 0.08, 0.06, 1), Color(0.5, 0.08, 0.06, 1), 1.0))
+	_sphere(fridge_switch, "Indicator", 0.03, Vector3(0, -0.11, -0.03), _material(Color(0.45, 0.231, 0.22, 1), Color(0.45, 0.231, 0.22, 1), 1.0))
 	# Without a collision shape the interaction ray could never hit it.
 	_add_body_collision(fridge_switch, Vector3(0.26, 0.36, 0.14), Vector3(0, 0, -0.03))
 	fridge_switch.connect("toggled", _on_fridge_switch_toggled)
@@ -1005,7 +1099,7 @@ func _build_rewire_panel(world_position: Vector3) -> void:
 	halo_light.light_color = Color(0.25, 0.85, 1.0, 1)
 	panel.add_child(halo_light)
 
-	var halo_material := _material(Color(0.1, 0.4, 0.55, 0.16), Color(0.2, 0.8, 1.0, 1), 1.4)
+	var halo_material := _material(Color(0.26, 0.417, 0.495, 0.16), Color(0.482, 0.796, 0.9, 1), 1.4)
 	halo_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	halo_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	var halo_disc := _cylinder(panel, "HaloDisc", 1.15, 0.01, Vector3(0, 0.05, 0.2), halo_material)
@@ -1021,10 +1115,10 @@ func _build_rewire_panel(world_position: Vector3) -> void:
 	# is repaired, at which point the fray caps hide and the wires glow
 	# brighter, reading as freshly reconnected.
 	var stub_colors: Array[Color] = [
-		Color(0.15, 0.85, 0.85, 1),
-		Color(0.55, 0.9, 0.2, 1),
-		Color(1.0, 0.35, 0.75, 1),
-		Color(0.95, 0.8, 0.15, 1)
+		Color(0.4, 0.765, 0.765, 1),
+		Color(0.627, 0.81, 0.445, 1),
+		Color(0.9, 0.561, 0.769, 1),
+		Color(0.855, 0.777, 0.437, 1)
 	]
 	var tilt_angles: Array[float] = [-22.0, -8.0, 8.0, 22.0]
 	var fray_material := _material(Color(0.32, 0.22, 0.14, 1))
@@ -1045,7 +1139,7 @@ func _build_rewire_panel(world_position: Vector3) -> void:
 
 	# The glowing ring at the panel's center - dim amber while broken,
 	# brightens to green once every wire is reconnected.
-	var ring_material := _material(Color(0.6, 0.32, 0.05, 1), Color(1.0, 0.55, 0.1, 1), 1.6)
+	var ring_material := _material(Color(0.54, 0.394, 0.253, 1), Color(0.9, 0.665, 0.43, 1), 1.6)
 	var ring := _torus(panel, "CenterRing", 0.16, 0.11, Vector3(0, 0, -0.1), ring_material)
 	ring.rotation_degrees.x = 90.0
 
@@ -1057,7 +1151,7 @@ func _build_rewire_panel(world_position: Vector3) -> void:
 	ring_light.light_color = Color(1.0, 0.6, 0.15, 1)
 	panel.add_child(ring_light)
 
-	_box(panel, "StatusLight", Vector3(0.12, 0.12, 0.06), Vector3(0.57, 0.45, -0.14), _material(Color(1.0, 0.15, 0.08, 1), Color(1.0, 0.15, 0.08, 1), 2.4))
+	_box(panel, "StatusLight", Vector3(0.12, 0.12, 0.06), Vector3(0.57, 0.45, -0.14), _material(Color(0.9, 0.456, 0.42, 1), Color(0.9, 0.456, 0.42, 1), 2.4))
 	_add_body_collision(panel, Vector3(1.35, 1.95, 0.3), Vector3.ZERO)
 	add_child(panel)
 
@@ -1157,23 +1251,23 @@ func _process(delta: float) -> void:
 func _refresh_hud() -> void:
 	var rows: Array = []
 	if task_active.get("dust", true):
-		rows.append({"label": "DUSTING", "current": dust_cleaned, "total": 6, "color": "#ff5c4d"})
+		rows.append({"label": "DUSTING", "current": dust_cleaned, "total": 6, "color": "#e69089"})
 	if task_active.get("panel_repair", true):
-		rows.append({"label": "REWIRE PANEL", "current": panel_repaired, "total": 1, "color": "#4da8ff"})
+		rows.append({"label": "REWIRE PANEL", "current": panel_repaired, "total": 1, "color": "#89b8e6"})
 	if task_active.get("fridge", true):
-		rows.append({"label": "FRIDGE", "current": fridge_done, "total": 1, "color": "#4da8ff"})
+		rows.append({"label": "FRIDGE", "current": fridge_done, "total": 1, "color": "#89b8e6"})
 	if task_active.get("furniture", true):
-		rows.append({"label": "FURNITURE", "current": furniture_placed, "total": FURNITURE_TOTAL, "color": "#ff5c4d"})
+		rows.append({"label": "FURNITURE", "current": furniture_placed, "total": FURNITURE_TOTAL, "color": "#e69089"})
 	if task_active.get("washroom", true):
-		rows.append({"label": "WASHROOM", "current": _washroom_total(), "total": 3, "color": "#5cf0a0"})
+		rows.append({"label": "WASHROOM", "current": _washroom_total(), "total": 3, "color": "#8bd8ae"})
 	if task_active.get("lockpick", true):
-		rows.append({"label": "LOCK-PICK DRAWER", "current": lockpick_done, "total": 1, "color": "#4da8ff"})
+		rows.append({"label": "LOCK-PICK DRAWER", "current": lockpick_done, "total": 1, "color": "#89b8e6"})
 	if task_active.get("picture", true):
-		rows.append({"label": "STRAIGHTEN PICTURE", "current": picture_done, "total": 1, "color": "#ff5c4d"})
+		rows.append({"label": "STRAIGHTEN PICTURE", "current": picture_done, "total": 1, "color": "#e69089"})
 	if task_active.get("spill", true):
-		rows.append({"label": "SCRUB SPILL", "current": spill_done, "total": 1, "color": "#5cf0a0"})
+		rows.append({"label": "SCRUB SPILL", "current": spill_done, "total": 1, "color": "#8bd8ae"})
 	if task_active.get("stain", true):
-		rows.append({"label": "OLD STAIN", "current": stain_done, "total": 1, "color": "#5cf0a0"})
+		rows.append({"label": "OLD STAIN", "current": stain_done, "total": 1, "color": "#8bd8ae"})
 	hud.set_task_counts(rows)
 
 	if _all_tasks_done():
@@ -1306,7 +1400,7 @@ func _on_fridge_switch_toggled(is_on: bool) -> void:
 	fridge_interior_light.light_energy = 1.1 if is_on else 0.0
 	var status_material := fridge_status_light.material_override as StandardMaterial3D
 	if status_material != null:
-		var lit_color := Color(0.2, 1.0, 0.4, 1)
+		var lit_color := Color(0.482, 0.9, 0.587, 1)
 		var dead_color := Color(0.35, 0.08, 0.06, 1)
 		status_material.albedo_color = lit_color if is_on else dead_color
 		status_material.emission = lit_color if is_on else dead_color
@@ -1430,7 +1524,7 @@ func _build_safe_corner_light() -> void:
 	var root := _new_prop_root("SafeCornerLight", Vector3(-9.81, 2.95, -7.5))
 	root.rotation_degrees.y = 90.0
 	var fixture := _material(Color(0.15, 0.15, 0.17, 1))
-	var bulb := _material(Color(1.0, 0.92, 0.72, 1), Color(1.0, 0.85, 0.55, 1), 2.5)
+	var bulb := _material(Color(1.0, 0.92, 0.72, 1), Color(0.9, 0.822, 0.665, 1), 2.5)
 	_box(root, "SconceBody", Vector3(0.5, 0.22, 0.18), Vector3.ZERO, fixture)
 	_sphere(root, "SconceBulb", 0.07, Vector3(0.0, -0.02, 0.1), bulb)
 

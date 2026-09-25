@@ -67,7 +67,7 @@ func stop_interaction() -> void:
 func _fire_clue() -> void:
 	var inner_voice := get_node_or_null("/root/InnerVoiceManager")
 	if inner_voice != null:
-		inner_voice.call("queue_thought", "LOGIC", CLUE_TEXT, 5.0, Color(0.35, 0.85, 0.95, 1))
+		inner_voice.call("queue_thought", "LOGIC", CLUE_TEXT, 5.0, Color(0.542, 0.803, 0.855, 1))
 
 
 func _has_required_tool() -> bool:

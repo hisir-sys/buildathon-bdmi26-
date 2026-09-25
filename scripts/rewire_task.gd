@@ -7,10 +7,10 @@ const RewireCanvasScript = preload("res://scripts/rewire_canvas.gd")
 @export var task_kind: String = "panel"
 
 const PAIR_COLORS: Array[Color] = [
-	Color(0.95, 0.25, 0.2, 1),
-	Color(0.25, 0.55, 0.95, 1),
-	Color(0.95, 0.85, 0.15, 1),
-	Color(0.95, 0.35, 0.85, 1)
+	Color(0.855, 0.49, 0.464, 1),
+	Color(0.49, 0.646, 0.855, 1),
+	Color(0.855, 0.803, 0.437, 1),
+	Color(0.855, 0.542, 0.803, 1)
 ]
 
 var is_complete: bool = false
@@ -73,14 +73,14 @@ func _open_puzzle() -> void:
 	var panel := Panel.new()
 	panel.position = Vector2(390, 96)
 	panel.size = Vector2(500, 528)
-	panel.add_theme_stylebox_override("panel", _panel_style(Color(0.035, 0.075, 0.15, 0.98), Color(0.12, 0.28, 0.5, 1.0), 2))
+	panel.add_theme_stylebox_override("panel", _panel_style(Color(0.035, 0.075, 0.15, 0.98), Color(0.252, 0.335, 0.45, 1.0), 2))
 	overlay.add_child(panel)
 
 	var title := Label.new()
 	title.position = Vector2(24, 18)
 	title.size = Vector2(400, 34)
 	title.text = "REWIRE PANEL"
-	title.add_theme_color_override("font_color", Color(0.18, 0.86, 1.0, 1))
+	title.add_theme_color_override("font_color", Color(0.472, 0.827, 0.9, 1))
 	title.add_theme_font_size_override("font_size", 25)
 	panel.add_child(title)
 
@@ -159,7 +159,7 @@ func _open_puzzle() -> void:
 	walk_away.text = "WALK AWAY"
 	walk_away.focus_mode = Control.FOCUS_NONE
 	walk_away.add_theme_font_size_override("font_size", 12)
-	walk_away.add_theme_stylebox_override("normal", _panel_style(Color(0.08, 0.13, 0.23, 1), Color(0.18, 0.3, 0.48, 1), 1))
+	walk_away.add_theme_stylebox_override("normal", _panel_style(Color(0.08, 0.13, 0.23, 1), Color(0.275, 0.338, 0.432, 1), 1))
 	walk_away.pressed.connect(_close_puzzle)
 	panel.add_child(walk_away)
 
@@ -184,7 +184,7 @@ func _complete_puzzle() -> void:
 	is_complete = true
 	if status_label != null:
 		status_label.text = "WIRING FIXED"
-		status_label.add_theme_color_override("font_color", Color(0.35, 1.0, 0.55, 1))
+		status_label.add_theme_color_override("font_color", Color(0.561, 0.9, 0.665, 1))
 	_apply_fixed_visual()
 	completed.emit(task_kind)
 	await get_tree().create_timer(1.0).timeout

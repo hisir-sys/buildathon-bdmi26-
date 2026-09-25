@@ -10,17 +10,17 @@ extends Node
 #
 # Usage from anywhere:
 #   InnerVoiceManager.queue_thought("LOGIC", "This carpet fiber has been...")
-#   InnerVoiceManager.queue_thought("GREED", "Nobody would know...", 5.0, Color(0.85, 0.65, 0.15))
+#   InnerVoiceManager.queue_thought("GREED", "Nobody would know...", 5.0, Color(0.765, 0.661, 0.4))
 
 const UiKit = preload("res://scripts/ui_kit.gd")
 const SAMPLE_RATE := 22050.0
 
 # Default accent colors per persona; callers can still override per-call.
 const PERSONA_COLORS := {
-	"GREED": Color(0.85, 0.62, 0.16, 1),
-	"LOGIC": Color(0.35, 0.85, 0.95, 1),
-	"CAUTION": Color(0.95, 0.75, 0.25, 1),
-	"SUSPICION": Color(0.85, 0.25, 0.3, 1),
+	"GREED": Color(0.765, 0.645, 0.405, 1),
+	"LOGIC": Color(0.542, 0.803, 0.855, 1),
+	"CAUTION": Color(0.855, 0.751, 0.49, 1),
+	"SUSPICION": Color(0.765, 0.452, 0.478, 1),
 }
 
 class Thought:
@@ -143,7 +143,7 @@ func _build_ui() -> void:
 	# Glass-morphism panel per the spec's UI theme.
 	var style := UiKit.glass_style(
 		Color(0.04, 0.06, 0.09, 0.82),
-		Color(0.3, 0.6, 1.0, 0.35),
+		Color(0.535, 0.691, 0.9, 0.35),
 		10,
 		Color(0, 0, 0, 0.5),
 		20

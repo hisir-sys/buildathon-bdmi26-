@@ -119,7 +119,7 @@ func _attempt_stop() -> void:
 	else:
 		_locked_out = true
 		status_label.text = "MISSED - RESETTING..."
-		needle.color = Color(0.9, 0.2, 0.2, 1)
+		needle.color = Color(0.81, 0.445, 0.445, 1)
 		await get_tree().create_timer(LOCKOUT_SECONDS, true).timeout
 		needle.color = Color(0.95, 0.95, 1.0, 1)
 		_finish(false)
@@ -173,7 +173,7 @@ func _build_ui() -> void:
 	var style := StyleBoxFlat.new()
 	# Glass-morphism panel per the visual spec.
 	style.bg_color = Color(0.04, 0.06, 0.09, 0.82)
-	style.border_color = Color(0.3, 0.6, 1.0, 0.35)
+	style.border_color = Color(0.535, 0.691, 0.9, 0.35)
 	style.set_border_width_all(1)
 	style.set_corner_radius_all(10)
 	style.shadow_color = Color(0, 0, 0, 0.5)
@@ -207,7 +207,7 @@ func _build_ui() -> void:
 
 	target_zone = ColorRect.new()
 	target_zone.size = Vector2(80, TRACK_HEIGHT)
-	target_zone.color = Color(0.25, 0.9, 0.45, 0.85)
+	target_zone.color = Color(0.471, 0.81, 0.575, 0.85)
 	track_holder.add_child(target_zone)
 
 	needle = ColorRect.new()

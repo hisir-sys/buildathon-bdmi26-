@@ -14,8 +14,8 @@ const CABINET_CLEARANCE := 3.2
 
 # Camera positions relative to the chest origin (chest sits on the desk).
 # The root is rotated 180 degrees so the chest front faces into the room from the front wall.
-const CAM_START := Vector3(-0.8, 2.7, -3.6)
-const CAM_END := Vector3(-0.3, 2.45, -2.2)
+const CAM_START := Vector3(-0.8, 2.7, 3.6)
+const CAM_END := Vector3(-0.3, 2.45, 2.2)
 const CAM_TARGET := Vector3(0.0, 1.2, 0.0)
 const PADLOCK_DROP_POS := Vector3(0.75, 0.95, 0.3)
 

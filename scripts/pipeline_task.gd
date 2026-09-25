@@ -92,14 +92,14 @@ func _open_puzzle() -> void:
 	var panel := Panel.new()
 	panel.position = Vector2(350, 86)
 	panel.size = Vector2(580, 548)
-	panel.add_theme_stylebox_override("panel", _panel_style(Color(0.035, 0.075, 0.15, 0.98), Color(0.12, 0.28, 0.5, 1.0), 2))
+	panel.add_theme_stylebox_override("panel", _panel_style(Color(0.035, 0.075, 0.15, 0.98), Color(0.252, 0.335, 0.45, 1.0), 2))
 	overlay.add_child(panel)
 
 	var warning := Label.new()
 	warning.position = Vector2(24, 14)
 	warning.size = Vector2(532, 24)
 	warning.text = "⚠  ⚠  ⚠  ⚠  ⚠  ⚠  ⚠  ⚠  ⚠  ⚠  ⚠  ⚠"
-	warning.add_theme_color_override("font_color", Color(1.0, 0.72, 0.12, 1))
+	warning.add_theme_color_override("font_color", Color(0.9, 0.754, 0.441, 1))
 	warning.add_theme_font_size_override("font_size", 18)
 	warning.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	panel.add_child(warning)
@@ -108,7 +108,7 @@ func _open_puzzle() -> void:
 	title.position = Vector2(24, 52)
 	title.size = Vector2(420, 34)
 	title.text = "PIPELINE"
-	title.add_theme_color_override("font_color", Color(0.18, 0.86, 1.0, 1))
+	title.add_theme_color_override("font_color", Color(0.472, 0.827, 0.9, 1))
 	title.add_theme_font_size_override("font_size", 25)
 	panel.add_child(title)
 
@@ -124,7 +124,7 @@ func _open_puzzle() -> void:
 	inlet.position = Vector2(28, 273)
 	inlet.size = Vector2(30, 40)
 	inlet.text = "▶"
-	inlet.add_theme_color_override("font_color", Color(1.0, 0.78, 0.16, 1))
+	inlet.add_theme_color_override("font_color", Color(0.9, 0.785, 0.462, 1))
 	inlet.add_theme_font_size_override("font_size", 26)
 	panel.add_child(inlet)
 
@@ -132,7 +132,7 @@ func _open_puzzle() -> void:
 	outlet.position = Vector2(526, 273)
 	outlet.size = Vector2(30, 40)
 	outlet.text = "◀"
-	outlet.add_theme_color_override("font_color", Color(0.3, 1.0, 0.55, 1))
+	outlet.add_theme_color_override("font_color", Color(0.535, 0.9, 0.665, 1))
 	outlet.add_theme_font_size_override("font_size", 26)
 	panel.add_child(outlet)
 
@@ -147,8 +147,8 @@ func _open_puzzle() -> void:
 		cell.focus_mode = Control.FOCUS_NONE
 		cell.text = ""
 		cell.add_theme_stylebox_override("normal", _panel_style(Color(0.06, 0.12, 0.23, 1), Color(0.1, 0.2, 0.36, 1), 1))
-		cell.add_theme_stylebox_override("hover", _panel_style(Color(0.09, 0.18, 0.32, 1), Color(0.2, 0.55, 0.75, 1), 2))
-		cell.add_theme_stylebox_override("pressed", _panel_style(Color(0.04, 0.1, 0.2, 1), Color(0.25, 0.8, 1.0, 1), 2))
+		cell.add_theme_stylebox_override("hover", _panel_style(Color(0.09, 0.18, 0.32, 1), Color(0.388, 0.571, 0.675, 1), 2))
+		cell.add_theme_stylebox_override("pressed", _panel_style(Color(0.04, 0.1, 0.2, 1), Color(0.509, 0.796, 0.9, 1), 2))
 		cell.pressed.connect(_on_cell_pressed.bind(index))
 		panel.add_child(cell)
 		cell_buttons.append(cell)
@@ -175,7 +175,7 @@ func _open_puzzle() -> void:
 	walk_away.text = "WALK AWAY"
 	walk_away.focus_mode = Control.FOCUS_NONE
 	walk_away.add_theme_font_size_override("font_size", 12)
-	walk_away.add_theme_stylebox_override("normal", _panel_style(Color(0.08, 0.13, 0.23, 1), Color(0.18, 0.3, 0.48, 1), 1))
+	walk_away.add_theme_stylebox_override("normal", _panel_style(Color(0.08, 0.13, 0.23, 1), Color(0.275, 0.338, 0.432, 1), 1))
 	walk_away.pressed.connect(_close_puzzle)
 	panel.add_child(walk_away)
 
@@ -203,10 +203,10 @@ func _refresh_cells() -> void:
 		var icon := cell_icons[index] as Control
 		icon.set("mask", current_masks[index])
 		if connected[index]:
-			icon.set("line_color", Color(0.35, 0.95, 1.0, 1))
-			cell_buttons[index].add_theme_stylebox_override("normal", _panel_style(Color(0.06, 0.32, 0.5, 1), Color(0.2, 0.85, 1.0, 1), 2))
+			icon.set("line_color", Color(0.561, 0.874, 0.9, 1))
+			cell_buttons[index].add_theme_stylebox_override("normal", _panel_style(Color(0.22, 0.356, 0.45, 1), Color(0.482, 0.822, 0.9, 1), 2))
 		else:
-			icon.set("line_color", Color(0.44, 0.53, 0.68, 1))
+			icon.set("line_color", Color(0.487, 0.534, 0.612, 1))
 			cell_buttons[index].add_theme_stylebox_override("normal", _panel_style(Color(0.06, 0.12, 0.23, 1), Color(0.1, 0.2, 0.36, 1), 1))
 
 	if connected[OUTLET_INDEX] and (current_masks[OUTLET_INDEX] & RIGHT):
@@ -262,7 +262,7 @@ func _complete_puzzle() -> void:
 	is_complete = true
 	if status_label != null:
 		status_label.text = "FLOW RESTORED — WATER RUNNING"
-		status_label.add_theme_color_override("font_color", Color(0.35, 1.0, 0.55, 1))
+		status_label.add_theme_color_override("font_color", Color(0.561, 0.9, 0.665, 1))
 	_hide_leak()
 	for flow_part in flow_parts:
 		flow_part.visible = true

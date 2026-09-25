@@ -50,7 +50,7 @@ size = Vector3(20, 4, 0.2)
 size = Vector3(20, 4, 0.2)
 
 [sub_resource type="StandardMaterial3D" id="Material_back_wall"]
-albedo_color = Color(0.78, 0.74, 0.5, 1)
+albedo_color = Color(0.702, 0.681, 0.556, 1)
 roughness = 0.85
 
 [sub_resource type="BoxMesh" id="BoxMesh_side_wall"]
@@ -60,7 +60,7 @@ size = Vector3(0.2, 4, 20)
 size = Vector3(0.2, 4, 20)
 
 [sub_resource type="StandardMaterial3D" id="Material_side_wall"]
-albedo_color = Color(0.75, 0.71, 0.48, 1)
+albedo_color = Color(0.675, 0.654, 0.534, 1)
 roughness = 0.85
 
 [sub_resource type="BoxMesh" id="BoxMesh_ceiling"]
@@ -86,7 +86,7 @@ size = Vector3(0.35, 0.8, 1.25)
 size = Vector3(3.7, 1.6, 1.6)
 
 [sub_resource type="StandardMaterial3D" id="Material_sofa"]
-albedo_color = Color(0.66, 0.25, 0.1, 1)
+albedo_color = Color(0.594, 0.38, 0.302, 1)
 roughness = 0.72
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_dust"]
@@ -133,7 +133,7 @@ border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(0.15, 0.6, 0.85, 0.9)
+border_color = Color(0.4, 0.635, 0.765, 0.9)
 corner_radius_top_left = 12
 corner_radius_top_right = 12
 corner_radius_bottom_right = 12
@@ -147,7 +147,7 @@ border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(1, 0.78, 0.25, 0.9)
+border_color = Color(0.9, 0.785, 0.509, 0.9)
 corner_radius_top_left = 7
 corner_radius_top_right = 7
 corner_radius_bottom_right = 7
@@ -173,7 +173,7 @@ border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
-border_color = Color(0.14, 0.45, 0.62, 0.55)
+border_color = Color(0.307, 0.469, 0.558, 0.55)
 corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
@@ -187,7 +187,7 @@ border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
-border_color = Color(1, 0.78, 0.35, 0.55)
+border_color = Color(0.9, 0.785, 0.561, 0.55)
 corner_radius_top_left = 16
 corner_radius_top_right = 16
 corner_radius_bottom_right = 16
@@ -199,7 +199,7 @@ border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
-border_color = Color(0.14, 0.45, 0.62, 0.55)
+border_color = Color(0.307, 0.469, 0.558, 0.55)
 corner_radius_top_left = 8
 corner_radius_top_right = 8
 corner_radius_bottom_right = 8
@@ -462,7 +462,7 @@ offset_left = 18.0
 offset_top = 12.0
 offset_right = 220.0
 offset_bottom = 38.0
-theme_override_colors/font_color = Color(0.25, 0.9, 1, 1)
+theme_override_colors/font_color = Color(0.509, 0.848, 0.9, 1)
 theme_override_font_sizes/font_size = 17
 text = "TASK BOARD"
 
@@ -471,7 +471,7 @@ offset_left = 232.0
 offset_top = 14.0
 offset_right = 280.0
 offset_bottom = 36.0
-theme_override_colors/font_color = Color(1, 0.78, 0.25, 1)
+theme_override_colors/font_color = Color(0.9, 0.785, 0.509, 1)
 theme_override_font_sizes/font_size = 14
 horizontal_alignment = 2
 text = "0/5"
@@ -493,7 +493,7 @@ offset_left = 16.0
 offset_top = 254.0
 offset_right = 296.0
 offset_bottom = 274.0
-theme_override_colors/font_color = Color(0.35, 0.45, 0.6, 1)
+theme_override_colors/font_color = Color(0.41, 0.462, 0.54, 1)
 theme_override_font_sizes/font_size = 10
 text = "RED CLEAN · BLUE MECH · GREEN WASH"
 
@@ -532,7 +532,7 @@ offset_top = 1.0
 offset_right = 282.0
 offset_bottom = 3.0
 mouse_filter = 2
-color = Color(0.35, 0.85, 1, 0.72)
+color = Color(0.561, 0.822, 0.9, 0.72)
 
 [node name="TimerStatusDot" type="ColorRect" parent="HUD/TimerPanel"]
 visible = false
@@ -541,7 +541,7 @@ offset_top = 14.0
 offset_right = 22.0
 offset_bottom = 18.0
 mouse_filter = 2
-color = Color(0.4, 0.95, 1, 1)
+color = Color(0.587, 0.874, 0.9, 1)
 
 [node name="TimerAccentLine" type="ColorRect" parent="HUD/TimerPanel"]
 visible = false
@@ -550,7 +550,7 @@ offset_top = 64.0
 offset_right = 270.0
 offset_bottom = 66.0
 mouse_filter = 2
-color = Color(0.35, 0.72, 0.95, 0.35)
+color = Color(0.542, 0.735, 0.855, 0.35)
 
 [node name="SoundButton" type="Button" parent="HUD"]
 offset_left = 1222.0
@@ -676,7 +676,7 @@ offset_left = 0.0
 offset_top = 6.0
 offset_right = 40.0
 offset_bottom = 32.0
-theme_override_colors/font_color = Color(1, 0.85, 0.35, 1)
+theme_override_colors/font_color = Color(0.9, 0.822, 0.561, 1)
 theme_override_font_sizes/font_size = 20
 horizontal_alignment = 1
 text = "E"
@@ -687,7 +687,7 @@ offset_left = 68.0
 offset_top = 22.0
 offset_right = 462.0
 offset_bottom = 52.0
-theme_override_colors/font_color = Color(1, 0.86, 0.4, 1)
+theme_override_colors/font_color = Color(0.9, 0.827, 0.587, 1)
 theme_override_font_sizes/font_size = 17
 horizontal_alignment = 0
 text = "INTERACT"

@@ -141,9 +141,9 @@ func _build_sofa_details() -> void:
 		return
 	details_built = true
 
-	var cushion_material := _sofa_material(Color(0.48, 0.16, 0.08, 1))
-	var piping_material := _sofa_material(Color(0.72, 0.29, 0.12, 1))
-	var pillow_material := _sofa_material(Color(0.62, 0.22, 0.1, 1))
+	var cushion_material := _sofa_material(Color(0.432, 0.265, 0.223, 1))
+	var piping_material := _sofa_material(Color(0.648, 0.424, 0.335, 1))
+	var pillow_material := _sofa_material(Color(0.558, 0.349, 0.287, 1))
 	var leg_material := _sofa_material(Color(0.12, 0.07, 0.04, 1))
 
 	_add_sofa_box("SeatCushionLeft", Vector3(1.35, 0.2, 1.02), Vector3(-0.7, 0.7, -0.04), cushion_material)

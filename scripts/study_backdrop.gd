@@ -154,7 +154,7 @@ func _build_bookshelf(center_x: float) -> void:
 
 
 func _build_window(config: Dictionary) -> void:
-	var glass_color: Color = config.get("window_color", Color(0.35, 0.5, 0.9, 1))
+	var glass_color: Color = config.get("window_color", Color(0.523, 0.601, 0.81, 1))
 	var glass := _mat(Color(glass_color.r * 0.5, glass_color.g * 0.5, glass_color.b * 0.5, 1), 0.3, 0.0, glass_color, 1.4)
 	var frame := _mat(Color(0.05, 0.03, 0.02, 1), 0.6)
 	_box(self, Vector3(1.5, 1.9, 0.04), Vector3(0, 2.7, -2.98), glass)

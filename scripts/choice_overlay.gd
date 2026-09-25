@@ -83,7 +83,7 @@ func _build_ui() -> void:
 	panel.custom_minimum_size = Vector2(640, 0)
 	var panel_style := StyleBoxFlat.new()
 	panel_style.bg_color = Color(0.04, 0.06, 0.11, 0.96)
-	panel_style.border_color = Color(0.85, 0.68, 0.3, 1)
+	panel_style.border_color = Color(0.765, 0.676, 0.478, 1)
 	panel_style.set_border_width_all(2)
 	panel_style.set_corner_radius_all(14)
 	panel_style.shadow_color = Color(0, 0, 0, 0.6)
@@ -99,7 +99,7 @@ func _build_ui() -> void:
 	column.add_theme_constant_override("separation", 10)
 	panel.add_child(column)
 
-	column.add_child(_label("A  DECISION", 13, Color(0.85, 0.68, 0.3, 1)))
+	column.add_child(_label("A  DECISION", 13, Color(0.765, 0.676, 0.478, 1)))
 	column.add_child(_label("THE DIAMOND", 42, Color(0.92, 0.96, 1.0, 1)))
 	column.add_child(_label("Nobody's watching. Nobody would know.", 17, Color(0.6, 0.7, 0.86, 1)))
 
@@ -111,14 +111,14 @@ func _build_ui() -> void:
 	buttons.add_theme_constant_override("separation", 20)
 	column.add_child(buttons)
 
-	steal_button = _make_button("STEAL THE DIAMOND", Color(0.5, 0.1, 0.14, 1), Color(0.82, 0.18, 0.24, 1))
-	leave_button = _make_button("LEAVE THE DIAMOND", Color(0.07, 0.34, 0.32, 1), Color(0.13, 0.58, 0.52, 1))
+	steal_button = _make_button("STEAL THE DIAMOND", Color(0.45, 0.241, 0.262, 1), Color(0.738, 0.404, 0.435, 1))
+	leave_button = _make_button("LEAVE THE DIAMOND", Color(0.07, 0.34, 0.32, 1), Color(0.287, 0.522, 0.491, 1))
 	buttons.add_child(steal_button)
 	buttons.add_child(leave_button)
 	steal_button.pressed.connect(_on_pressed.bind(true))
 	leave_button.pressed.connect(_on_pressed.bind(false))
 
-	column.add_child(_label("This choice cannot be undone.", 12, Color(0.4, 0.48, 0.6, 1)))
+	column.add_child(_label("This choice cannot be undone.", 12, Color(0.436, 0.477, 0.54, 1)))
 
 	flash = ColorRect.new()
 	flash.name = "Flash"

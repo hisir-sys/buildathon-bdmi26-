@@ -54,8 +54,8 @@ func _ending_data(ending_id: int) -> Dictionary:
 		2:
 			return {
 				"title": "ENDING 2: CLEANER SUCCESS — SPY MISSION FAILED",
-				"title_color": Color(1.0, 0.78, 0.35, 1),
-				"accent": Color(0.9, 0.58, 0.12, 1),
+				"title_color": Color(0.9, 0.785, 0.561, 1),
+				"accent": Color(0.81, 0.643, 0.403, 1),
 				"body": "You completed every cleaning task, but you did not collect the files, items, or other assets required for the spy objective. The room was cleaned, but the intelligence mission was not completed.",
 				"scene": {
 					"lamp_on": true,
@@ -65,7 +65,7 @@ func _ending_data(ending_id: int) -> Dictionary:
 					"ambient_energy": 0.45,
 					"fog_color": Color(0.12, 0.08, 0.04, 1),
 					"fog_density": 0.025,
-					"window_color": Color(0.75, 0.58, 0.3, 1),
+					"window_color": Color(0.675, 0.586, 0.44, 1),
 					"moon_energy": 1.8,
 					"desk": [],
 					"cam_pos": cam_pos,
@@ -75,19 +75,19 @@ func _ending_data(ending_id: int) -> Dictionary:
 		3:
 			return {
 				"title": "ENDING 3: MISSION SUCCESSFUL",
-				"title_color": Color(0.6, 0.95, 0.7, 1),
-				"accent": Color(0.3, 0.8, 0.45, 1),
+				"title_color": Color(0.672, 0.855, 0.724, 1),
+				"accent": Color(0.459, 0.72, 0.537, 1),
 				"body": "Mission accomplished. Every cleaning task is complete, all required files and assets have been collected, and you completed the operation without getting caught. The room is clean and the intelligence is secured.",
 				"scene": {
 					"lamp_on": true,
 					"spot_energy": 14.0,
 					"spot_angle": 46.0,
 					"fill_energy": 1.4,
-					"ambient_color": Color(0.6, 0.5, 0.4, 1),
+					"ambient_color": Color(0.54, 0.488, 0.436, 1),
 					"ambient_energy": 0.6,
 					"fog_color": Color(0.18, 0.12, 0.08, 1),
 					"fog_density": 0.02,
-					"window_color": Color(1.0, 0.8, 0.55, 1),
+					"window_color": Color(0.9, 0.796, 0.665, 1),
 					"moon_energy": 2.5,
 					"desk": ["chest", "scroll"],
 					"cam_pos": cam_pos,
@@ -97,16 +97,16 @@ func _ending_data(ending_id: int) -> Dictionary:
 		_:
 			return {
 				"title": "ENDING 1: MISSION FAILED",
-				"title_color": Color(1.0, 0.45, 0.42, 1),
-				"accent": Color(0.75, 0.12, 0.14, 1),
+				"title_color": Color(0.9, 0.613, 0.597, 1),
+				"accent": Color(0.675, 0.346, 0.357, 1),
 				"body": "Mission failed. You did not complete the cleaning tasks, and you did not collect any of the files, items, or assets you were sent to retrieve. The operation is over.",
 				"scene": {
 					"lamp_on": false,
-					"ambient_color": Color(0.35, 0.45, 0.7, 1),
+					"ambient_color": Color(0.447, 0.499, 0.63, 1),
 					"ambient_energy": 0.35,
 					"fog_color": Color(0.05, 0.08, 0.14, 1),
 					"fog_density": 0.035,
-					"window_color": Color(0.4, 0.55, 0.95, 1),
+					"window_color": Color(0.568, 0.646, 0.855, 1),
 					"moon_energy": 2.5,
 					"desk": [],
 					"cam_pos": cam_pos,

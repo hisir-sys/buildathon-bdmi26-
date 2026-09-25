@@ -6,9 +6,9 @@ const UiKit = preload("res://scripts/ui_kit.gd")
 const StudyBackdropScript = preload("res://scripts/study_backdrop.gd")
 const INTRO_SCENE_PATH := "res://scenes/cutscene_intro.tscn"
 
-const BLUE := Color(0.3, 0.7, 1.0, 1)
-const GOLD := Color(0.93, 0.76, 0.32, 1)
-const FBI_BLUE := Color(0.38, 0.72, 1.0, 1)
+const BLUE := Color(0.535, 0.743, 0.9, 1)
+const GOLD := Color(0.837, 0.748, 0.519, 1)
+const FBI_BLUE := Color(0.576, 0.754, 0.9, 1)
 
 var fade: ColorRect
 var toast: Label
@@ -31,11 +31,11 @@ func _ready() -> void:
 		"spot_energy": 10.0,
 		"spot_angle": 42.0,
 		"fill_energy": 0.5,
-		"ambient_color": Color(0.25, 0.3, 0.5, 1),
+		"ambient_color": Color(0.32, 0.346, 0.45, 1),
 		"ambient_energy": 0.25,
 		"fog_color": Color(0.06, 0.08, 0.14, 1),
 		"fog_density": 0.04,
-		"window_color": Color(0.35, 0.5, 0.9, 1),
+		"window_color": Color(0.523, 0.601, 0.81, 1),
 		"moon_energy": 1.5,
 		"desk": ["chest", "scroll"],
 		"cam_pos": Vector3(-0.6, 1.5, 2.7),
@@ -73,7 +73,7 @@ func _build_ui() -> void:
 	column.alignment = BoxContainer.ALIGNMENT_CENTER
 	center.add_child(column)
 
-	column.add_child(UiKit.label("A  DARK  NIGHT  SHIFT", 14, Color(0.55, 0.68, 0.9, 0.9), HORIZONTAL_ALIGNMENT_CENTER))
+	column.add_child(UiKit.label("A  DARK  NIGHT  SHIFT", 14, Color(0.627, 0.695, 0.81, 0.9), HORIZONTAL_ALIGNMENT_CENTER))
 
 	var title_top := UiKit.label("THE FINAL", 60, Color(0.95, 0.93, 0.88, 1), HORIZONTAL_ALIGNMENT_CENTER)
 	title_top.add_theme_constant_override("outline_size", 8)
@@ -112,7 +112,7 @@ func _build_ui() -> void:
 	load_button.pressed.connect(_on_load)
 	quit_button.pressed.connect(_on_quit)
 
-	toast = UiKit.label("", 15, Color(1.0, 0.8, 0.5, 1), HORIZONTAL_ALIGNMENT_CENTER)
+	toast = UiKit.label("", 15, Color(0.9, 0.796, 0.639, 1), HORIZONTAL_ALIGNMENT_CENTER)
 	toast.modulate.a = 0.0
 	column.add_child(toast)
 

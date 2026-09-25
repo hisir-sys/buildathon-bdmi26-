@@ -44,8 +44,8 @@ func _update_visual() -> void:
 	var material := indicator.material_override as StandardMaterial3D
 	if material == null:
 		return
-	var lit_color := Color(0.25, 1.0, 0.45, 1)
-	var dead_color := Color(0.5, 0.08, 0.06, 1)
+	var lit_color := Color(0.509, 0.9, 0.613, 1)
+	var dead_color := Color(0.45, 0.231, 0.22, 1)
 	material.albedo_color = lit_color if is_on else dead_color
 	material.emission = lit_color if is_on else dead_color
 	material.emission_energy_multiplier = 2.4 if is_on else 1.0

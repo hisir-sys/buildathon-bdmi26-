@@ -101,19 +101,19 @@ func _open_keypad() -> void:
 
 	var panel := PanelContainer.new()
 	panel.custom_minimum_size = Vector2(300, 0)
-	panel.add_theme_stylebox_override("panel", UiKit.glass_style(Color(0.05, 0.06, 0.08, 0.95), Color(0.6, 0.5, 0.3, 0.85), 6))
+	panel.add_theme_stylebox_override("panel", UiKit.glass_style(Color(0.05, 0.06, 0.08, 0.95), Color(0.54, 0.488, 0.383, 0.85), 6))
 	center.add_child(panel)
 
 	var column := VBoxContainer.new()
 	column.add_theme_constant_override("separation", 10)
 	panel.add_child(column)
 
-	column.add_child(UiKit.label("ENTER 4-DIGIT CODE", 14, Color(0.8, 0.7, 0.5, 1), HORIZONTAL_ALIGNMENT_CENTER))
+	column.add_child(UiKit.label("ENTER 4-DIGIT CODE", 14, Color(0.72, 0.668, 0.563, 1), HORIZONTAL_ALIGNMENT_CENTER))
 
 	var entry_label := UiKit.label("- - - -", 30, Color(1, 1, 1, 1), HORIZONTAL_ALIGNMENT_CENTER)
 	column.add_child(entry_label)
 
-	var status_label := UiKit.label(" ", 13, Color(1.0, 0.4, 0.35, 1), HORIZONTAL_ALIGNMENT_CENTER)
+	var status_label := UiKit.label(" ", 13, Color(0.9, 0.587, 0.561, 1), HORIZONTAL_ALIGNMENT_CENTER)
 	column.add_child(status_label)
 
 	var grid := GridContainer.new()
@@ -131,7 +131,7 @@ func _open_keypad() -> void:
 		entry_label.text = display.strip_edges()
 
 	var make_digit_button := func(digit: int) -> Button:
-		var button := UiKit.glass_button(str(digit), Color(0.6, 0.5, 0.3, 1), Vector2(70, 54))
+		var button := UiKit.glass_button(str(digit), Color(0.54, 0.488, 0.383, 1), Vector2(70, 54))
 		button.pressed.connect(func() -> void:
 			if _code_entry.length() >= 4:
 				return
@@ -155,8 +155,8 @@ func _open_keypad() -> void:
 	buttons_row.add_theme_constant_override("separation", 8)
 	column.add_child(buttons_row)
 
-	var clear_button := UiKit.glass_button("CLEAR", Color(0.6, 0.3, 0.25, 1), Vector2(110, 44))
-	var enter_button := UiKit.glass_button("ENTER", Color(0.3, 0.55, 0.35, 1), Vector2(110, 44))
+	var clear_button := UiKit.glass_button("CLEAR", Color(0.54, 0.383, 0.357, 1), Vector2(110, 44))
+	var enter_button := UiKit.glass_button("ENTER", Color(0.365, 0.495, 0.391, 1), Vector2(110, 44))
 	var cancel_button := UiKit.glass_button("CANCEL", Color(0.4, 0.4, 0.45, 1), Vector2(90, 44))
 	buttons_row.add_child(clear_button)
 	buttons_row.add_child(enter_button)
@@ -273,7 +273,7 @@ func _add_sphere(parent: Node3D, node_name: String, radius: float, local_positio
 func _build_visuals() -> void:
 	var carcass_steel := _steel(Color(0.16, 0.17, 0.19, 1), 0.6, 0.55)
 	var door_steel := _steel(Color(0.3, 0.31, 0.34, 1), 0.75, 0.32)
-	var brass := _steel(Color(0.72, 0.56, 0.2, 1), 0.9, 0.3)
+	var brass := _steel(Color(0.648, 0.564, 0.377, 1), 0.9, 0.3)
 	var dark := _steel(Color(0.05, 0.05, 0.06, 1), 0.2, 0.7)
 
 	# Carcass: the solid box that sits inside the wall, so only its front shows.
@@ -319,7 +319,7 @@ func _build_visuals() -> void:
 			var button_position := keypad_center + Vector3((column - 1) * 0.062, 0.085 - row * 0.05, 0.008)
 			_add_box(_door, "KeyButton%d%d" % [row, column], Vector3(0.045, 0.035, 0.012), button_position, door_steel)
 
-	var led_material := _steel(Color(0.5, 0.08, 0.06, 1), 0.0, 0.5)
+	var led_material := _steel(Color(0.45, 0.231, 0.22, 1), 0.0, 0.5)
 	led_material.emission_enabled = true
 	led_material.emission = Color(0.5, 0.08, 0.06, 1)
 	led_material.emission_energy_multiplier = 1.0
