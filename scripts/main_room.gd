@@ -82,11 +82,9 @@ var loiter_warned: bool = false
 var loiter_spot_id: String = ""
 var fill_lights: Array[OmniLight3D] = []
 
-# --- Spy mechanics update: 9-task pool state --------------------------------
-# task_active starts with everything on so the game is fully playable even
-# if RunGenerator never runs (e.g. it was removed from the scene). Once
-# RunGenerator's _ready() fires, _on_run_generated() flips 4 of these to
-# false for the run.
+# --- Fixed 9-task checklist --------------------------------------------------
+# All nine tasks are always active. There is no random task selection or
+# random task removal, so the HUD always shows the complete 9-task checklist.
 var task_active: Dictionary = {
 	"dust": true, "panel_repair": true, "fridge": true,
 	"furniture": true, "washroom": true,
@@ -307,9 +305,10 @@ func _build_chest() -> void:
 	# Not movable. Needs the key (see _build_key).
 	var chest := StaticBody3D.new()
 	chest.name = "TreasureChest"
-	# Wall-mounted placement: the desk sits flush against the front wall and
-	# the chest faces back into the room instead of pointing into the wall.
-	chest.position = Vector3(0.0, 0.1, 8.95)
+	# Wall-mounted placement: keep the desk + chest against the front wall,
+	# parallel to the wall and well clear of the refrigerator/TV. The desk is
+	# flush to the wall and the chest opens toward the room.
+	chest.position = Vector3(1.5, 0.1, 9.25)
 	chest.rotation_degrees.y = 180.0
 	chest.set_script(TreasureChestScript)
 	add_child(chest)
@@ -449,28 +448,16 @@ func _build_run_generator() -> void:
 	add_child(run_generator)
 
 
-func _on_run_generated(_modifier_id: String, _key_spawn_name: String, deactivated_task_ids: Array) -> void:
-	for id in deactivated_task_ids:
-		task_active[id] = false
-		match id:
-			"lockpick":
-				RunGeneratorScript.apply_node_active(lock_pick_drawer_node, false)
-			"picture":
-				RunGeneratorScript.apply_node_active(crooked_picture_node, false)
-				# The safe's code only ever comes from the picture, so hide
-				# it too rather than leaving an un-codeable prop in the room.
-				RunGeneratorScript.apply_node_active(wall_safe_node, false)
-			"spill":
-				RunGeneratorScript.apply_node_active(spill_cleaner_node, false)
-			"stain":
-				RunGeneratorScript.apply_node_active(permanent_stain_node, false)
-			_:
-				# The 5 pre-existing systems (dust/panel_repair/fridge/
-				# furniture/washroom) are multi-node/aggregate and aren't
-				# physically hidden - they're just excluded from the win
-				# requirement and the HUD checklist for this run. See
-				# INTEGRATION_GUIDE.md for why that's the safer trade-off.
-				pass
+func _on_run_generated(_modifier_id: String, _key_spawn_name: String, _deactivated_task_ids: Array) -> void:
+	# The run generator no longer removes tasks. Keep every task enabled and
+	# visible so every playthrough has the same complete 9-task checklist.
+	for id in task_active.keys():
+		task_active[id] = true
+	RunGeneratorScript.apply_node_active(lock_pick_drawer_node, true)
+	RunGeneratorScript.apply_node_active(crooked_picture_node, true)
+	RunGeneratorScript.apply_node_active(wall_safe_node, true)
+	RunGeneratorScript.apply_node_active(spill_cleaner_node, true)
+	RunGeneratorScript.apply_node_active(permanent_stain_node, true)
 	_refresh_hud()
 
 

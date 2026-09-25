@@ -1,5 +1,5 @@
 extends StaticBody3D
-# The desk + chest are mounted against the front wall. Not movable. The player needs the key
+# The desk + chest are mounted against the front wall, parallel to it. Not movable. The player needs the key
 # (found in the bathroom) and has to shift the cabinet away first. Unlocking
 # freezes the game, cuts to a fixed camera, dims the room and asks the player
 # to STEAL or LEAVE the diamond. The result is stored on the GameManager
@@ -13,9 +13,9 @@ const ChoiceOverlayScript = preload("res://scripts/choice_overlay.gd")
 const CABINET_CLEARANCE := 3.2
 
 # Camera positions relative to the chest origin (chest sits on the desk).
-# The root is rotated 180 degrees so the chest front faces into the room.
-const CAM_START := Vector3(0.8, 2.7, 3.6)
-const CAM_END := Vector3(0.3, 2.45, 2.2)
+# The root is rotated 180 degrees so the chest front faces into the room from the front wall.
+const CAM_START := Vector3(-0.8, 2.7, -3.6)
+const CAM_END := Vector3(-0.3, 2.45, -2.2)
 const CAM_TARGET := Vector3(0.0, 1.2, 0.0)
 const PADLOCK_DROP_POS := Vector3(0.75, 0.95, 0.3)
 
@@ -209,7 +209,7 @@ func show_treasure_on_desk() -> void:
 
 # --- Construction ----------------------------------------------------------
 # Local origin is on the floor at the centre of the desk. Desk top is y=0.9;
-# the chest front faces +z (into the room).
+# the chest front faces toward the room from the front wall.
 
 func _mat(color: Color, emission: Color = Color(0, 0, 0, 1), energy: float = 0.0, metallic: float = 0.0, roughness: float = 0.8) -> StandardMaterial3D:
 	var material := StandardMaterial3D.new()

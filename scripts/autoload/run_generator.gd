@@ -38,22 +38,18 @@ const MODIFIER_NAMES := {
 	Modifier.HEAVY_LOCK: "Heavy Lock",
 }
 
-# The full 9-task pool from the spec: the project's 5 pre-existing tasks
-# plus the 4 new ones added by this update. 7 or 8 of the 9 (see
-# ACTIVE_TASK_COUNT_MIN/MAX below) stay active each run; the rest are handed
-# back as `deactivated_task_ids` for main_room.gd to switch off.
+# The full 9-task pool is always active. There is no random task
+# deactivation, so the player always gets the complete checklist.
 const TASK_IDS: Array[String] = [
 	"dust", "panel_repair", "fridge", "furniture", "washroom",
 	"lockpick", "picture", "spill", "stain",
 ]
-# 10 minutes is tight, so most/all of the pool should be live each run rather
-# than the original 5-of-9 split: each run now randomly leaves 7 OR 8 of the
-# 9 tasks active (i.e. deactivates only 1 or 2), decided fresh every run.
-const ACTIVE_TASK_COUNT_MIN := 7
-const ACTIVE_TASK_COUNT_MAX := 8
+# Every run always uses the full 9-task checklist. No task is randomly
+# removed or hidden.
+const ACTIVE_TASK_COUNT_MIN := 9
+const ACTIVE_TASK_COUNT_MAX := 9
 const TASK_POOL_SIZE := 9
 
-# Cross-script modifier state (see header). Reset every run by _ready().
 static var current_modifier: int = Modifier.SQUEAKY_SHOES
 static var suspicion_build_multiplier: float = 1.0   # Squeaky Shoes: x1.2
 static var cleaning_speed_multiplier: float = 1.0     # Ergonomic Mop: x1.3
@@ -109,21 +105,8 @@ func _spawn_key() -> String:
 ## _on_run_generated() for how each ID maps to an actual system getting
 ## switched off.
 func _select_deactivated_tasks() -> Array[String]:
-	var ids := TASK_IDS.duplicate()
-	# Manual Fisher-Yates using this RunGenerator's own RNG (not the engine's
-	# global RNG) so `seed_override` reliably reproduces the same run.
-	for i in range(ids.size() - 1, 0, -1):
-		var j := _rng.randi_range(0, i)
-		var tmp: String = ids[i]
-		ids[i] = ids[j]
-		ids[j] = tmp
-
-	var active_count: int = _rng.randi_range(ACTIVE_TASK_COUNT_MIN, ACTIVE_TASK_COUNT_MAX)
-	var deactivate_count: int = maxi(0, TASK_POOL_SIZE - active_count)
-	var deactivated: Array[String] = []
-	for i in range(deactivate_count):
-		deactivated.append(ids[i])
-	return deactivated
+	# Deliberately return an empty list: all 9 tasks stay active every run.
+	return []
 
 
 ## Convenience helper for the 4 new single-node tasks: hides, stops
