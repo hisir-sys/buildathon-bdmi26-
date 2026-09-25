@@ -41,6 +41,7 @@ func _ready() -> void:
 	_build_key_badge()
 	_build_note()
 	_build_suspicion_meter()
+	_build_toast()
 	if has_node("/root/SuspicionManager"):
 		get_node("/root/SuspicionManager").connect("suspicion_changed", set_suspicion)
 
@@ -277,3 +278,56 @@ func _build_suspicion_meter() -> void:
 	suspicion_bar_fill.size = Vector2(0, 8)
 	suspicion_bar_fill.color = Color(0.3, 0.8, 0.45, 1)
 	suspicion_bar_track.add_child(suspicion_bar_fill)
+
+
+# --- Toast: a short message that fades out on its own ----------------------
+
+var toast_panel: PanelContainer
+var toast_label: Label
+var toast_tween: Tween
+
+
+func _build_toast() -> void:
+	toast_panel = PanelContainer.new()
+	toast_panel.name = "Toast"
+	toast_panel.anchor_left = 0.5
+	toast_panel.anchor_right = 0.5
+	toast_panel.offset_left = -160.0
+	toast_panel.offset_right = 160.0
+	toast_panel.offset_top = 70.0
+	toast_panel.offset_bottom = 70.0
+	toast_panel.grow_vertical = Control.GROW_DIRECTION_END
+	toast_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.04, 0.06, 0.09, 0.92)
+	style.border_color = Color(0.92, 0.72, 0.22, 1)
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(8)
+	style.content_margin_left = 22
+	style.content_margin_right = 22
+	style.content_margin_top = 10
+	style.content_margin_bottom = 10
+	toast_panel.add_theme_stylebox_override("panel", style)
+
+	toast_label = Label.new()
+	toast_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	toast_label.add_theme_font_size_override("font_size", 18)
+	toast_label.add_theme_color_override("font_color", Color(0.95, 0.78, 0.3, 1))
+	toast_panel.add_child(toast_label)
+
+	toast_panel.visible = false
+	add_child(toast_panel)
+
+
+func show_toast(message: String, seconds: float = 2.5) -> void:
+	toast_label.text = message
+	toast_panel.visible = true
+	toast_panel.modulate.a = 1.0
+	if toast_tween != null and toast_tween.is_valid():
+		toast_tween.kill()
+	toast_tween = create_tween()
+	toast_tween.tween_interval(seconds)
+	toast_tween.tween_property(toast_panel, "modulate:a", 0.0, 0.5)
+	toast_tween.tween_callback(func() -> void:
+		toast_panel.visible = false
+	)

@@ -19,6 +19,26 @@ const SpillCleanerScript = preload("res://scripts/tasks/spill_cleaner.gd")
 const PermanentStainScript = preload("res://scripts/tasks/permanent_stain.gd")
 const RunGeneratorScript = preload("res://scripts/autoload/run_generator.gd")
 
+# --- Suspicion + lighting tuning (change these numbers to taste) -----------
+const LOITER_RADIUS := 3.0               # how close (flat distance) counts as "standing here"
+const LOITER_GRACE_SECONDS := 10.0       # free time before suspicion starts climbing
+const LOITER_SUSPICION_PER_SECOND := 4.0 # how fast suspicion climbs after the grace time
+const FIXED_CEILING_ENERGY_MULTIPLIER := 5.0  # ceiling light brightness once wiring is fixed
+const FIXED_SPOT_ENERGY := 4.5
+const FIXED_FILL_ENERGY := 1.4
+const FIXED_AMBIENT_ENERGY := 0.55
+const FIXED_SUN_ENERGY := 0.35
+# Extra soft lights spread around the room. Off while the wiring is broken.
+const FILL_LIGHT_POSITIONS: Array[Vector3] = [
+	Vector3(-6.0, 3.4, 6.0),
+	Vector3(6.0, 3.4, 6.0),
+	Vector3(0.0, 3.4, 0.0),
+	Vector3(-6.0, 3.4, -4.0),
+	Vector3(4.5, 3.4, 4.0),
+	Vector3(-6.0, 3.4, -8.0),
+	Vector3(7.0, 3.4, 8.0),
+]
+
 # Sofa, dining table, 2 chairs and the cabinet.
 const FURNITURE_TOTAL := 5
 
@@ -55,6 +75,11 @@ var repair_bulbs: Array[MeshInstance3D] = []
 var fridge_status_light: MeshInstance3D
 var fridge_interior_light: OmniLight3D
 var fridge_is_powered: bool = false
+var chest_node: StaticBody3D
+var suspicion_manager: Node
+var loiter_time: float = 0.0
+var loiter_warned: bool = false
+var fill_lights: Array[OmniLight3D] = []
 
 # --- Spy mechanics update: 9-task pool state --------------------------------
 # task_active starts with everything on so the game is fully playable even
@@ -81,6 +106,7 @@ func _ready() -> void:
 	interaction_ray.target_changed.connect(hud.set_interaction_prompt)
 	player.tool_selected.connect(hud.set_active_tool)
 	hud.set_active_tool(player.current_tool)
+	suspicion_manager = get_node_or_null("/root/SuspicionManager")
 
 	game_manager.time_changed.connect(hud.set_timer)
 	game_manager.time_expired.connect(_on_time_expired)
@@ -283,6 +309,7 @@ func _build_chest() -> void:
 	chest.position = Vector3(0.0, 0.0, -9.4)
 	chest.set_script(TreasureChestScript)
 	add_child(chest)
+	chest_node = chest
 	chest.call("setup", player, hud, game_manager)
 	chest.connect("choice_started", _on_chest_choice_started)
 	chest.connect("choice_finished", _on_chest_choice_finished)
@@ -312,6 +339,8 @@ func _build_spy_mechanics_update() -> void:
 	_build_crooked_picture()
 	_build_spill_tasks()
 	_build_run_generator()
+	_build_safe_corner_light()
+	_build_fill_lights()
 
 
 func _build_lock_pick_drawer() -> void:
@@ -353,6 +382,7 @@ func _build_crooked_picture() -> void:
 	safe.set_script(WallSafeScript)
 	add_child(safe)
 	wall_safe_node = safe
+	safe.connect("opened", _on_safe_opened)
 
 
 func _build_spill_tasks() -> void:
@@ -453,6 +483,8 @@ func _on_chest_choice_started() -> void:
 	dim_tween.set_parallel(true)
 	for light in ceiling_lights:
 		dim_tween.tween_property(light, "light_energy", light.light_energy * 0.15, 0.8)
+	for fill in fill_lights:
+		dim_tween.tween_property(fill, "light_energy", fill.light_energy * 0.15, 0.8)
 	for spotlight in repair_spotlights:
 		dim_tween.tween_property(spotlight, "light_energy", spotlight.light_energy * 0.15, 0.8)
 	if world_environment.environment != null:
@@ -1069,18 +1101,21 @@ func _debug_end(tasks_finished: bool, diamond_taken: bool) -> void:
 
 func _process(delta: float) -> void:
 	ambience_time += delta
+	_update_loitering(delta)
 
 	if lights_fixed:
 		# Wiring is repaired: lights stop flickering and hold a steady,
 		# properly-lit glow instead.
 		for index in range(ceiling_lights.size()):
-			ceiling_lights[index].light_energy = light_base_energy[index] * 3.4
+			ceiling_lights[index].light_energy = light_base_energy[index] * FIXED_CEILING_ENERGY_MULTIPLIER
 			var fixed_bulb_material := light_bulbs[index].material_override as StandardMaterial3D
 			if fixed_bulb_material != null:
 				fixed_bulb_material.emission_energy_multiplier = 2.6
 			light_bulbs[index].visible = true
 		for spotlight in repair_spotlights:
-			spotlight.light_energy = 3.2
+			spotlight.light_energy = FIXED_SPOT_ENERGY
+		for fill in fill_lights:
+			fill.light_energy = FIXED_FILL_ENERGY
 		for bulb in repair_bulbs:
 			bulb.visible = true
 			var repaired_bulb_material := bulb.material_override as StandardMaterial3D
@@ -1090,8 +1125,8 @@ func _process(delta: float) -> void:
 				repaired_bulb_material.emission = Color(1.0, 0.62, 0.2, 1)
 				repaired_bulb_material.emission_energy_multiplier = 3.0
 		if world_environment.environment != null:
-			world_environment.environment.ambient_light_energy = 0.24
-		directional_light.light_energy = 0.18
+			world_environment.environment.ambient_light_energy = FIXED_AMBIENT_ENERGY
+		directional_light.light_energy = FIXED_SUN_ENERGY
 		return
 
 	# Haunted-house flicker: each light stays on for a short stretch, then
@@ -1318,3 +1353,83 @@ func _on_time_expired() -> void:
 	hud.set_time_expired()
 	_finish_game(false)
 	hud.set_interaction_prompt("TIME IS UP")
+
+
+# --- Suspicion: lingering near the chest or the safe -------------------------
+
+func _update_loitering(delta: float) -> void:
+	if game_over or not bool(game_manager.get("is_running")):
+		return
+	if not _player_near_watch_spot():
+		loiter_time = 0.0
+		loiter_warned = false
+		return
+
+	loiter_time += delta
+	if loiter_time < LOITER_GRACE_SECONDS:
+		return
+
+	if not loiter_warned:
+		loiter_warned = true
+		var inner_voice := get_node_or_null("/root/InnerVoiceManager")
+		if inner_voice != null:
+			inner_voice.call("queue_thought", "CAUTION", "Standing here too long. Someone is going to notice.", 3.5)
+
+	if suspicion_manager != null:
+		suspicion_manager.call("add_suspicion", LOITER_SUSPICION_PER_SECOND * delta)
+
+
+func _player_near_watch_spot() -> bool:
+	# Flat (x/z) distance, so the player's height doesn't matter.
+	var player_flat := Vector2(player.global_position.x, player.global_position.z)
+	for watch_node in [chest_node, wall_safe_node]:
+		if watch_node == null:
+			continue
+		var spot_flat := Vector2(watch_node.global_position.x, watch_node.global_position.z)
+		if player_flat.distance_to(spot_flat) <= LOITER_RADIUS:
+			return true
+	return false
+
+
+# --- Safe corner light ----------------------------------------------------
+
+func _build_safe_corner_light() -> void:
+	# A wall sconce right above the safe. It's not tied to the wiring, so the
+	# corner is lit from the start.
+	var root := _new_prop_root("SafeCornerLight", Vector3(-9.81, 2.95, -7.5))
+	root.rotation_degrees.y = 90.0
+	var fixture := _material(Color(0.15, 0.15, 0.17, 1))
+	var bulb := _material(Color(1.0, 0.92, 0.72, 1), Color(1.0, 0.85, 0.55, 1), 2.5)
+	_box(root, "SconceBody", Vector3(0.5, 0.22, 0.18), Vector3.ZERO, fixture)
+	_sphere(root, "SconceBulb", 0.07, Vector3(0.0, -0.02, 0.1), bulb)
+
+	var light := OmniLight3D.new()
+	light.name = "SafeCornerGlow"
+	light.position = Vector3(0.0, -0.1, 0.5)
+	light.omni_range = 6.0
+	light.light_energy = 1.6
+	light.light_color = Color(1.0, 0.9, 0.7, 1)
+	root.add_child(light)
+
+
+# --- Fill lights -------------------------------------------------------------
+
+func _build_fill_lights() -> void:
+	# Soft lights spread around the room. They stay OFF while the wiring is
+	# broken (the room is meant to feel gloomy) and switch on at full strength
+	# once the panel is repaired (see _process).
+	for fill_position in FILL_LIGHT_POSITIONS:
+		var fill := OmniLight3D.new()
+		fill.name = "FillLight"
+		fill.position = fill_position
+		fill.omni_range = 8.0
+		fill.light_energy = 0.0
+		fill.light_color = Color(1.0, 0.96, 0.88, 1)
+		add_child(fill)
+		fill_lights.append(fill)
+
+
+# --- Safe feedback ---------------------------------------------------------
+
+func _on_safe_opened() -> void:
+	hud.call("show_toast", "FILE COLLECTED")

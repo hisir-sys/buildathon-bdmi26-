@@ -1,9 +1,9 @@
 extends StaticBody3D
-# Bonus investigation object: a small wall safe, closing the loose thread
-# left by crooked_picture.gd's safe code (which used to have nowhere to go).
-# Purely optional - it doesn't touch task_active/_task_complete, so it can't
-# affect winning either way. Call set_code() once the code is known (wired
-# to CrookedPicture's "straightened" signal in main_room.gd).
+# Bonus investigation object: a wall safe. Its 4-digit code is found by
+# straightening the picture (see crooked_picture.gd). Purely optional - it
+# doesn't touch task_active/_task_complete, so it can't affect winning.
+# Call set_code() once the code is known (wired to CrookedPicture's
+# "straightened" signal in main_room.gd).
 
 signal opened
 
@@ -12,23 +12,28 @@ const UiKit = preload("res://scripts/ui_kit.gd")
 @export var reduce_suspicion_amount: float = 10.0
 @export var wrong_guess_suspicion: float = 5.0
 
+# Local layout of the safe. Its front face points along +z, which becomes
+# +x (into the room) because main_room.gd rotates the safe 90 degrees.
+const BODY_SIZE := Vector3(0.9, 0.9, 0.4)
+const BODY_CENTER := Vector3(0.0, 0.0, -0.15)
+const DOOR_PIVOT := Vector3(-0.42, 0.0, 0.05)
+# Distance a part sits in front of the door's own face.
+const FRONT_Z := 0.035
+
 var _required_code: String = ""
 var _is_known: bool = false
 var _is_open: bool = false
 var _is_busy: bool = false
 
-# The digits typed so far in the currently-open keypad. This MUST live on
-# the script (not as a local inside _open_keypad()) because GDScript lambdas
-# capture local variables BY VALUE at the moment each closure is created -
-# every button's `pressed` callback would otherwise get its own frozen,
-# independent copy of a local "entered" string, so digit presses would never
-# actually accumulate anywhere the ENTER button could see. Reading/writing
-# `self._code_entry` from inside a lambda works because `self` itself is
-# what closures capture correctly, and all callbacks then share one value.
+# The digits typed so far. This MUST live on the script (not as a local inside
+# _open_keypad()) because GDScript lambdas capture local variables BY VALUE at
+# the moment each closure is created - every button's `pressed` callback would
+# otherwise get its own frozen copy of a local string. Reading/writing
+# `_code_entry` from inside a lambda works because all callbacks share `self`.
 var _code_entry: String = ""
 
 var _door: Node3D
-var _dial_lights: Array = []
+var _led_materials: Array = []
 var _keypad: CanvasLayer
 
 
@@ -108,7 +113,6 @@ func _open_keypad() -> void:
 	column.add_child(grid)
 
 	_code_entry = ""
-	var digit_buttons: Array = []
 
 	var refresh_display := func() -> void:
 		var display := ""
@@ -128,14 +132,11 @@ func _open_keypad() -> void:
 
 	# 1-9 fill the 3x3 grid in order, then 0 gets its own centered last row.
 	for digit in range(1, 10):
-		var button: Button = make_digit_button.call(digit)
-		digit_buttons.append(button)
-		grid.add_child(button)
+		grid.add_child(make_digit_button.call(digit))
 
 	var spacer_left := Control.new()
 	var zero_button: Button = make_digit_button.call(0)
 	var spacer_right := Control.new()
-	digit_buttons.append(zero_button)
 	grid.add_child(spacer_left)
 	grid.add_child(zero_button)
 	grid.add_child(spacer_right)
@@ -194,8 +195,10 @@ func _on_correct_code() -> void:
 
 	var tween := create_tween()
 	tween.tween_property(_door, "rotation_degrees:y", -100.0, 0.7).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	for light in _dial_lights:
-		tween.parallel().tween_property(light, "light_energy", 0.9, 0.5)
+	# The keypad LED flips from red to green as the door swings.
+	for led_material in _led_materials:
+		tween.parallel().tween_property(led_material, "emission", Color(0.2, 1.0, 0.4, 1), 0.4)
+		tween.parallel().tween_property(led_material, "emission_energy_multiplier", 2.5, 0.4)
 
 	var inner_voice := get_node_or_null("/root/InnerVoiceManager")
 	if inner_voice != null:
@@ -208,69 +211,121 @@ func _on_correct_code() -> void:
 	opened.emit()
 
 
+# --- Visuals ---------------------------------------------------------------
+# Built from primitive meshes (no external assets), same as the rest of the
+# room. Layout: a steel carcass sunk into the wall, a fixed frame around the
+# opening, and a hinged door carrying the dial, keypad, and handle.
+
+func _steel(color: Color, metallic: float, roughness: float) -> StandardMaterial3D:
+	var material := StandardMaterial3D.new()
+	material.albedo_color = color
+	material.metallic = metallic
+	material.roughness = roughness
+	return material
+
+
+func _add_box(parent: Node3D, node_name: String, size: Vector3, local_position: Vector3, material: Material) -> MeshInstance3D:
+	var mesh_instance := MeshInstance3D.new()
+	mesh_instance.name = node_name
+	var mesh := BoxMesh.new()
+	mesh.size = size
+	mesh_instance.mesh = mesh
+	mesh_instance.position = local_position
+	mesh_instance.material_override = material
+	parent.add_child(mesh_instance)
+	return mesh_instance
+
+
+func _add_cylinder(parent: Node3D, node_name: String, radius: float, height: float, local_position: Vector3, material: Material) -> MeshInstance3D:
+	var mesh_instance := MeshInstance3D.new()
+	mesh_instance.name = node_name
+	var mesh := CylinderMesh.new()
+	mesh.top_radius = radius
+	mesh.bottom_radius = radius
+	mesh.height = height
+	mesh.radial_segments = 20
+	mesh_instance.mesh = mesh
+	mesh_instance.position = local_position
+	mesh_instance.material_override = material
+	parent.add_child(mesh_instance)
+	return mesh_instance
+
+
+func _add_sphere(parent: Node3D, node_name: String, radius: float, local_position: Vector3, material: Material) -> MeshInstance3D:
+	var mesh_instance := MeshInstance3D.new()
+	mesh_instance.name = node_name
+	var mesh := SphereMesh.new()
+	mesh.radius = radius
+	mesh.height = radius * 2.0
+	mesh.radial_segments = 16
+	mesh.rings = 8
+	mesh_instance.mesh = mesh
+	mesh_instance.position = local_position
+	mesh_instance.material_override = material
+	parent.add_child(mesh_instance)
+	return mesh_instance
+
+
 func _build_visuals() -> void:
-	var steel := StandardMaterial3D.new()
-	steel.albedo_color = Color(0.22, 0.23, 0.25, 1)
-	steel.metallic = 0.7
-	steel.roughness = 0.4
-	var brass := StandardMaterial3D.new()
-	brass.albedo_color = Color(0.62, 0.48, 0.16, 1)
-	brass.metallic = 0.8
-	brass.roughness = 0.35
+	var carcass_steel := _steel(Color(0.16, 0.17, 0.19, 1), 0.6, 0.55)
+	var door_steel := _steel(Color(0.3, 0.31, 0.34, 1), 0.75, 0.32)
+	var brass := _steel(Color(0.72, 0.56, 0.2, 1), 0.9, 0.3)
+	var dark := _steel(Color(0.05, 0.05, 0.06, 1), 0.2, 0.7)
 
-	var frame := MeshInstance3D.new()
-	frame.name = "SafeFrame"
-	var frame_mesh := BoxMesh.new()
-	frame_mesh.size = Vector3(0.42, 0.42, 0.1)
-	frame.mesh = frame_mesh
-	frame.material_override = steel
-	add_child(frame)
+	# Carcass: the solid box that sits inside the wall, so only its front shows.
+	_add_box(self, "Carcass", BODY_SIZE, BODY_CENTER, carcass_steel)
 
+	# Fixed frame around the opening (top, bottom, left, right).
+	_add_box(self, "FrameTop", Vector3(0.96, 0.06, 0.06), Vector3(0.0, 0.45, 0.03), door_steel)
+	_add_box(self, "FrameBottom", Vector3(0.96, 0.06, 0.06), Vector3(0.0, -0.45, 0.03), door_steel)
+	_add_box(self, "FrameLeft", Vector3(0.06, 0.9, 0.06), Vector3(-0.45, 0.0, 0.03), door_steel)
+	_add_box(self, "FrameRight", Vector3(0.06, 0.9, 0.06), Vector3(0.45, 0.0, 0.03), door_steel)
+
+	# Hinge knuckles on the fixed side (they stay put when the door swings).
+	for hinge_y in [-0.3, 0.3]:
+		var hinge := _add_cylinder(self, "Hinge", 0.025, 0.12, Vector3(DOOR_PIVOT.x, hinge_y, DOOR_PIVOT.z + FRONT_Z), brass)
+		hinge.rotation_degrees = Vector3(90.0, 0.0, 0.0)
+
+	# The door. Everything under _door rotates together when it opens. The
+	# pivot sits on the left edge, so the door's own centre is at +0.41 on x.
 	_door = Node3D.new()
 	_door.name = "DoorPivot"
-	_door.position = Vector3(-0.19, 0, 0.05)
+	_door.position = DOOR_PIVOT
 	add_child(_door)
+	_add_box(_door, "DoorPanel", Vector3(0.82, 0.82, 0.06), Vector3(0.41, 0.0, 0.0), door_steel)
+	_add_box(_door, "DoorInset", Vector3(0.7, 0.7, 0.01), Vector3(0.41, 0.0, 0.032), carcass_steel)
 
-	var door_panel := MeshInstance3D.new()
-	door_panel.name = "DoorPanel"
-	var door_mesh := BoxMesh.new()
-	door_mesh.size = Vector3(0.38, 0.38, 0.03)
-	door_panel.mesh = door_mesh
-	door_panel.material_override = steel
-	door_panel.position = Vector3(0.19, 0, 0)
-	_door.add_child(door_panel)
+	# Dial: a brass disc with eight tick marks around it.
+	var dial_center := Vector3(0.6, 0.05, FRONT_Z)
+	var dial := _add_cylinder(_door, "Dial", 0.075, 0.03, dial_center, brass)
+	dial.rotation_degrees = Vector3(90.0, 0.0, 0.0)
+	for tick_index in range(8):
+		var angle := TAU * float(tick_index) / 8.0
+		var tick_position := dial_center + Vector3(cos(angle) * 0.11, sin(angle) * 0.11, 0.006)
+		_add_box(_door, "DialTick%d" % tick_index, Vector3(0.018, 0.018, 0.012), tick_position, dark)
 
-	var handle := MeshInstance3D.new()
-	handle.name = "DoorHandle"
-	var handle_mesh := CylinderMesh.new()
-	handle_mesh.top_radius = 0.04
-	handle_mesh.bottom_radius = 0.04
-	handle_mesh.height = 0.03
-	handle.mesh = handle_mesh
-	handle.material_override = brass
-	handle.position = Vector3(0.32, 0, 0.03)
-	handle.rotation_degrees.x = 90.0
-	_door.add_child(handle)
+	# Handle lever on the right side of the door.
+	_add_box(_door, "Handle", Vector3(0.14, 0.04, 0.05), Vector3(0.7, -0.08, 0.045), brass)
 
-	for offset in [-0.12, 0.0, 0.12]:
-		var indicator := MeshInstance3D.new()
-		indicator.name = "DialLight"
-		var indicator_mesh := SphereMesh.new()
-		indicator_mesh.radius = 0.015
-		indicator_mesh.height = 0.03
-		indicator.mesh = indicator_mesh
-		var indicator_material := StandardMaterial3D.new()
-		indicator_material.albedo_color = Color(0.5, 0.08, 0.06, 1)
-		indicator_material.emission_enabled = true
-		indicator_material.emission = Color(0.5, 0.08, 0.06, 1)
-		indicator_material.emission_energy_multiplier = 0.0
-		indicator.material_override = indicator_material
-		indicator.position = Vector3(offset, 0.16, 0.052)
-		add_child(indicator)
-		_dial_lights.append(indicator)
+	# Keypad: a dark plate with a 3x4 grid of buttons, and a status LED above it.
+	var keypad_center := Vector3(0.2, -0.2, FRONT_Z)
+	_add_box(_door, "KeypadPlate", Vector3(0.22, 0.26, 0.012), keypad_center, dark)
+	for row in range(4):
+		for column in range(3):
+			var button_position := keypad_center + Vector3((column - 1) * 0.062, 0.085 - row * 0.05, 0.008)
+			_add_box(_door, "KeyButton%d%d" % [row, column], Vector3(0.045, 0.035, 0.012), button_position, door_steel)
 
+	var led_material := _steel(Color(0.5, 0.08, 0.06, 1), 0.0, 0.5)
+	led_material.emission_enabled = true
+	led_material.emission = Color(0.5, 0.08, 0.06, 1)
+	led_material.emission_energy_multiplier = 1.0
+	_add_sphere(_door, "StatusLed", 0.014, Vector3(0.2, -0.045, FRONT_Z + 0.005), led_material)
+	_led_materials.append(led_material)
+
+	# One collision box for the whole safe so the interaction ray can hit it.
 	var collision := CollisionShape3D.new()
 	var shape := BoxShape3D.new()
-	shape.size = Vector3(0.42, 0.42, 0.14)
+	shape.size = BODY_SIZE
 	collision.shape = shape
+	collision.position = BODY_CENTER
 	add_child(collision)
