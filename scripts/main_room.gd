@@ -1070,27 +1070,37 @@ func _add_body_collision(body: StaticBody3D, size: Vector3, local_position: Vect
 	collision.shape = shape
 	body.add_child(collision)
 func _unhandled_input(event: InputEvent) -> void:
-	# Debug shortcuts for testing the endings without playing 10 minutes.
-	# Only active when run from the editor (never in an exported build).
-	#   F1 = Ending 1 (timer out, diamond left)   F2 = Ending 2 (timer out, diamond taken)
-	#   F3 = Ending 3 (tasks done, diamond left)  F4 = Ending 4 (tasks done, diamond taken)
+	# Debug ending shortcuts. On laptops, hold the hardware Fn key so the
+	# physical F1/F2/F3 keys are sent to Godot. These are the ONLY three
+	# endings available for testing. There is deliberately no F4 ending.
 	if not OS.is_debug_build() or game_over:
 		return
 	if event is InputEventKey and event.pressed and not event.echo:
-		match event.keycode:
+		var key := event.keycode if event.keycode != KEY_NONE else event.physical_keycode
+		match key:
 			KEY_F1:
-				_debug_end(false, false)
+				_debug_force_ending(1)
 			KEY_F2:
-				_debug_end(false, true)
+				_debug_force_ending(2)
 			KEY_F3:
-				_debug_end(true, false)
-			KEY_F4:
-				_debug_end(true, true)
+				_debug_force_ending(3)
 
 
-func _debug_end(tasks_finished: bool, diamond_taken: bool) -> void:
-	game_manager.set("diamond_taken", diamond_taken)
-	_finish_game(tasks_finished)
+func _debug_force_ending(ending_id: int) -> void:
+	# F1: failed — no cleaning and no assets.
+	# F2: cleaning complete — no assets collected.
+	# F3: everything complete — assets collected and not caught.
+	if ending_id < 1 or ending_id > 3:
+		return
+
+	# Set the exact state represented by the requested ending so the normal
+	# ending transition and existing UI are reused without creating another UI.
+	game_manager.set("diamond_taken", ending_id == 3)
+	lockpick_done = 1 if ending_id == 3 else 0
+	if suspicion_manager != null:
+		suspicion_manager.call("reset_run")
+
+	_finish_game(ending_id != 1, ending_id)
 
 
 func _process(delta: float) -> void:
@@ -1223,7 +1233,7 @@ func _tasks_done_count() -> int:
 	return count
 
 
-func _finish_game(tasks_finished: bool) -> void:
+func _finish_game(tasks_finished: bool, forced_ending_id: int = 0) -> void:
 	# Three endings only:
 	# 1) Cleaning incomplete + spy assets not secured.
 	# 2) Cleaning complete, but spy objective failed or the operation was compromised.
@@ -1242,11 +1252,12 @@ func _finish_game(tasks_finished: bool) -> void:
 	if suspicion_manager != null:
 		caught = float(suspicion_manager.get("current_suspicion")) >= 100.0
 
-	var ending := 1
-	if tasks_finished:
-		ending = 3 if assets_secured and not caught else 2
-	else:
-		ending = 1
+	var ending := forced_ending_id
+	if ending == 0:
+		if tasks_finished:
+			ending = 3 if assets_secured and not caught else 2
+		else:
+			ending = 1
 
 	GameFlow.ending_id = ending
 	GameFlow.tasks_done = _tasks_done_count()

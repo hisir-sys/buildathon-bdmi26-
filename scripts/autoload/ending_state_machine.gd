@@ -23,14 +23,12 @@ func evaluate_and_trigger_ending(
 	diamond_taken: bool,
 	transition: bool = true
 ) -> int:
-	# Full success requires every cleaning task, both spy assets (pendrive +
-	# diamond), and no detection. A completed cleaning shift without the
-	# covert objective is the middle ending. Anything else is total failure.
+	# Exactly three outcomes exist: incomplete cleaning/no assets, complete
+	# cleaning without the assets, or complete cleaning + all assets + no detection.
 	var ending_id := Outcome.MISSION_FAILED
 	if tasks_complete:
-		# Calls from older integrations only know about the diamond, so treat
-		# suspicion as the deciding detection condition here. main_room.gd uses
-		# the stricter pendrive + diamond check before setting ending_id.
+		# The main room verifies the full asset set (pendrive + diamond). This
+		# helper retains the same three-outcome contract for older callers.
 		ending_id = Outcome.SPY_MISSION_FAILED if suspicion_maxed or not diamond_taken else Outcome.MISSION_SUCCESSFUL
 	
 	GameFlow.ending_id = ending_id

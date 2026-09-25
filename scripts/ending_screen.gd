@@ -1,6 +1,6 @@
 extends Node3D
-# One of four ending screens, chosen by GameFlow.ending_id (set by
-# main_room.gd when the timer runs out or every task is finished).
+# One of three ending screens, chosen by GameFlow.ending_id (set by
+# main_room.gd when the run ends or by the F1/F2/F3 debug shortcuts).
 
 const UiKit = preload("res://scripts/ui_kit.gd")
 const GameFlow = preload("res://scripts/game_flow.gd")
@@ -56,7 +56,7 @@ func _ending_data(ending_id: int) -> Dictionary:
 				"title": "ENDING 2: CLEANER SUCCESS — SPY MISSION FAILED",
 				"title_color": Color(1.0, 0.78, 0.35, 1),
 				"accent": Color(0.9, 0.58, 0.12, 1),
-				"body": "You cleaned the room exactly as required, but the spy operation failed. The required files and assets were not secured, or the operation was compromised before you could complete the covert objective. You succeeded as the cleaner, but not as the operative.",
+				"body": "You completed every cleaning task, but you did not collect the files, items, or other assets required for the spy objective. The room was cleaned, but the intelligence mission was not completed.",
 				"scene": {
 					"lamp_on": true,
 					"spot_energy": 10.0,
@@ -77,7 +77,7 @@ func _ending_data(ending_id: int) -> Dictionary:
 				"title": "ENDING 3: MISSION SUCCESSFUL",
 				"title_color": Color(0.6, 0.95, 0.7, 1),
 				"accent": Color(0.3, 0.8, 0.45, 1),
-				"body": "Mission successful. You completed every cleaning task, secured the required files and assets, and completed the operation without being detected. The room is clean, the intelligence is secured, and the operation is complete.",
+				"body": "Mission accomplished. Every cleaning task is complete, all required files and assets have been collected, and you completed the operation without getting caught. The room is clean and the intelligence is secured.",
 				"scene": {
 					"lamp_on": true,
 					"spot_energy": 14.0,
@@ -99,7 +99,7 @@ func _ending_data(ending_id: int) -> Dictionary:
 				"title": "ENDING 1: MISSION FAILED",
 				"title_color": Color(1.0, 0.45, 0.42, 1),
 				"accent": Color(0.75, 0.12, 0.14, 1),
-				"body": "You failed the mission. The room was not cleaned, and none of the files or assets you were sent to retrieve were secured. The operation is over before the real objective could be completed.",
+				"body": "Mission failed. You did not complete the cleaning tasks, and you did not collect any of the files, items, or assets you were sent to retrieve. The operation is over.",
 				"scene": {
 					"lamp_on": false,
 					"ambient_color": Color(0.35, 0.45, 0.7, 1),
