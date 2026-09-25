@@ -1,5 +1,5 @@
 extends StaticBody3D
-# The desk + chest in the back-left corner. Not movable. The player needs the key
+# The desk + chest are mounted against the front wall. Not movable. The player needs the key
 # (found in the bathroom) and has to shift the cabinet away first. Unlocking
 # freezes the game, cuts to a fixed camera, dims the room and asks the player
 # to STEAL or LEAVE the diamond. The result is stored on the GameManager
@@ -13,6 +13,7 @@ const ChoiceOverlayScript = preload("res://scripts/choice_overlay.gd")
 const CABINET_CLEARANCE := 3.2
 
 # Camera positions relative to the chest origin (chest sits on the desk).
+# The root is rotated 180 degrees so the chest front faces into the room.
 const CAM_START := Vector3(0.8, 2.7, 3.6)
 const CAM_END := Vector3(0.3, 2.45, 2.2)
 const CAM_TARGET := Vector3(0.0, 1.2, 0.0)

@@ -307,7 +307,10 @@ func _build_chest() -> void:
 	# Not movable. Needs the key (see _build_key).
 	var chest := StaticBody3D.new()
 	chest.name = "TreasureChest"
-	chest.position = Vector3(0.0, 0.1, 2.8)
+	# Wall-mounted placement: the desk sits flush against the front wall and
+	# the chest faces back into the room instead of pointing into the wall.
+	chest.position = Vector3(0.0, 0.1, 8.95)
+	chest.rotation_degrees.y = 180.0
 	chest.set_script(TreasureChestScript)
 	add_child(chest)
 	chest_node = chest
