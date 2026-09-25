@@ -24,9 +24,9 @@ const HOTBAR_NORMAL_BG := Color(0.03, 0.05, 0.1, 0.85)
 var sound_enabled: bool = true
 var is_paused: bool = false
 var key_badge: PanelContainer
-var note_panel: PanelContainer
-var note_title: Label
-var note_body: Label
+var collected_items_panel: PanelContainer
+var collected_items_label: Label
+var collected_items: Array[String] = []
 var suspicion_bar_fill: ColorRect
 var suspicion_bar_track: Control
 var suspicion_percent_label: Label
@@ -39,8 +39,8 @@ func _ready() -> void:
 	sound_button.pressed.connect(_toggle_sound)
 	pause_button.pressed.connect(_toggle_pause)
 	_build_key_badge()
-	_build_note()
 	_build_suspicion_meter()
+	_build_collected_items()
 	_build_toast()
 	if has_node("/root/SuspicionManager"):
 		get_node("/root/SuspicionManager").connect("suspicion_changed", set_suspicion)
@@ -132,6 +132,20 @@ func _toggle_pause() -> void:
 
 func set_key_owned(has_key: bool) -> void:
 	key_badge.visible = has_key
+	if has_key:
+		add_collected_item("CHEST KEY")
+
+
+func add_collected_item(item_name: String) -> void:
+	var normalized_name := item_name.strip_edges().to_upper()
+	if normalized_name.is_empty() or collected_items.has(normalized_name):
+		return
+	collected_items.append(normalized_name)
+
+	var lines: Array[String] = []
+	for item in collected_items:
+		lines.append("• " + item)
+	collected_items_label.text = "\n".join(lines)
 
 
 func set_suspicion(new_value: float, max_value: float) -> void:
@@ -145,16 +159,6 @@ func set_suspicion(new_value: float, max_value: float) -> void:
 	else:
 		color = Color(0.95, 0.75, 0.2, 1).lerp(Color(0.9, 0.2, 0.22, 1), (ratio - 0.5) / 0.5)
 	suspicion_bar_fill.color = color
-
-
-func show_note(title_text: String, body_text: String) -> void:
-	note_title.text = title_text
-	note_body.text = body_text
-	note_panel.visible = true
-
-
-func hide_note() -> void:
-	note_panel.visible = false
 
 
 func _build_key_badge() -> void:
@@ -183,51 +187,6 @@ func _build_key_badge() -> void:
 	key_badge.add_child(label)
 	key_badge.visible = false
 	add_child(key_badge)
-
-
-func _build_note() -> void:
-	# Paper note shown at the top-centre while the player is near the chest
-	# and hasn't found the key yet.
-	note_panel = PanelContainer.new()
-	note_panel.name = "ChestNote"
-	note_panel.anchor_left = 0.5
-	note_panel.anchor_right = 0.5
-	note_panel.offset_left = -230.0
-	note_panel.offset_right = 230.0
-	note_panel.offset_top = 110.0
-	note_panel.offset_bottom = 110.0
-	note_panel.grow_vertical = Control.GROW_DIRECTION_END
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.93, 0.87, 0.7, 0.97)
-	style.border_color = Color(0.45, 0.3, 0.12, 1)
-	style.set_border_width_all(2)
-	style.set_corner_radius_all(4)
-	style.shadow_color = Color(0, 0, 0, 0.45)
-	style.shadow_size = 10
-	style.content_margin_left = 18
-	style.content_margin_right = 18
-	style.content_margin_top = 12
-	style.content_margin_bottom = 14
-	note_panel.add_theme_stylebox_override("panel", style)
-
-	var column := VBoxContainer.new()
-	column.add_theme_constant_override("separation", 6)
-	note_panel.add_child(column)
-
-	note_title = Label.new()
-	note_title.add_theme_font_size_override("font_size", 12)
-	note_title.add_theme_color_override("font_color", Color(0.5, 0.3, 0.1, 1))
-	column.add_child(note_title)
-
-	note_body = Label.new()
-	note_body.custom_minimum_size = Vector2(420, 0)
-	note_body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	note_body.add_theme_font_size_override("font_size", 17)
-	note_body.add_theme_color_override("font_color", Color(0.2, 0.12, 0.06, 1))
-	column.add_child(note_body)
-
-	note_panel.visible = false
-	add_child(note_panel)
 
 
 func _build_suspicion_meter() -> void:
@@ -278,6 +237,53 @@ func _build_suspicion_meter() -> void:
 	suspicion_bar_fill.size = Vector2(0, 8)
 	suspicion_bar_fill.color = Color(0.3, 0.8, 0.45, 1)
 	suspicion_bar_track.add_child(suspicion_bar_fill)
+
+
+func _build_collected_items() -> void:
+	collected_items_panel = PanelContainer.new()
+	collected_items_panel.name = "CollectedItems"
+	collected_items_panel.anchor_left = 1.0
+	collected_items_panel.anchor_right = 1.0
+	collected_items_panel.anchor_top = 1.0
+	collected_items_panel.anchor_bottom = 1.0
+	collected_items_panel.offset_left = -264.0
+	collected_items_panel.offset_right = -24.0
+	collected_items_panel.offset_top = -164.0
+	collected_items_panel.offset_bottom = -24.0
+	collected_items_panel.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	collected_items_panel.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	collected_items_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.04, 0.06, 0.09, 0.86)
+	style.border_color = Color(0.3, 0.6, 1.0, 0.35)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(9)
+	style.content_margin_left = 14
+	style.content_margin_right = 14
+	style.content_margin_top = 10
+	style.content_margin_bottom = 10
+	collected_items_panel.add_theme_stylebox_override("panel", style)
+
+	var column := VBoxContainer.new()
+	column.add_theme_constant_override("separation", 5)
+	collected_items_panel.add_child(column)
+
+	var title := Label.new()
+	title.text = "COLLECTED ITEMS"
+	title.add_theme_font_size_override("font_size", 12)
+	title.add_theme_color_override("font_color", Color(0.62, 0.78, 0.94, 0.95))
+	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	column.add_child(title)
+
+	collected_items_label = Label.new()
+	collected_items_label.text = "None yet"
+	collected_items_label.add_theme_font_size_override("font_size", 13)
+	collected_items_label.add_theme_color_override("font_color", Color(0.92, 0.94, 0.98, 0.95))
+	collected_items_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	column.add_child(collected_items_label)
+
+	add_child(collected_items_panel)
 
 
 # --- Toast: a short message that fades out on its own ----------------------

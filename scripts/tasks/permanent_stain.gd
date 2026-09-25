@@ -25,6 +25,7 @@ var _capped_fired: bool = false
 
 func _ready() -> void:
 	add_to_group("interactable")
+	add_to_group("floor_cleaning_task")
 	_build_visuals()
 
 
@@ -76,7 +77,7 @@ func _build_visuals() -> void:
 	_stain_mesh = MeshInstance3D.new()
 	_stain_mesh.name = "PermanentStainQuad"
 	var quad := PlaneMesh.new()
-	quad.size = Vector2(0.6, 0.4)
+	quad.size = Vector2(1.1, 0.78)
 	quad.orientation = PlaneMesh.FACE_Y
 	_stain_mesh.mesh = quad
 	_stain_mesh.position = Vector3(0, 0.008, 0)
@@ -85,7 +86,8 @@ func _build_visuals() -> void:
 	_shader_material.shader = StainShader
 	# Darker, rust-brown tint - reads as old and organic rather than a
 	# fresh spill.
-	_shader_material.set_shader_parameter("stain_color", Color(0.08, 0.02, 0.015, 0.92))
+	_shader_material.set_shader_parameter("stain_color", Color(0.24, 0.105, 0.06, 0.76))
+	_shader_material.set_shader_parameter("stain_age", 1.0)
 	_shader_material.set_shader_parameter("scrub_progress", 0.0)
 	_shader_material.set_shader_parameter("edge_softness", 0.24)
 	_stain_mesh.material_override = _shader_material
@@ -93,7 +95,7 @@ func _build_visuals() -> void:
 
 	var collision := CollisionShape3D.new()
 	var shape := BoxShape3D.new()
-	shape.size = Vector3(0.6, 0.02, 0.4)
+	shape.size = Vector3(1.15, 0.025, 0.84)
 	collision.shape = shape
-	collision.position = Vector3(0, 0.01, 0)
+	collision.position = Vector3(0, 0.0125, 0)
 	add_child(collision)

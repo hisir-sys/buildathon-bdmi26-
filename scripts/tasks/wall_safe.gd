@@ -35,6 +35,7 @@ var _code_entry: String = ""
 var _door: Node3D
 var _led_materials: Array = []
 var _keypad: CanvasLayer
+var _previous_process_mode: int = Node.PROCESS_MODE_INHERIT
 
 
 func _ready() -> void:
@@ -64,7 +65,16 @@ func interact() -> void:
 	_open_keypad()
 
 
+func _unhandled_input(event: InputEvent) -> void:
+	if not _is_busy or not event.is_action_pressed("interact"):
+		return
+	get_viewport().set_input_as_handled()
+	_close_keypad()
+
+
 func _open_keypad() -> void:
+	_previous_process_mode = process_mode
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	_keypad = CanvasLayer.new()
 	_keypad.layer = 60
 	_keypad.process_mode = Node.PROCESS_MODE_ALWAYS
@@ -151,6 +161,7 @@ func _open_keypad() -> void:
 	buttons_row.add_child(clear_button)
 	buttons_row.add_child(enter_button)
 	buttons_row.add_child(cancel_button)
+	column.add_child(UiKit.label("PRESS E TO CLOSE", 11, Color(0.7, 0.72, 0.76, 0.85), HORIZONTAL_ALIGNMENT_CENTER))
 
 	clear_button.pressed.connect(func() -> void:
 		_code_entry = ""
@@ -185,6 +196,7 @@ func _close_keypad() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	get_tree().paused = false
 	_is_busy = false
+	process_mode = _previous_process_mode
 
 
 func _on_correct_code() -> void:
@@ -200,14 +212,6 @@ func _on_correct_code() -> void:
 		tween.parallel().tween_property(led_material, "emission", Color(0.2, 1.0, 0.4, 1), 0.4)
 		tween.parallel().tween_property(led_material, "emission_energy_multiplier", 2.5, 0.4)
 
-	var inner_voice := get_node_or_null("/root/InnerVoiceManager")
-	if inner_voice != null:
-		inner_voice.call(
-			"queue_thought",
-			"SATISFACTION",
-			"The safe clicks open. So the wall panel wasn't just decoration.",
-			4.0
-		)
 	opened.emit()
 
 

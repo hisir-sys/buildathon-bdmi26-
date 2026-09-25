@@ -26,6 +26,7 @@ var _is_cleaned: bool = false
 
 func _ready() -> void:
 	add_to_group("interactable")
+	add_to_group("floor_cleaning_task")
 	_build_visuals()
 
 
@@ -86,21 +87,24 @@ func _build_visuals() -> void:
 	_stain_mesh = MeshInstance3D.new()
 	_stain_mesh.name = "StainQuad"
 	var quad := PlaneMesh.new()
-	quad.size = Vector2(0.55, 0.55)
+	quad.size = Vector2(1.1, 0.85)
 	quad.orientation = PlaneMesh.FACE_Y
 	_stain_mesh.mesh = quad
 	_stain_mesh.position = Vector3(0, 0.008, 0)
 
 	_shader_material = ShaderMaterial.new()
 	_shader_material.shader = StainShader
-	_shader_material.set_shader_parameter("stain_color", Color(0.05, 0.04, 0.03, 0.9))
+	_shader_material.set_shader_parameter("stain_color", Color(0.085, 0.105, 0.09, 0.76))
+	_shader_material.set_shader_parameter("stain_age", 0.0)
 	_shader_material.set_shader_parameter("scrub_progress", 0.0)
 	_stain_mesh.material_override = _shader_material
 	add_child(_stain_mesh)
 
 	var collision := CollisionShape3D.new()
 	var shape := BoxShape3D.new()
-	shape.size = Vector3(0.55, 0.02, 0.55)
+	# Keep the collider broad and paper-thin: the stain is easy to target while
+	# the player can still walk over it without bumping into an invisible block.
+	shape.size = Vector3(1.15, 0.025, 0.95)
 	collision.shape = shape
-	collision.position = Vector3(0, 0.01, 0)
+	collision.position = Vector3(0, 0.0125, 0)
 	add_child(collision)

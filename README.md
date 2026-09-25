@@ -20,12 +20,14 @@ You have **10 minutes**. Fix and clean whatever you can, in any order you like:
 
 - Reconnect the **electrical wiring** — pick the right wire before the circuit blows
 - Repair the **broken pipeline** — drag the segments back into place
-- Get the **fridge** back where it belongs and plugged in
-- Clear the **piled-up furniture**
+- Carry the **fridge** to its pink spot on the left wall, then flip the wall switch to power it on
+- Clear the **piled-up furniture** (sofa, table, chairs and the cabinet) onto their pink spots
 - **Dust** the room and clear the spider webs
 - Scrub the **washroom** clean
 
 Along the way, decide: **take the diamond, or leave it.**
+
+A desk with a locked chest sits in the back-left corner, hidden behind the cabinet. Move the cabinet, search the apartment for the key while cleaning, and unlock the chest. The game freezes and you choose: **STEAL THE DIAMOND** or **LEAVE THE DIAMOND**.
 
 ## Controls
 
@@ -37,14 +39,18 @@ Along the way, decide: **take the diamond, or leave it.**
 | **Space** | Open/close the bathroom door (only while looking at it) |
 | **Escape** | Release or recapture the mouse cursor |
 
+## Flow
+
+`start_menu` (THE FINAL CONTRACT: Start / Load / Quit) -> `cutscene_intro` -> `main_room` -> `ending_screen`.
+
 ## Endings
 
-How the night ends depends on two things: **how much of the house got fixed**, and **whether the diamond was taken**.
+The game ends when the **timer runs out** or **every task is finished**, and the ending depends on whether the diamond was taken:
 
-- **Full Pay** — the house is in order, and the diamond stayed put.
-- **Docked Pay** — some tasks were left unfinished.
-- **No Pay** — most of the house is still a mess when the owner walks in.
-- **Caught Red-Handed** — the diamond went missing, and it gets noticed.
+| | Diamond left | Diamond taken |
+|---|---|---|
+| **Timer ran out** | Ending 1: Total Failure | Ending 2: The Greed Trap |
+| **All tasks done** | Ending 3: Mission Accomplished | Ending 4: The Shadow Victory |
 
 ## Running the Game
 

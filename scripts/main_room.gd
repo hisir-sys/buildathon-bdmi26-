@@ -79,6 +79,7 @@ var chest_node: StaticBody3D
 var suspicion_manager: Node
 var loiter_time: float = 0.0
 var loiter_warned: bool = false
+var loiter_spot_id: String = ""
 var fill_lights: Array[OmniLight3D] = []
 
 # --- Spy mechanics update: 9-task pool state --------------------------------
@@ -276,13 +277,13 @@ func _build_rug(world_position: Vector3) -> void:
 
 
 func _build_cabinet() -> void:
-	# Starts one step in front of the desk + chest on the back wall, hiding
-	# them from the room. Pick it up and carry it to the pink footprint on the
-	# right wall. It counts toward the FURNITURE task like the sofa/table/chairs.
+	# Starts in front of the desk + chest in the back-left corner, hiding them
+	# from the room. Pick it up and carry it to the pink footprint on the right
+	# wall. It counts toward the FURNITURE task like the sofa/table/chairs.
 	var root := _new_furniture_item(
 		"Cabinet",
 		"CABINET",
-		Vector3(0.0, 0.0, -7.9),
+		Vector3(-7.6, 0.0, -5.0),
 		Vector3(9.15, 0.0, -1.2),
 		Vector3(2.9, 0.04, 1.5),
 		Vector3(0.0, 90.0, 0.0),
@@ -302,11 +303,11 @@ func _build_cabinet() -> void:
 
 
 func _build_chest() -> void:
-	# Desk + chest against the back wall, directly behind the cabinet's
-	# starting spot. Not movable. Needs the key (see _build_key).
+	# Desk + chest placed in the open room area shown in the reference image.
+	# Not movable. Needs the key (see _build_key).
 	var chest := StaticBody3D.new()
 	chest.name = "TreasureChest"
-	chest.position = Vector3(0.0, 0.0, -9.4)
+	chest.position = Vector3(0.0, 0.1, 2.8)
 	chest.set_script(TreasureChestScript)
 	add_child(chest)
 	chest_node = chest
@@ -357,12 +358,13 @@ func _build_lock_pick_drawer() -> void:
 
 
 func _build_crooked_picture() -> void:
-	# Main back wall (z -10), between the mop station (x -6.7) and the
-	# chest/desk (x 0) - moved further from the chest than before, and given
-	# more breathing room now that the frame itself is bigger.
+	# Right wall, beside the cabinet's furniture destination. The picture is
+	# flipped to face into the room; the hidden code plaster patch is a child
+	# of this prop, so it flips with the picture too.
 	var picture := StaticBody3D.new()
 	picture.name = "CrookedPicture"
-	picture.position = Vector3(-4.5, 1.85, -9.8)
+	picture.position = Vector3(9.82, 1.85, 2.0)
+	picture.rotation_degrees.y = -90.0
 	picture.set_script(CrookedPictureScript)
 	add_child(picture)
 	crooked_picture_node = picture
@@ -390,7 +392,7 @@ func _build_spill_tasks() -> void:
 	# the dust spots, and the rewire-panel/fridge wall furniture.
 	var spill := StaticBody3D.new()
 	spill.name = "SpillCleaner"
-	spill.position = Vector3(-3.5, 0.0, -2.0)
+	spill.position = Vector3(-3.5, 0.1, -2.0)
 	spill.set_script(SpillCleanerScript)
 	add_child(spill)
 	spill_cleaner_node = spill
@@ -400,7 +402,7 @@ func _build_spill_tasks() -> void:
 	# as "something was dragged out of the bathroom and scrubbed here".
 	var stain := StaticBody3D.new()
 	stain.name = "PermanentStain"
-	stain.position = Vector3(6.4, 0.0, -3.0)
+	stain.position = Vector3(6.4, 0.1, -3.0)
 	stain.set_script(PermanentStainScript)
 	add_child(stain)
 	permanent_stain_node = stain
@@ -492,12 +494,14 @@ func _on_chest_choice_started() -> void:
 	dim_tween.tween_property(directional_light, "light_energy", saved_sun_energy * 0.2, 0.8)
 
 
-func _on_chest_choice_finished(_diamond_taken: bool) -> void:
+func _on_chest_choice_finished(diamond_taken: bool) -> void:
 	if dim_tween != null and dim_tween.is_valid():
 		dim_tween.kill()
 	if world_environment.environment != null:
 		world_environment.environment.ambient_light_energy = saved_ambient_energy
 	directional_light.light_energy = saved_sun_energy
+	if diamond_taken:
+		hud.call("add_collected_item", "DIAMOND")
 
 
 func _build_tv(world_position: Vector3) -> void:
@@ -524,18 +528,18 @@ func _build_broken_floor(world_position: Vector3) -> void:
 
 
 func _build_furniture_items() -> void:
-	# The furniture starts scrambled in a loose, overlapping pile in the
-	# front-right corner - not a neat row - so it reads as "not put away
-	# yet". Each item gets its own pink footprint only after it's picked up.
+	# The furniture starts in empty staging spots. The dining table's final
+	# pink footprint is centered on the rug, with the two chairs aligned
+	# opposite each other at the rug's long sides.
 	var table := _new_furniture_item(
 		"DiningTable",
 		"DINING TABLE",
 		Vector3(6.5, 0.0, 4.35),
-		Vector3(-5.8, 0.0, -6.2),
+		Vector3(0.0, 0.18, -5.4),
 		Vector3(2.9, 0.04, 1.65),
 		Vector3(0.0, 0.0, 0.0),
 		0.72,
-		Vector3(0.0, 16.0, 0.0)
+		Vector3(0.0, 90.0, 0.0)
 	)
 	var table_wood := _material(Color(0.36, 0.16, 0.065, 1))
 	var table_trim := _material(Color(0.58, 0.28, 0.1, 1))
@@ -555,11 +559,11 @@ func _build_furniture_items() -> void:
 		"DiningChairA",
 		"CHAIR 1",
 		Vector3(8.3, 0.0, 5.3),
-		Vector3(-5.8, 0.0, -4.55),
+		Vector3(0.0, 0.18, -7.0),
 		Vector3(0.95, 0.04, 0.95),
-		Vector3(0.0, 0.0, 0.0),
+		Vector3(0.0, 180.0, 0.0),
 		0.82,
-		Vector3(0.0, -32.0, 0.0)
+		Vector3(0.0, 0.0, 0.0)
 	)
 	_build_dining_chair_meshes(chair_a)
 
@@ -567,11 +571,11 @@ func _build_furniture_items() -> void:
 		"DiningChairB",
 		"CHAIR 2",
 		Vector3(7.35, 0.0, 2.5),
-		Vector3(-5.8, 0.0, -7.85),
+		Vector3(0.0, 0.18, -3.8),
 		Vector3(0.95, 0.04, 0.95),
-		Vector3(0.0, 180.0, 0.0),
+		Vector3(0.0, 0.0, 0.0),
 		0.82,
-		Vector3(0.0, 205.0, 0.0)
+		Vector3(0.0, 180.0, 0.0)
 	)
 	_build_dining_chair_meshes(chair_b)
 
@@ -1327,8 +1331,10 @@ func _on_repair_task_completed(task_kind: String) -> void:
 	_refresh_hud()
 
 
-func _on_lockpick_unlocked(_item_name: String) -> void:
+func _on_lockpick_unlocked(item_name: String) -> void:
 	lockpick_done = 1
+	hud.call("show_toast", "PENDRIVE COLLECTED")
+	hud.call("add_collected_item", item_name)
 	_refresh_hud()
 
 
@@ -1355,15 +1361,22 @@ func _on_time_expired() -> void:
 	hud.set_interaction_prompt("TIME IS UP")
 
 
-# --- Suspicion: lingering near the chest or the safe -------------------------
+# --- Suspicion: lingering near restricted investigation spots ----------------
 
 func _update_loitering(delta: float) -> void:
 	if game_over or not bool(game_manager.get("is_running")):
 		return
-	if not _player_near_watch_spot():
+	var spot_id := _near_watch_spot_id()
+	if spot_id.is_empty():
 		loiter_time = 0.0
 		loiter_warned = false
+		loiter_spot_id = ""
 		return
+
+	if spot_id != loiter_spot_id:
+		loiter_time = 0.0
+		loiter_warned = false
+		loiter_spot_id = spot_id
 
 	loiter_time += delta
 	if loiter_time < LOITER_GRACE_SECONDS:
@@ -1373,22 +1386,32 @@ func _update_loitering(delta: float) -> void:
 		loiter_warned = true
 		var inner_voice := get_node_or_null("/root/InnerVoiceManager")
 		if inner_voice != null:
-			inner_voice.call("queue_thought", "CAUTION", "Standing here too long. Someone is going to notice.", 3.5)
+			var warning := "Lingering by the lockpick drawer. Keep moving before someone notices."
+			if spot_id != "lockpick":
+				warning = "Standing here too long. Someone is going to notice."
+			inner_voice.call("queue_thought", "CAUTION", warning, 3.5)
 
 	if suspicion_manager != null:
 		suspicion_manager.call("add_suspicion", LOITER_SUSPICION_PER_SECOND * delta)
 
 
-func _player_near_watch_spot() -> bool:
+func _near_watch_spot_id() -> String:
+	if _player_near_watch_node(lock_pick_drawer_node):
+		return "lockpick"
+	if _player_near_watch_node(chest_node):
+		return "chest"
+	if _player_near_watch_node(wall_safe_node):
+		return "safe"
+	return ""
+
+
+func _player_near_watch_node(watch_node: Node3D) -> bool:
+	if watch_node == null or not is_instance_valid(watch_node) or not watch_node.visible:
+		return false
 	# Flat (x/z) distance, so the player's height doesn't matter.
 	var player_flat := Vector2(player.global_position.x, player.global_position.z)
-	for watch_node in [chest_node, wall_safe_node]:
-		if watch_node == null:
-			continue
-		var spot_flat := Vector2(watch_node.global_position.x, watch_node.global_position.z)
-		if player_flat.distance_to(spot_flat) <= LOITER_RADIUS:
-			return true
-	return false
+	var spot_flat := Vector2(watch_node.global_position.x, watch_node.global_position.z)
+	return player_flat.distance_to(spot_flat) <= LOITER_RADIUS
 
 
 # --- Safe corner light ----------------------------------------------------
@@ -1433,3 +1456,4 @@ func _build_fill_lights() -> void:
 
 func _on_safe_opened() -> void:
 	hud.call("show_toast", "FILE COLLECTED")
+	hud.call("add_collected_item", "FILE")

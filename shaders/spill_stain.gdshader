@@ -9,6 +9,7 @@ render_mode blend_mix, depth_draw_opaque, cull_back, unshaded, alpha_to_coverage
 
 uniform vec4 stain_color : source_color = vec4(0.05, 0.04, 0.03, 1.0);
 uniform float scrub_progress : hint_range(0.0, 1.0) = 0.0;
+uniform float stain_age : hint_range(0.0, 1.0) = 0.0;
 uniform float edge_softness : hint_range(0.0, 0.5) = 0.18;
 uniform float noise_scale : hint_range(1.0, 40.0) = 12.0;
 uniform float noise_strength : hint_range(0.0, 1.0) = 0.35;
@@ -32,26 +33,43 @@ float value_noise(vec2 uv) {
 }
 
 void fragment() {
-	// Distance from the stain's edge (UV 0.5,0.5 is the center of the
-	// mesh/quad this material is applied to).
 	vec2 centered = UV - vec2(0.5);
-	float dist = length(centered) * 2.0;
+	float radial = length(centered * vec2(1.9, 1.6));
+	float angle = atan(centered.y, centered.x);
+	float broad_noise = value_noise(UV * noise_scale);
+	float fine_noise = value_noise(UV * (noise_scale * 2.4));
+	float edge_wave = 0.055 * sin(angle * 3.0 + 1.2) + 0.035 * sin(angle * 7.0 - 0.5);
+	edge_wave += (broad_noise - 0.5) * noise_strength * 0.2;
+	float boundary = 0.82 + edge_wave;
+	float pool = 1.0 - smoothstep(boundary - edge_softness, boundary + edge_softness, radial);
 
-	float n = value_noise(UV * noise_scale) * noise_strength;
-	float ragged_dist = dist + n * (1.0 - scrub_progress);
+	// Scattered droplets break up the smooth pool edge into an uneven spill.
+	vec2 splash_grid = UV * vec2(6.0, 4.0);
+	vec2 splash_local = fract(splash_grid) - vec2(0.5);
+	vec2 splash_cell = floor(splash_grid);
+	float splash_random = hash12(splash_cell + vec2(12.4, 5.7));
+	float splash_radius = mix(0.07, 0.17, splash_random);
+	float droplet = 1.0 - smoothstep(splash_radius, splash_radius + 0.035, length(splash_local));
+	float droplet_gate = step(0.58, hash12(splash_cell + vec2(7.1, 19.2)));
+	float splatter = droplet * droplet_gate * (1.0 - smoothstep(0.6, 1.05, radial));
+	float shape_alpha = max(pool, splatter * 0.64);
 
-	// Base disc falloff so the stain has a soft, irregular silhouette even
-	// before scrubbing starts.
-	float shape_alpha = 1.0 - smoothstep(1.0 - edge_softness, 1.0, ragged_dist);
+	// Subtle pigment variation gives fresh liquid a wet sheen and old residue
+	// a dry, mottled surface instead of a flat, uniform decal.
+	float pigment_variation = mix(0.72, 1.12, fine_noise);
+	vec3 pigment = stain_color.rgb * pigment_variation;
+	float rim = smoothstep(boundary - 0.17, boundary - 0.025, radial) * shape_alpha;
+	vec3 rim_tint = pigment * mix(1.2, 0.72, stain_age);
+	ALBEDO = mix(pigment, rim_tint, rim * 0.65);
+	ROUGHNESS = mix(0.24, 0.98, stain_age);
+	SPECULAR = mix(0.72, 0.18, stain_age);
 
-	// scrub_progress erases the stain from the inside out with a soft,
-	// noise-perturbed front, so it reads as being wiped away unevenly
-	// rather than uniformly fading.
+	// Progress wipes fresh liquid away from the middle. A stubborn aged
+	// residue remains visible even after the player finishes the old-stain task.
 	float wipe_front = scrub_progress * 1.15;
-	float wiped_alpha = smoothstep(wipe_front - edge_softness, wipe_front, dist + n * 0.4);
-
-	float final_alpha = shape_alpha * wiped_alpha;
-
-	ALBEDO = stain_color.rgb;
+	float wipe_dist = radial + (broad_noise - 0.5) * 0.1;
+	float wiped_alpha = smoothstep(wipe_front - edge_softness, wipe_front, wipe_dist);
+	float persistent_residue = shape_alpha * stain_age * 0.34;
+	float final_alpha = max(shape_alpha * wiped_alpha, persistent_residue);
 	ALPHA = clamp(final_alpha * stain_color.a, 0.0, 1.0);
 }

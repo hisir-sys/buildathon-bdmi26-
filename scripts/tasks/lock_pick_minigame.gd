@@ -12,6 +12,7 @@ extends CanvasLayer
 #   minigame.start()
 
 signal resolved(hit: bool)
+signal cancelled
 
 const TRACK_WIDTH := 520.0
 const TRACK_HEIGHT := 14.0
@@ -58,7 +59,7 @@ func start() -> void:
 	_running = true
 	_resolved = false
 	_locked_out = false
-	status_label.text = "PICK THE LOCK - SPACE / CLICK TO STOP THE NEEDLE"
+	status_label.text = "SPACE / CLICK TO PICK  •  E TO CLOSE"
 	var tween := create_tween()
 	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	tween.tween_property(root, "modulate:a", 1.0, 0.25)
@@ -78,14 +79,36 @@ func _process(delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("interact"):
+		get_viewport().set_input_as_handled()
+		_cancel()
+		return
 	if not _running or _locked_out or _resolved:
 		return
-	var pressed := event.is_action_pressed("interact") or event.is_action_pressed("ui_accept")
+	var pressed := event.is_action_pressed("ui_accept")
 	if event is InputEventMouseButton and event.pressed and (event as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT:
 		pressed = true
 	if not pressed:
 		return
 	_attempt_stop()
+
+
+func _cancel() -> void:
+	if _resolved:
+		return
+	_resolved = true
+	_running = false
+	_locked_out = false
+
+	var tween := create_tween()
+	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	tween.tween_property(root, "modulate:a", 0.0, 0.2)
+	await tween.finished
+
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	get_tree().paused = false
+	cancelled.emit()
+	queue_free()
 
 
 func _attempt_stop() -> void:

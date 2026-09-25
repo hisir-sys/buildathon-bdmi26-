@@ -9,7 +9,7 @@ signal unlocked(item_name: String)
 
 const LockPickMinigame = preload("res://scripts/tasks/lock_pick_minigame.gd")
 
-@export var granted_item_name: String = "Brass Letter Opener"
+@export var granted_item_name: String = "Pendrive"
 @export var hit_suspicion: float = 5.0
 @export var miss_suspicion: float = 25.0
 
@@ -40,7 +40,12 @@ func interact() -> void:
 	var minigame := LockPickMinigame.new()
 	get_tree().current_scene.add_child(minigame)
 	minigame.resolved.connect(_on_minigame_resolved)
+	minigame.cancelled.connect(_on_minigame_cancelled)
 	minigame.start()
+
+
+func _on_minigame_cancelled() -> void:
+	_is_busy = false
 
 
 func _on_minigame_resolved(hit: bool) -> void:

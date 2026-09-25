@@ -62,9 +62,11 @@ the `.tscn` file.
 | Object | World position | Notes |
 |---|---|---|
 | `LockPickDrawer` | `(-9.85, 0.9, 4.0)`, facing into the room | Built into the left-wall paneling, between the fridge switch and the TV corner — an open stretch of wall. Reads as a hidden compartment, which fits the spy framing. |
-| `CrookedPicture` | `(-3.0, 1.8, -9.8)` | Main back wall, between the mop station and the desk/chest. |
-| `SpillCleaner` | `(-3.5, 0, -2.0)` | Open floor, clear of the rug, dust spots, and the rewire panel/fridge wall furniture. |
-| `PermanentStain` | `(6.4, 0, -3.0)` | Just outside the bathroom doorway. |
+| `TreasureChest` | `(-7.6, 0.1, -7.3)` | Desk and chest are tucked into the back-left corner, behind the cabinet's start position. |
+| `CrookedPicture` | `(9.82, 1.85, 2.0)`, facing into the room | Right wall beside the cabinet's placement; the revealed scratch-code patch moves with the picture. |
+| `DiningTable` target | `(8.2, 0, 2.0)`, turned parallel to the right wall | Arranged beside the picture and near the cabinet. |
+| `SpillCleaner` | `(-3.5, 0.1, -2.0)` | Sits just above the floor top; its broad, thin hitbox makes it easier to target without blocking movement. |
+| `PermanentStain` | `(6.4, 0.1, -3.0)` | Just outside the bathroom doorway; retains visible residue after scrubbing. |
 | `KeySpawn_A/B/C` | bathroom shelf (original spot) / rack's top shelf / mop station shelf | `RunGenerator` picks one per run; the key (`ChestKey`) is now in the `chest_key` group so it finds it automatically. |
 | `RunGenerator` | plain child node, no transform | Runs its randomization once in `_ready()`. |
 

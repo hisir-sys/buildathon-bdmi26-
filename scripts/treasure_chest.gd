@@ -1,5 +1,5 @@
 extends StaticBody3D
-# The desk + chest at the back wall. Not movable. The player needs the key
+# The desk + chest in the back-left corner. Not movable. The player needs the key
 # (found in the bathroom) and has to shift the cabinet away first. Unlocking
 # freezes the game, cuts to a fixed camera, dims the room and asks the player
 # to STEAL or LEAVE the diamond. The result is stored on the GameManager
@@ -10,9 +10,6 @@ signal choice_finished(diamond_taken: bool)
 
 const ChoiceOverlayScript = preload("res://scripts/choice_overlay.gd")
 
-const NOTE_TITLE := "A NOTE ON THE DESK"
-const NOTE_TEXT := "\"The key is hidden in the bathroom - look on the middle shelf of the storage rack.\""
-const NOTE_RADIUS := 5.5
 const CABINET_CLEARANCE := 3.2
 
 # Camera positions relative to the chest origin (chest sits on the desk).
@@ -35,7 +32,6 @@ var diamond: Node3D
 var diamond_light: OmniLight3D
 var cinematic_camera: Camera3D
 var overlay: CanvasLayer
-var note_visible: bool = false
 
 # Grouped so the start/ending backdrops can hide or rearrange the chest.
 var chest_group: Node3D
@@ -77,8 +73,6 @@ func _process(delta: float) -> void:
 			cinematic_camera.look_at(to_global(CAM_TARGET), Vector3.UP)
 		return
 
-	_update_note()
-
 
 # --- Interaction -----------------------------------------------------------
 
@@ -107,31 +101,11 @@ func _cabinet_in_the_way() -> bool:
 	return cabinet != null and cabinet.global_position.distance_to(global_position) < CABINET_CLEARANCE
 
 
-func _update_note() -> void:
-	if hud == null or player == null:
-		return
-	var should_show := (
-		not is_unlocked
-		and not is_sealed
-		and not _has_key()
-		and player.global_position.distance_to(global_position) <= NOTE_RADIUS
-	)
-	if should_show == note_visible:
-		return
-	note_visible = should_show
-	if should_show:
-		hud.call("show_note", NOTE_TITLE, NOTE_TEXT)
-	else:
-		hud.call("hide_note")
-
-
 # --- Sequence --------------------------------------------------------------
 
 func _run_sequence() -> void:
 	is_busy = true
 	is_unlocked = true
-	note_visible = false
-	hud.call("hide_note")
 	hud.call("set_interaction_prompt", "")
 	game_manager.call("set_has_key", false)
 
