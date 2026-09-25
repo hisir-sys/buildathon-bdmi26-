@@ -153,14 +153,15 @@ func _build_floor_plan_props() -> void:
 	# seating area instead of sitting off to the side.
 	_build_tv(Vector3(-5.5, 0.0, 9.78))
 	_build_broken_floor(Vector3(-5.8, 0.0, 6.7))
-	# On the front wall, left of the desk/chest and right of the TV, filling
-	# the open gap between them (TV's right edge is ~x -3.1, the desk's left
-	# edge is ~x 0.33) - the front wall is at z 10, so this needs the 180
-	# rotation to flip the shelf's open front from its default +z to -z,
-	# i.e. into the room, same as the chest itself.
+	# On the front wall, roughly lined up with the bathroom doorway (door is
+	# at x 6.4, z -3.65) so it's the wall you're facing stepping out of the
+	# bathroom. Shifted slightly to x 5.5 to clear FrontSpotlightRight at
+	# x 7.2. Front wall is at z 10, so this needs the 180 rotation to flip
+	# the shelf's open front from its default +z to -z, i.e. into the room,
+	# same as the chest itself.
 	# Purely decorative, not part of any task, same pattern as the TV / mop
 	# station / rug.
-	_build_bookshelf(Vector3(-1.4, 0.0, 9.6), 180.0)
+	_build_bookshelf(Vector3(5.5, 0.0, 9.6), 180.0)
 	_build_furniture_items()
 	_build_bathroom()
 	_build_reference_game_props()
