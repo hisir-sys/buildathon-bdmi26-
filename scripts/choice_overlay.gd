@@ -184,6 +184,7 @@ func _on_pressed(steal: bool) -> void:
 	if locked:
 		return
 	locked = true
+	SoundManager.play_ui_click()
 	steal_button.disabled = true
 	leave_button.disabled = true
 

@@ -113,6 +113,7 @@ func _cancel() -> void:
 
 func _attempt_stop() -> void:
 	_running = false
+	SoundManager.play_ui_click()
 	var hit := _needle_pos >= _target_start and _needle_pos <= _target_end
 	if hit:
 		_finish(true)

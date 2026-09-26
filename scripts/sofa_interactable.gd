@@ -52,6 +52,7 @@ func _pick_up() -> void:
 	if hold_point == null:
 		return
 
+	SoundManager.play_ui_click()
 	is_carried = true
 	add_to_group("carried_interactable")
 	collision_layer = 0
@@ -83,6 +84,7 @@ func _place_at_zone() -> void:
 	collision_mask = 1
 	_hide_placement_highlight()
 
+	SoundManager.play_task_success()
 	placed.emit()
 
 

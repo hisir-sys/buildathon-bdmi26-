@@ -99,6 +99,7 @@ var crooked_picture_node: StaticBody3D
 var spill_cleaner_node: StaticBody3D
 var permanent_stain_node: StaticBody3D
 var wall_safe_node: StaticBody3D
+var _last_suspicion_value: float = 0.0
 
 
 func _ready() -> void:
@@ -106,6 +107,8 @@ func _ready() -> void:
 	player.tool_selected.connect(hud.set_active_tool)
 	hud.set_active_tool(player.current_tool)
 	suspicion_manager = get_node_or_null("/root/SuspicionManager")
+	if suspicion_manager != null:
+		suspicion_manager.connect("suspicion_changed", _on_suspicion_changed)
 
 	game_manager.time_changed.connect(hud.set_timer)
 	game_manager.time_expired.connect(_on_time_expired)
@@ -500,7 +503,10 @@ func _on_chest_choice_finished(diamond_taken: bool) -> void:
 		world_environment.environment.ambient_light_energy = saved_ambient_energy
 	directional_light.light_energy = saved_sun_energy
 	if diamond_taken:
+		SoundManager.play_pickup()
 		hud.call("add_collected_item", "DIAMOND")
+	else:
+		SoundManager.play_toggle(false)
 
 
 func _build_tv(world_position: Vector3) -> void:
@@ -1373,6 +1379,7 @@ func _finish_game(tasks_finished: bool, forced_ending_id: int = 0) -> void:
 	fade.mouse_filter = Control.MOUSE_FILTER_STOP
 	fade_layer.add_child(fade)
 	add_child(fade_layer)
+	SoundManager.play_ending(ending == 3)
 	var tween := create_tween()
 	tween.tween_property(fade, "color:a", 1.0, 1.0)
 	await tween.finished
@@ -1381,11 +1388,13 @@ func _finish_game(tasks_finished: bool, forced_ending_id: int = 0) -> void:
 
 func _on_dust_cleaned() -> void:
 	dust_cleaned += 1
+	SoundManager.play_task_success()
 	_refresh_hud()
 
 
 func _on_web_cleared() -> void:
 	webs_cleared += 1
+	SoundManager.play_task_success()
 	_refresh_hud()
 
 
@@ -1397,6 +1406,9 @@ func _on_fridge_placed() -> void:
 func _on_fridge_switch_toggled(is_on: bool) -> void:
 	fridge_is_powered = is_on
 	fridge_done = 1 if is_on else 0
+	SoundManager.play_toggle(is_on)
+	if is_on:
+		SoundManager.play_task_success()
 	_refresh_hud()
 	fridge_interior_light.light_energy = 1.1 if is_on else 0.0
 	var status_material := fridge_status_light.material_override as StandardMaterial3D
@@ -1410,17 +1422,20 @@ func _on_fridge_switch_toggled(is_on: bool) -> void:
 
 func _on_furniture_placed() -> void:
 	furniture_placed = mini(furniture_placed + 1, FURNITURE_TOTAL)
+	SoundManager.play_task_success()
 	hud.mark_furniture_complete(furniture_placed, FURNITURE_TOTAL)
 	_refresh_hud()
 
 
 func _on_bathroom_mirror_cleaned() -> void:
 	bathroom_mirrors_cleaned = 1
+	SoundManager.play_task_success()
 	_refresh_hud()
 
 
 func _on_bathroom_door_cleaned() -> void:
 	bathroom_door_cleaned = 1
+	SoundManager.play_task_success()
 	_refresh_hud()
 
 
@@ -1431,11 +1446,13 @@ func _on_repair_task_completed(task_kind: String) -> void:
 			lights_fixed = true
 		"bathroom_pipe":
 			bathroom_pipe_cleaned = 1
+	SoundManager.play_task_success()
 	_refresh_hud()
 
 
 func _on_lockpick_unlocked(item_name: String) -> void:
 	lockpick_done = 1
+	SoundManager.play_task_success()
 	hud.call("show_toast", "PENDRIVE COLLECTED")
 	hud.call("add_collected_item", item_name)
 	_refresh_hud()
@@ -1443,6 +1460,7 @@ func _on_lockpick_unlocked(item_name: String) -> void:
 
 func _on_picture_straightened(safe_code: String) -> void:
 	picture_done = 1
+	SoundManager.play_task_success()
 	if wall_safe_node != null:
 		wall_safe_node.call("set_code", safe_code)
 	_refresh_hud()
@@ -1450,18 +1468,30 @@ func _on_picture_straightened(safe_code: String) -> void:
 
 func _on_spill_cleaned() -> void:
 	spill_done = 1
+	SoundManager.play_task_success()
 	_refresh_hud()
 
 
 func _on_stain_capped() -> void:
 	stain_done = 1
+	SoundManager.play_task_success()
 	_refresh_hud()
 
 
 func _on_time_expired() -> void:
+	SoundManager.play_alarm()
 	hud.set_time_expired()
 	_finish_game(false)
 	hud.set_interaction_prompt("TIME IS UP")
+
+
+func _on_suspicion_changed(new_value: float, max_value: float) -> void:
+	if new_value > _last_suspicion_value + 0.5:
+		if new_value >= max_value:
+			SoundManager.play_alarm()
+		else:
+			SoundManager.play_suspicion_tick()
+	_last_suspicion_value = new_value
 
 
 # --- Suspicion: lingering near restricted investigation spots ----------------
@@ -1558,5 +1588,6 @@ func _build_fill_lights() -> void:
 # --- Safe feedback ---------------------------------------------------------
 
 func _on_safe_opened() -> void:
+	SoundManager.play_task_success()
 	hud.call("show_toast", "FILE COLLECTED")
 	hud.call("add_collected_item", "FILE")

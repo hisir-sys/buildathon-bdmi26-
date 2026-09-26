@@ -29,6 +29,7 @@ func interact() -> void:
 	if not is_unlocked or not _has_required_tool():
 		return
 	is_on = not is_on
+	SoundManager.play_toggle(is_on)
 	_update_visual()
 	toggled.emit(is_on)
 

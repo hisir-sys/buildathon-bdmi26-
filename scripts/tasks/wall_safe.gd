@@ -135,6 +135,7 @@ func _open_keypad() -> void:
 		button.pressed.connect(func() -> void:
 			if _code_entry.length() >= 4:
 				return
+			SoundManager.play_ui_click()
 			_code_entry += str(digit)
 			refresh_display.call()
 		)
@@ -164,11 +165,13 @@ func _open_keypad() -> void:
 	column.add_child(UiKit.label("PRESS E TO CLOSE", 11, Color(0.7, 0.72, 0.76, 0.85), HORIZONTAL_ALIGNMENT_CENTER))
 
 	clear_button.pressed.connect(func() -> void:
+		SoundManager.play_ui_click()
 		_code_entry = ""
 		status_label.text = " "
 		refresh_display.call()
 	)
 	cancel_button.pressed.connect(func() -> void:
+		SoundManager.play_ui_click()
 		_close_keypad()
 	)
 	enter_button.pressed.connect(func() -> void:
@@ -180,6 +183,7 @@ func _open_keypad() -> void:
 			_close_keypad()
 			_on_correct_code()
 		else:
+			SoundManager.play_error()
 			status_label.text = "INCORRECT - TRY AGAIN"
 			_code_entry = ""
 			refresh_display.call()

@@ -18,6 +18,9 @@ const TOOL_ELECTRICAL := 0
 const TOOL_MOP := 1
 const TOOL_SCRUBBER := 2
 
+const FOOTSTEP_INTERVAL := 0.38
+var _footstep_timer: float = 0.0
+
 
 func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -76,6 +79,7 @@ func _select_tool(index: int) -> void:
 	current_tool = index
 	for tool_index in range(tool_nodes.size()):
 		tool_nodes[tool_index].visible = (tool_index == index)
+	SoundManager.play_ui_click()
 	tool_selected.emit(index)
 	if has_node("/root/SuspicionManager"):
 		get_node("/root/SuspicionManager").call("set_cover_state", index == TOOL_MOP) # Mop
@@ -104,5 +108,14 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity.x = move_toward(velocity.x, 0.0, move_speed)
 		velocity.z = move_toward(velocity.z, 0.0, move_speed)
+
+	var is_walking := movement_direction != Vector3.ZERO and is_on_floor()
+	if is_walking:
+		_footstep_timer -= delta
+		if _footstep_timer <= 0.0:
+			_footstep_timer = FOOTSTEP_INTERVAL
+			SoundManager.play_footstep()
+	else:
+		_footstep_timer = 0.0
 
 	move_and_slide()

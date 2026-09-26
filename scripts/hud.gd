@@ -486,10 +486,13 @@ func set_active_tool(tool_index: int) -> void:
 func _toggle_sound() -> void:
 	sound_enabled = not sound_enabled
 	AudioServer.set_bus_mute(0, not sound_enabled)
+	if sound_enabled:
+		SoundManager.play_ui_click()
 	sound_button.text = "🔊" if sound_enabled else "🔇"
 
 
 func _toggle_pause() -> void:
+	SoundManager.play_ui_click()
 	_set_paused(not is_paused)
 
 func _set_paused(value: bool) -> void:
@@ -1078,7 +1081,10 @@ func _build_pause_menu() -> void:
 	pause_resume_button.add_theme_color_override("font_color", Color(0.035, 0.05, 0.08, 1))
 	pause_resume_button.add_theme_stylebox_override("normal", _make_button_style(Color(0.9, 0.796, 0.493, 1), Color(0.9, 0.848, 0.639, 1), 8))
 	pause_resume_button.add_theme_stylebox_override("hover", _make_button_style(Color(0.9, 0.827, 0.561, 1), Color(1, 1, 1, 0.7), 8))
-	pause_resume_button.pressed.connect(func() -> void: _set_paused(false))
+	pause_resume_button.pressed.connect(func() -> void:
+		SoundManager.play_ui_click()
+		_set_paused(false)
+	)
 	button_column.add_child(pause_resume_button)
 
 	var restart := Button.new()
@@ -1102,9 +1108,11 @@ func _build_pause_menu() -> void:
 	button_column.add_child(quit)
 
 func _restart_shift() -> void:
+	SoundManager.play_ui_click()
 	_set_paused(false)
 	get_tree().reload_current_scene()
 
 func _quit_to_menu() -> void:
+	SoundManager.play_ui_click()
 	_set_paused(false)
 	get_tree().change_scene_to_file("res://scenes/start_menu.tscn")

@@ -181,7 +181,10 @@ func _build_ui(data: Dictionary) -> void:
 	button_row.add_child(quit)
 	again.pressed.connect(_go_to.bind(INTRO_SCENE_PATH))
 	menu.pressed.connect(_go_to.bind(MENU_SCENE_PATH))
-	quit.pressed.connect(func() -> void: get_tree().quit())
+	quit.pressed.connect(func() -> void:
+		SoundManager.play_ui_click()
+		get_tree().quit()
+	)
 
 	var fade_layer := CanvasLayer.new()
 	fade_layer.layer = 100
@@ -224,6 +227,7 @@ func _go_to(path: String) -> void:
 	if leaving:
 		return
 	leaving = true
+	SoundManager.play_ui_click()
 	var tween := create_tween()
 	tween.tween_property(fade, "color:a", 1.0, 0.6)
 	await tween.finished

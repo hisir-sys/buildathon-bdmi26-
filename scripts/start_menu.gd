@@ -131,6 +131,7 @@ func _build_ui() -> void:
 func _on_start() -> void:
 	if starting:
 		return
+	SoundManager.play_ui_click()
 	starting = true
 	start_button.disabled = true
 	load_button.disabled = true
@@ -144,6 +145,7 @@ func _on_start() -> void:
 func _on_load() -> void:
 	# There is no mid-run save (a run is a single 10-minute shift), so this
 	# just tells the player so.
+	SoundManager.play_ui_click()
 	toast.text = "NO SAVED GAME FOUND"
 	if toast_tween != null and toast_tween.is_valid():
 		toast_tween.kill()
@@ -154,4 +156,5 @@ func _on_load() -> void:
 
 
 func _on_quit() -> void:
+	SoundManager.play_ui_click()
 	get_tree().quit()

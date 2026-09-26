@@ -139,12 +139,14 @@ func _run_sequence() -> void:
 
 
 func _unlock_and_open() -> void:
+	SoundManager.play_toggle(true)
 	var lock_tween := _make_tween()
 	lock_tween.tween_property(padlock, "rotation_degrees:z", 20.0, 0.2)
 	lock_tween.tween_property(padlock, "position", PADLOCK_DROP_POS, 0.45).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
 	lock_tween.parallel().tween_property(padlock, "rotation_degrees", Vector3(-90.0, 35.0, 20.0), 0.45)
 	await lock_tween.finished
 
+	SoundManager.play_task_success()
 	var lid_tween := _make_tween()
 	lid_tween.tween_property(lid_pivot, "rotation_degrees:x", -115.0, 1.2).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	await lid_tween.finished

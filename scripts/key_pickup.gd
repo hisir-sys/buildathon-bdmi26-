@@ -13,6 +13,7 @@ func get_interaction_prompt() -> String:
 
 
 func interact() -> void:
+	SoundManager.play_pickup()
 	var manager := get_tree().get_first_node_in_group("game_manager")
 	if manager != null:
 		manager.call("set_has_key", true)
